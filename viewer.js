@@ -36,6 +36,10 @@
     { id: 'mono',       name: 'Mono',        desc: 'brutalist terminal' },
     { id: 'midcentury', name: 'Mid-Century', desc: 'wes-anderson poster' },
     { id: 'blueprint',  name: 'Blueprint',   desc: 'technical drawing' },
+    { id: 'solarized',  name: 'Solarized',   desc: 'developer classic' },
+    { id: 'newsprint',  name: 'Newsprint',   desc: '1920s newspaper' },
+    { id: 'neon',       name: 'Neon',        desc: 'cyberpunk minimal' },
+    { id: 'botanical',  name: 'Botanical',   desc: 'herbarium plate' },
   ];
   const STORAGE_THEME = 'lifecycle-map.theme';
   const STORAGE_MODE  = 'lifecycle-map.mode';

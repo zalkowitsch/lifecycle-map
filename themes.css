@@ -13,7 +13,7 @@
  */
 
 /* ============ FONT IMPORTS ============ */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&family=Special+Elite&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&family=Special+Elite&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@400;500;600;700;800&family=Source+Code+Pro:wght@400;500;700&display=swap');
 
 /* ============ THEME · paper (default — editorial schematic) ============ */
 :root, [data-theme="paper"] {
@@ -230,6 +230,209 @@
   background-image:
     linear-gradient(to right, rgba(232,240,255,0.06) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(232,240,255,0.06) 1px, transparent 1px) !important;
+}
+
+/* ============ THEME · solarized (developer classic) ============ */
+[data-theme="solarized"] {
+  --font-display: 'Source Code Pro', 'JetBrains Mono', monospace;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'Source Code Pro', monospace;
+  --display-tracking: -0.005em;
+  --body-tracking: 0;
+  --node-radius: 3px;
+  --pill-radius: 3px;
+  --button-radius: 3px;
+  --grain-opacity: 0.05;
+  --grain-blend: multiply;
+}
+[data-theme="solarized"][data-mode="light"], [data-theme="solarized"]:not([data-mode="dark"]) {
+  --bg:        #fdf6e3;
+  --bg-2:      #eee8d5;
+  --ink:       #073642;
+  --ink-2:     #586e75;
+  --mute:      #93a1a1;
+  --rule:      #93a1a1;
+  --rule-2:    #d1c9a9;
+  --accent:    #b58900;
+  --accent-2:  #eee8d5;
+  --node-bg:           #fdf6e3;
+  --node-bg-hover:     #fffce9;
+  --node-active-bg:    #fff3c4;
+  --upstream-bg:       #d6e9f5;
+  --upstream-stroke:   #268bd2;
+  --downstream-bg:     #d5e8c8;
+  --downstream-stroke: #859900;
+}
+[data-theme="solarized"][data-mode="dark"] {
+  --bg:        #002b36;
+  --bg-2:      #073642;
+  --ink:       #fdf6e3;
+  --ink-2:     #eee8d5;
+  --mute:      #586e75;
+  --rule:      #586e75;
+  --rule-2:    #073642;
+  --accent:    #b58900;
+  --accent-2:  #073642;
+  --node-bg:           #073642;
+  --node-bg-hover:     #0a3f50;
+  --node-active-bg:    #4a3a08;
+  --upstream-bg:       #003b54;
+  --upstream-stroke:   #268bd2;
+  --downstream-bg:     #1f3819;
+  --downstream-stroke: #859900;
+}
+
+/* ============ THEME · newsprint (1920s newspaper) ============ */
+[data-theme="newsprint"] {
+  --font-display: 'Old Standard TT', 'Times New Roman', serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --display-tracking: -0.01em;
+  --body-tracking: 0;
+  --node-radius: 0px;
+  --pill-radius: 0px;
+  --button-radius: 0px;
+  --grain-opacity: 0.22;
+  --grain-blend: multiply;
+}
+[data-theme="newsprint"][data-mode="light"], [data-theme="newsprint"]:not([data-mode="dark"]) {
+  --bg:        #f1ead8;
+  --bg-2:      #e3d9bf;
+  --ink:       #1a1a16;
+  --ink-2:     #2d2926;
+  --mute:      #7a7159;
+  --rule:      #9b8f6e;
+  --rule-2:    #c8bea0;
+  --accent:    #8b1a1a;
+  --accent-2:  #f1ead8;
+  --node-bg:           #f9f3e0;
+  --node-bg-hover:     #fffaea;
+  --node-active-bg:    #f5d8d8;
+  --upstream-bg:       #e3dbc2;
+  --upstream-stroke:   #2b3a55;
+  --downstream-bg:     #dbe3c2;
+  --downstream-stroke: #3a5520;
+}
+[data-theme="newsprint"][data-mode="dark"] {
+  --bg:        #1a1814;
+  --bg-2:      #24211c;
+  --ink:       #f1ead8;
+  --ink-2:     #d8d2c0;
+  --mute:      #807966;
+  --rule:      #4a4538;
+  --rule-2:    #2b2722;
+  --accent:    #d97a7a;
+  --accent-2:  #2b1818;
+  --node-bg:           #221e18;
+  --node-bg-hover:     #2c281f;
+  --node-active-bg:    #3d2828;
+  --upstream-bg:       #1c2436;
+  --upstream-stroke:   #8aa5d8;
+  --downstream-bg:     #1f2a18;
+  --downstream-stroke: #9bb874;
+}
+
+/* ============ THEME · neon (cyberpunk minimal) ============ */
+[data-theme="neon"] {
+  --font-display: 'Syne', 'Inter', sans-serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --display-tracking: -0.025em;
+  --body-tracking: 0;
+  --node-radius: 6px;
+  --pill-radius: 14px;
+  --button-radius: 4px;
+  --grain-opacity: 0.04;
+  --grain-blend: screen;
+}
+[data-theme="neon"][data-mode="light"], [data-theme="neon"]:not([data-mode="dark"]) {
+  --bg:        #fef5f8;
+  --bg-2:      #fce4ed;
+  --ink:       #1a0f1a;
+  --ink-2:     #3a1a3a;
+  --mute:      #a07a90;
+  --rule:      #d8a8c0;
+  --rule-2:    #ecd0dd;
+  --accent:    #d9006c;
+  --accent-2:  #ffe0ec;
+  --node-bg:           #ffffff;
+  --node-bg-hover:     #fffaff;
+  --node-active-bg:    #ffd9e8;
+  --upstream-bg:       #d4f0ee;
+  --upstream-stroke:   #006e6e;
+  --downstream-bg:     #fff0d0;
+  --downstream-stroke: #b07000;
+}
+[data-theme="neon"][data-mode="dark"] {
+  --bg:        #0a0414;
+  --bg-2:      #14082a;
+  --ink:       #f0e8ff;
+  --ink-2:     #d8c8f0;
+  --mute:      #7a6890;
+  --rule:      #3a2860;
+  --rule-2:    #1f1240;
+  --accent:    #ff2d95;
+  --accent-2:  #2a0a30;
+  --node-bg:           #100628;
+  --node-bg-hover:     #1a0a3a;
+  --node-active-bg:    #3a0a3a;
+  --upstream-bg:       #082838;
+  --upstream-stroke:   #00f0ff;
+  --downstream-bg:     #2a1838;
+  --downstream-stroke: #c8ff00;
+}
+[data-theme="neon"][data-mode="dark"] .node.active .node-rect {
+  filter: drop-shadow(0 0 6px var(--accent));
+}
+
+/* ============ THEME · botanical (herbarium plate) ============ */
+[data-theme="botanical"] {
+  --font-display: 'Cormorant Garamond', 'Georgia', serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --display-tracking: -0.005em;
+  --body-tracking: 0;
+  --node-radius: 1px;
+  --pill-radius: 10px;
+  --button-radius: 1px;
+  --grain-opacity: 0.14;
+  --grain-blend: multiply;
+}
+[data-theme="botanical"][data-mode="light"], [data-theme="botanical"]:not([data-mode="dark"]) {
+  --bg:        #f4f0e3;
+  --bg-2:      #e8e2cf;
+  --ink:       #2a3a1a;
+  --ink-2:     #3d4a2a;
+  --mute:      #7d7560;
+  --rule:      #a39c75;
+  --rule-2:    #c8c0a0;
+  --accent:    #6b4a1a;
+  --accent-2:  #f4ebd0;
+  --node-bg:           #faf6e6;
+  --node-bg-hover:     #fffbed;
+  --node-active-bg:    #f0e0b8;
+  --upstream-bg:       #d8e0c8;
+  --upstream-stroke:   #4a6028;
+  --downstream-bg:     #e8d8c0;
+  --downstream-stroke: #8b5a28;
+}
+[data-theme="botanical"][data-mode="dark"] {
+  --bg:        #16201a;
+  --bg-2:      #1f2d24;
+  --ink:       #e8e2cf;
+  --ink-2:     #d0c8a8;
+  --mute:      #7a8a78;
+  --rule:      #3d4a38;
+  --rule-2:    #233028;
+  --accent:    #c8a060;
+  --accent-2:  #2a2418;
+  --node-bg:           #1c2820;
+  --node-bg-hover:     #243228;
+  --node-active-bg:    #382a18;
+  --upstream-bg:       #1f3022;
+  --upstream-stroke:   #8ab070;
+  --downstream-bg:     #2c2418;
+  --downstream-stroke: #c8a560;
 }
 
 /* ============ Global theme application ============ */
