@@ -1343,9 +1343,9 @@
       drawer.classList.add('open');
       scrim.classList.add('open');
       drawer.setAttribute('aria-hidden', 'false');
-      // Wait one frame so the CSS transition has the drawer's width laid out
-      // before we measure it for the canvas padding.
-      requestAnimationFrame(() => setDrawerPad(true));
+      // Grow the scrollable area synchronously so the subsequent
+      // centerOnPoint() can scroll past the original SVG width.
+      setDrawerPad(true);
     }
     function closeDrawer() {
       drawer.classList.remove('open');
