@@ -1168,7 +1168,7 @@
     laneSvg.setAttribute('height', SVG_H);
     laneSvg.setAttribute('viewBox', `0 0 ${LANE_LABEL_W} ${SVG_H}`);
     laneSvg.appendChild(svgEl('rect', { x: 0, y: 0, width: LANE_LABEL_W, height: SVG_H, fill: bgColor }));
-    laneSvg.appendChild(svgEl('line', { x1: 0, y1: PHASE_LABEL_H, x2: LANE_LABEL_W, y2: PHASE_LABEL_H, class: 'lane-edge' }));
+    // bottom border below the corner area is drawn by phSvg/cornerSvg — skip here
     lanes.forEach((l, i) => {
       const y = LANE_TOP_BY_ID[l.id];
       const h = LANE_HEIGHT_BY_ID[l.id];
@@ -1179,7 +1179,8 @@
         laneSvg.appendChild(svgEl('line', { x1: 0, y1: y + h, x2: LANE_LABEL_W, y2: y + h, class: 'lane-divider' }));
       }
     });
-    laneSvg.appendChild(svgEl('line', { x1: LANE_LABEL_W - 1, y1: 0, x2: LANE_LABEL_W - 1, y2: SVG_H, class: 'lane-edge' }));
+    // lane-labels right border starts at PHASE_LABEL_H; the top segment is owned by cornerSvg
+    laneSvg.appendChild(svgEl('line', { x1: LANE_LABEL_W - 1, y1: PHASE_LABEL_H, x2: LANE_LABEL_W - 1, y2: SVG_H, class: 'lane-edge' }));
 
     // phase dividers in main svg
     const ROMAN_LABEL_GAP = 10;
@@ -1209,7 +1210,8 @@
       phSvg.appendChild(svgText('phase-label', labelX, 22, L(p.label)));
       phSvg.appendChild(svgText('phase-sub', labelX, 36, `${p.subCols} ${p.subCols === 1 ? 'lane' : 'lanes'}`));
     });
-    phSvg.appendChild(svgEl('line', { x1: 0, y1: PHASE_LABEL_H - 0.5, x2: SVG_W, y2: PHASE_LABEL_H - 0.5, class: 'lane-edge' }));
+    // phase-header bottom border starts at LANE_LABEL_W; the segment from 0..LANE_LABEL_W is owned by cornerSvg
+    phSvg.appendChild(svgEl('line', { x1: LANE_LABEL_W, y1: PHASE_LABEL_H - 0.5, x2: SVG_W, y2: PHASE_LABEL_H - 0.5, class: 'lane-edge' }));
 
     // sticky corner
     const cornerSvg = document.getElementById('sticky-corner-svg');
