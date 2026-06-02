@@ -168,6 +168,8 @@
     const d = document.getElementById('settings-drawer');
     d.classList.add('open');
     d.setAttribute('aria-hidden', 'false');
+    const btn = document.getElementById('settings-btn');
+    if (btn) btn.classList.add('is-active');
     renderThemeSwatches();
     syncSettingsUI();
   }
@@ -175,6 +177,8 @@
     const d = document.getElementById('settings-drawer');
     d.classList.remove('open');
     d.setAttribute('aria-hidden', 'true');
+    const btn = document.getElementById('settings-btn');
+    if (btn) btn.classList.remove('is-active');
   }
   function renderThemeSwatches() {
     // sample each theme's palette by temporarily swapping data-theme on a hidden probe

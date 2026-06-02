@@ -84,8 +84,32 @@
     border-radius: var(--button-radius);
     transition: background 140ms, border-color 140ms, color 140ms;
   }
-  .h-icon-btn:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-  .h-icon-btn svg { width: 14px; height: 14px; stroke-width: 1.5; }
+  .h-icon-btn:hover {
+    background: var(--bg-2);
+    border-color: var(--ink);
+    color: var(--accent);
+  }
+  .h-icon-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .h-icon-btn.is-active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--bg);
+  }
+  .h-icon-btn.is-active:hover {
+    background: var(--ink);
+    color: var(--accent);
+  }
+  .h-icon-btn svg {
+    width: 14px; height: 14px;
+    stroke-width: 1.5;
+    transition: transform 200ms ease;
+  }
+  .h-icon-btn:hover svg { transform: rotate(20deg); }
+  .h-icon-btn#mode-toggle-btn:hover svg { transform: rotate(-15deg) scale(1.08); }
+  .h-icon-btn#settings-btn:hover svg { transform: rotate(45deg); }
   kbd {
     font-family: var(--font-mono); font-size: 9px;
     padding: 0 4px; border: 1px solid var(--rule); border-radius: 2px;
