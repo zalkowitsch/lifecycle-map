@@ -1,0 +1,43 @@
+{
+  "_comment": "Shared module catalog. Referenced from hiring-pipeline.json via $ref or by id.",
+  "modules": {
+    "ats:resume-parser": {
+      "name": "Resume parser",
+      "today": "automated",
+      "tomorrow": "ai",
+      "tags": ["★ Tablestakes"]
+    },
+    "ats:duplicate-detection": {
+      "name": "Duplicate candidate detection",
+      "today": "assisted",
+      "tomorrow": "automated"
+    },
+    "outreach:templates": {
+      "name": "Outreach template library",
+      "today": "manual",
+      "tomorrow": "ai",
+      "tags": ["High-leverage"]
+    },
+    "outreach:ab-testing": {
+      "name": "Subject line A/B testing",
+      "today": "n-a",
+      "tomorrow": "ai"
+    },
+    "interview:question-bank": {
+      "name": "Question bank",
+      "today": "assisted",
+      "tomorrow": "ai"
+    },
+    "interview:transcript": {
+      "name": "Interview transcript",
+      "today": "n-a",
+      "tomorrow": "ai",
+      "tags": ["🛡️ Moat"]
+    },
+    "scheduling:availability-pool": {
+      "name": "Interviewer availability pool",
+      "today": "manual",
+      "tomorrow": "automated"
+    }
+  }
+}

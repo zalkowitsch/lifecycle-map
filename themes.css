@@ -1,0 +1,246 @@
+/* lifecycle-map · themes.css
+ *
+ * Four themes × two modes (light/dark). Each theme has its own typography pair,
+ * proportions, and accent identity. Switching themes swaps everything atomically.
+ *
+ * Variables consumed everywhere downstream:
+ *   --bg, --bg-2, --ink, --ink-2, --mute, --rule, --rule-2,
+ *   --accent, --accent-2, --node-bg, --node-bg-hover, --node-active-bg,
+ *   --font-display, --font-body, --font-mono,
+ *   --display-tracking, --body-tracking,
+ *   --node-radius, --pill-radius, --button-radius,
+ *   --grain-opacity, --grain-blend
+ */
+
+/* ============ FONT IMPORTS ============ */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;700&family=Inter+Tight:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&family=Special+Elite&display=swap');
+
+/* ============ THEME · paper (default — editorial schematic) ============ */
+:root, [data-theme="paper"] {
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter Tight', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --display-tracking: -0.018em;
+  --body-tracking: 0;
+  --node-radius: 0px;
+  --pill-radius: 0px;
+  --button-radius: 0px;
+  --grain-opacity: 0.18;
+  --grain-blend: multiply;
+}
+[data-theme="paper"][data-mode="light"], [data-theme="paper"]:not([data-mode="dark"]) {
+  --bg:        #f5f1e8;
+  --bg-2:      #ede8db;
+  --ink:       #0d0d0d;
+  --ink-2:     #2a2a28;
+  --mute:      #837d70;
+  --rule:      #b8b2a0;
+  --rule-2:    #d4cebe;
+  --accent:    #c2410c;
+  --accent-2:  #fed7aa;
+  --node-bg:           #fdfbf3;
+  --node-bg-hover:     #fffdf5;
+  --node-active-bg:    #fff1de;
+  --upstream-bg:       #e7e9ff;
+  --upstream-stroke:   #4338ca;
+  --downstream-bg:     #dcf3e3;
+  --downstream-stroke: #047857;
+}
+[data-theme="paper"][data-mode="dark"] {
+  --bg:        #1a1815;
+  --bg-2:      #24211c;
+  --ink:       #f5f1e8;
+  --ink-2:     #ddd7c6;
+  --mute:      #8b8576;
+  --rule:      #4a4538;
+  --rule-2:    #2f2c25;
+  --accent:    #f97316;
+  --accent-2:  #7c2d12;
+  --node-bg:           #221f1a;
+  --node-bg-hover:     #2a2620;
+  --node-active-bg:    #3a2818;
+  --upstream-bg:       #1e2049;
+  --upstream-stroke:   #818cf8;
+  --downstream-bg:     #133024;
+  --downstream-stroke: #34d399;
+}
+
+/* ============ THEME · mono (brutalist terminal) ============ */
+[data-theme="mono"] {
+  --font-display: 'JetBrains Mono', monospace;
+  --font-body: 'JetBrains Mono', monospace;
+  --font-mono: 'JetBrains Mono', monospace;
+  --display-tracking: 0.04em;
+  --body-tracking: 0.01em;
+  --node-radius: 0px;
+  --pill-radius: 0px;
+  --button-radius: 0px;
+  --grain-opacity: 0;
+}
+[data-theme="mono"][data-mode="light"], [data-theme="mono"]:not([data-mode="dark"]) {
+  --bg:        #ffffff;
+  --bg-2:      #f4f4f4;
+  --ink:       #000000;
+  --ink-2:     #1a1a1a;
+  --mute:      #6e6e6e;
+  --rule:      #cccccc;
+  --rule-2:    #e5e5e5;
+  --accent:    #000000;
+  --accent-2:  #e5e5e5;
+  --node-bg:           #ffffff;
+  --node-bg-hover:     #f8f8f8;
+  --node-active-bg:    #000000;
+  --upstream-bg:       #f4f4f4;
+  --upstream-stroke:   #000000;
+  --downstream-bg:     #ffffff;
+  --downstream-stroke: #000000;
+}
+[data-theme="mono"][data-mode="dark"] {
+  --bg:        #000000;
+  --bg-2:      #0a0a0a;
+  --ink:       #ffffff;
+  --ink-2:     #e5e5e5;
+  --mute:      #8a8a8a;
+  --rule:      #2a2a2a;
+  --rule-2:    #1a1a1a;
+  --accent:    #ffffff;
+  --accent-2:  #2a2a2a;
+  --node-bg:           #000000;
+  --node-bg-hover:     #0f0f0f;
+  --node-active-bg:    #ffffff;
+  --upstream-bg:       #0a0a0a;
+  --upstream-stroke:   #ffffff;
+  --downstream-bg:     #000000;
+  --downstream-stroke: #ffffff;
+}
+[data-theme="mono"] .node.active .node-rect { stroke-width: 2.5 !important; }
+[data-theme="mono"][data-mode="light"] .node.active .node-title,
+[data-theme="mono"][data-mode="light"] .node.active .node-sub,
+[data-theme="mono"][data-mode="light"] .node.active .node-id { fill: #ffffff; }
+[data-theme="mono"][data-mode="dark"] .node.active .node-title,
+[data-theme="mono"][data-mode="dark"] .node.active .node-sub,
+[data-theme="mono"][data-mode="dark"] .node.active .node-id { fill: #000000; }
+
+/* ============ THEME · midcentury (Wes Anderson editorial) ============ */
+[data-theme="midcentury"] {
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --display-tracking: -0.012em;
+  --body-tracking: -0.005em;
+  --node-radius: 2px;
+  --pill-radius: 12px;
+  --button-radius: 2px;
+  --grain-opacity: 0.12;
+  --grain-blend: overlay;
+}
+[data-theme="midcentury"][data-mode="light"], [data-theme="midcentury"]:not([data-mode="dark"]) {
+  --bg:        #f4ebd0;
+  --bg-2:      #ead9a8;
+  --ink:       #1c3a3a;
+  --ink-2:     #2d4a4a;
+  --mute:      #8a7a52;
+  --rule:      #c0a865;
+  --rule-2:    #d8c896;
+  --accent:    #c2410c;
+  --accent-2:  #f4ebd0;
+  --node-bg:           #fdf6e3;
+  --node-bg-hover:     #fffaee;
+  --node-active-bg:    #ffe5b8;
+  --upstream-bg:       #c2d8c8;
+  --upstream-stroke:   #1c3a3a;
+  --downstream-bg:     #f0c987;
+  --downstream-stroke: #8b3a1c;
+}
+[data-theme="midcentury"][data-mode="dark"] {
+  --bg:        #1c3a3a;
+  --bg-2:      #2d4a4a;
+  --ink:       #f4ebd0;
+  --ink-2:     #ead9a8;
+  --mute:      #7d9a8a;
+  --rule:      #4a6a6a;
+  --rule-2:    #2d4a4a;
+  --accent:    #f4a261;
+  --accent-2:  #2d4a4a;
+  --node-bg:           #234646;
+  --node-bg-hover:     #2a5252;
+  --node-active-bg:    #3d2818;
+  --upstream-bg:       #1a4d3a;
+  --upstream-stroke:   #6fb89a;
+  --downstream-bg:     #4a3a1a;
+  --downstream-stroke: #f0c987;
+}
+
+/* ============ THEME · blueprint (technical drawing) ============ */
+[data-theme="blueprint"] {
+  --font-display: 'Special Elite', 'Courier New', monospace;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --display-tracking: 0.02em;
+  --body-tracking: 0;
+  --node-radius: 0px;
+  --pill-radius: 0px;
+  --button-radius: 0px;
+  --grain-opacity: 0.08;
+  --grain-blend: screen;
+}
+[data-theme="blueprint"][data-mode="light"], [data-theme="blueprint"]:not([data-mode="dark"]) {
+  --bg:        #f3ede0;
+  --bg-2:      #ebe3d2;
+  --ink:       #1f2b4a;
+  --ink-2:     #2d3a5c;
+  --mute:      #7a7868;
+  --rule:      #a89e85;
+  --rule-2:    #c4baa0;
+  --accent:    #a8431a;
+  --accent-2:  #f3ede0;
+  --node-bg:           #faf5e6;
+  --node-bg-hover:     #fffaef;
+  --node-active-bg:    #fdd9b8;
+  --upstream-bg:       #d6dceb;
+  --upstream-stroke:   #1f2b4a;
+  --downstream-bg:     #dde4d4;
+  --downstream-stroke: #3d5a2d;
+}
+[data-theme="blueprint"][data-mode="dark"] {
+  --bg:        #0f2944;
+  --bg-2:      #163355;
+  --ink:       #e8f0ff;
+  --ink-2:     #c8d6f0;
+  --mute:      #7a90b0;
+  --rule:      #3a5878;
+  --rule-2:    #1f3a5c;
+  --accent:    #5dd4f0;
+  --accent-2:  #163355;
+  --node-bg:           #133560;
+  --node-bg-hover:     #1a4070;
+  --node-active-bg:    #1e5070;
+  --upstream-bg:       #1e2049;
+  --upstream-stroke:   #818cf8;
+  --downstream-bg:     #133024;
+  --downstream-stroke: #5dd4f0;
+}
+[data-theme="blueprint"] body {
+  background-image:
+    linear-gradient(to right, rgba(31,43,74,0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(31,43,74,0.08) 1px, transparent 1px) !important;
+  background-size: 20px 20px !important;
+}
+[data-theme="blueprint"][data-mode="dark"] body {
+  background-image:
+    linear-gradient(to right, rgba(232,240,255,0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(232,240,255,0.06) 1px, transparent 1px) !important;
+}
+
+/* ============ Global theme application ============ */
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  letter-spacing: var(--body-tracking);
+  transition: background 240ms ease, color 240ms ease;
+}
+body::before {
+  opacity: var(--grain-opacity) !important;
+  mix-blend-mode: var(--grain-blend, multiply) !important;
+}

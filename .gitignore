@@ -1,0 +1,19 @@
+# Build artifacts (none today, but reserved)
+node_modules/
+dist/
+.cache/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local-only files
+.env
+.env.local

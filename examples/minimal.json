@@ -1,0 +1,22 @@
+{
+  "meta": { "title": "Minimal Example", "subtitle": "the smallest possible map" },
+  "lanes": [
+    { "id": "user", "label": "User" },
+    { "id": "system", "label": "System" }
+  ],
+  "phases": [
+    { "id": "request", "label": "Request" },
+    { "id": "response", "label": "Response" }
+  ],
+  "nodes": [
+    { "id": "ask",     "lane": "user",   "phase": "request",  "title": "Ask question" },
+    { "id": "process", "lane": "system", "phase": "request",  "title": "Process" },
+    { "id": "reply",   "lane": "system", "phase": "response", "title": "Reply" },
+    { "id": "read",    "lane": "user",   "phase": "response", "title": "Read answer" }
+  ],
+  "edges": [
+    { "from": "ask",     "to": "process" },
+    { "from": "process", "to": "reply" },
+    { "from": "reply",   "to": "read" }
+  ]
+}

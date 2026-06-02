@@ -1,0 +1,49 @@
+{
+  "_comment": "Same hiring pipeline as ../hiring-pipeline.json, but modules are referenced by ID from modules.json. Demonstrates the external reference pattern.",
+  "meta": {
+    "title": "Hiring Pipeline (with module references)",
+    "subtitle": "modules pulled from a shared catalog",
+    "modules_source": "./modules.json"
+  },
+
+  "lanes": [
+    { "id": "candidate", "label": "Candidate" },
+    { "id": "sourcer",   "label": "Sourcer" },
+    { "id": "recruiter", "label": "Recruiter" }
+  ],
+
+  "phases": [
+    { "id": "sourcing", "label": "Sourcing", "subCols": 1 },
+    { "id": "screen",   "label": "Screen",   "subCols": 1 }
+  ],
+
+  "nodes": [
+    {
+      "id": "source",
+      "lane": "sourcer",
+      "phase": "sourcing",
+      "title": "Source candidates",
+      "objective": "Build a top-of-funnel pipeline.",
+      "modules": [
+        "outreach:templates",
+        "outreach:ab-testing",
+        "ats:duplicate-detection"
+      ]
+    },
+    {
+      "id": "screen",
+      "lane": "recruiter",
+      "phase": "screen",
+      "title": "Resume screen",
+      "objective": "Filter the pool to a manageable set.",
+      "modules": [
+        "ats:resume-parser",
+        "ats:duplicate-detection"
+      ]
+    }
+  ],
+
+  "edges": [
+    { "from": "source", "to": "screen" }
+  ]
+}
