@@ -4,10 +4,11 @@
  * No first-party backend. The viewer page hosts no data.
  *
  * Strategies:
- *   1. Embedded URL     — gzip + base64url in URL fragment (no upload, private)
- *   2. catbox.moe       — anonymous file host, permanent, public
- *   3. 0x0.st           — anonymous file host, expires, public, short URL
- *   4. Encrypted image  — AES-GCM cipher + PNG steganography + catbox upload
+ *   1. Download JSON    — save a .json file locally (no upload, no URL)
+ *   2. Embedded URL     — gzip + base64url in URL fragment (no upload, private)
+ *   3. catbox.moe       — anonymous file host, permanent, public
+ *   4. 0x0.st           — anonymous file host, expires, public, short URL
+ *   5. Encrypted image  — AES-GCM cipher + PNG steganography + catbox upload
  *
  * Exports a single function attachShareUI() that wires the share button + modal.
  */
@@ -336,7 +337,23 @@
       setBusy(status, 'Working…');
 
       try {
-        if (strategy === 'embedded') {
+        if (strategy === 'download') {
+          const ts = new Date().toISOString().slice(0, 10);
+          const filename = `lifecycle-map-${ts}.json`;
+          const blob = makeJsonBlob(json);
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          const note = document.createElement('div');
+          note.className = 'share-note';
+          note.innerHTML = `Saved <code>${escapeHtml(filename)}</code> · ${formatSize(blob.size)}<br>Drop this file back onto the viewer anytime to reopen.`;
+          result.appendChild(note);
+        }
+        else if (strategy === 'embedded') {
           const r = await shareEmbedded(json);
           showLink(result, r.url, `URL · ${formatSize(r.url.length)}`);
         }
@@ -440,6 +457,22 @@
 
   function renderShareCards() {
     return `
+      <div class="share-card" data-strategy="download">
+        <div class="share-card-head">
+          <div>
+            <div class="share-card-name">Download JSON</div>
+            <div class="share-card-meta">save locally · nothing leaves your browser</div>
+          </div>
+          <span class="share-badge ok">private</span>
+        </div>
+        <p class="share-card-desc">Save the map as a <code>.json</code> file on your machine. The simplest option — no URL, no upload, no third party. Drop the file back onto the viewer later to reopen it.</p>
+        <div class="share-card-actions">
+          <button class="share-action-btn" data-action="run">Download .json</button>
+        </div>
+        <div class="share-status"></div>
+        <div class="share-result"></div>
+      </div>
+
       <div class="share-card" data-strategy="embedded">
         <div class="share-card-head">
           <div>
