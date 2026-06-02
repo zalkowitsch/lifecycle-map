@@ -1319,37 +1319,22 @@
         });
       });
     }
-    // Append/remove an absolutely-positioned spacer at the right edge of the
-    // SVG to grow the canvas-wrap's scrollWidth without touching the SVG
-    // itself (so edge routing, sticky layers, and pan logic stay untouched).
-    //
-    // Width math: to center a node that sits at the rightmost edge of the SVG
-    // inside the visible-viewport (which excludes the drawer cover), we need
-    // the scroll container to be able to scroll the node leftwards by
-    // approximately `visibleViewport/2 + drawerCover`. Easiest: pad the right
-    // side by `drawerCover + halfVisibleViewport` — that way any node, even
-    // the rightmost one, can be centered in the visible area.
-    const SPACER_ID = 'canvas-drawer-spacer';
+    // Grow canvas-wrap's scrollable width by directly setting an inline
+    // `padding-right` on the wrap. Padding on the scroll container is the
+    // simplest, most reliable way to extend scrollWidth — `position:absolute`
+    // children don't always contribute on every browser. Sticky layers
+    // (position:sticky) still attach to the same scroll container so the
+    // sticky headers/columns continue to work normally; padding doesn't move
+    // the existing content (sticky elements stay where they were).
     function setDrawerPad(open) {
       const wrap = document.getElementById('canvas-wrap');
-      const svg = document.getElementById('svg');
-      let spacer = document.getElementById(SPACER_ID);
       if (open) {
         const cover = drawer.getBoundingClientRect().width || 600;
         const visibleW = Math.max(200, wrap.clientWidth - cover);
         const padW = cover + Math.ceil(visibleW / 2);
-        const svgW = parseFloat(svg.getAttribute('width')) || svg.clientWidth || 0;
-        if (!spacer) {
-          spacer = document.createElement('div');
-          spacer.id = SPACER_ID;
-          spacer.style.cssText =
-            'position:absolute;top:0;height:1px;pointer-events:none;background:transparent;';
-          wrap.appendChild(spacer);
-        }
-        spacer.style.left = svgW + 'px';
-        spacer.style.width = padW + 'px';
-      } else if (spacer) {
-        spacer.remove();
+        wrap.style.paddingRight = padW + 'px';
+      } else {
+        wrap.style.paddingRight = '';
       }
     }
     function openDrawer() {
