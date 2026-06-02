@@ -317,18 +317,22 @@
   }
 
   // -------- bootstrap --------
+  let CURRENT_RAW_JSON = null;  // last raw JSON text — handed to share UI
+
   const params = new URLSearchParams(window.location.search);
   const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
   const hashParams = new URLSearchParams(hash);
 
   const src = params.get('src');
   const dataBlob = hashParams.get('data');
+  const imgUrl = hashParams.get('img') || params.get('img');
   const showPaste = params.has('paste');
 
   let DATA = null;
   try {
     if (src) DATA = await loadFromUrl(src);
     else if (dataBlob) DATA = await loadFromHash(dataBlob);
+    else if (imgUrl) DATA = await loadFromEncryptedImage(imgUrl);
     else if (showPaste) DATA = await showPasteUI();
     else DATA = await showSplash();
   } catch (err) {
@@ -344,9 +348,48 @@
     document.getElementById('canvas-wrap').style.display = '';
     const normalized = normalize(data);
     CURRENT_DATA = normalized;
+    CURRENT_RAW_JSON = JSON.stringify(data, (k, v) => k.startsWith('_') ? undefined : v, 2);
     discoverLanguages(normalized);
     syncSettingsUI();
     render(normalized);
+    if (window.LifecycleShare) {
+      window.LifecycleShare.attachShareUI(() => CURRENT_RAW_JSON);
+    }
+  }
+
+  async function loadFromEncryptedImage(url) {
+    showLoading('Loading encrypted image…');
+    if (!window.LifecycleShare) throw new Error('Share module not loaded.');
+    return new Promise((resolve, reject) => {
+      const prompt = document.getElementById('decrypt-prompt');
+      const input = document.getElementById('decrypt-input');
+      const err = document.getElementById('decrypt-err');
+      const cancel = document.getElementById('decrypt-cancel');
+      const go = document.getElementById('decrypt-go');
+      document.getElementById('loading').classList.add('hidden');
+      prompt.classList.remove('hidden');
+      input.value = '';
+      err.textContent = '';
+      input.focus();
+
+      async function attempt() {
+        const pw = input.value;
+        if (!pw) { err.textContent = 'Password required.'; return; }
+        err.textContent = '';
+        go.disabled = true; go.textContent = 'Decrypting…';
+        try {
+          const jsonText = await window.LifecycleShare.decodeFromImageUrl(url, pw);
+          prompt.classList.add('hidden');
+          resolve(JSON.parse(jsonText));
+        } catch (e) {
+          err.textContent = e.message || 'Decryption failed. Wrong password?';
+          go.disabled = false; go.textContent = 'Decrypt & load';
+        }
+      }
+      go.onclick = attempt;
+      input.onkeydown = (e) => { if (e.key === 'Enter') attempt(); };
+      cancel.onclick = () => { prompt.classList.add('hidden'); reject(new Error('Cancelled.')); };
+    });
   }
 
   function discoverLanguages(data) {

@@ -110,6 +110,7 @@
   .h-icon-btn:hover svg { transform: rotate(20deg); }
   .h-icon-btn#mode-toggle-btn:hover svg { transform: rotate(-15deg) scale(1.08); }
   .h-icon-btn#settings-btn:hover svg { transform: rotate(45deg); }
+  .h-icon-btn#share-btn:hover svg { transform: scale(1.1); }
   kbd {
     font-family: var(--font-mono); font-size: 9px;
     padding: 0 4px; border: 1px solid var(--rule); border-radius: 2px;
@@ -553,6 +554,225 @@
     z-index: 200; background: var(--bg);
   }
   .loading.hidden { display: none; }
+
+  /* ============ SHARE MODAL ============ */
+  .share-scrim {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.32);
+    z-index: 300; opacity: 0; pointer-events: none;
+    transition: opacity 200ms ease;
+    backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  }
+  [data-mode="dark"] .share-scrim { background: rgba(0,0,0,0.55); }
+  .share-scrim.open { opacity: 1; pointer-events: auto; }
+  .share-modal {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.96);
+    width: 720px; max-width: 94vw; max-height: 88vh;
+    background: var(--bg); border: 1px solid var(--ink);
+    box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+    z-index: 301; display: flex; flex-direction: column;
+    opacity: 0; pointer-events: none;
+    transition: opacity 220ms ease, transform 220ms cubic-bezier(.22,.61,.36,1);
+    border-radius: var(--button-radius);
+  }
+  [data-mode="dark"] .share-modal { box-shadow: 0 24px 64px rgba(0,0,0,0.6); }
+  .share-modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+  .share-header {
+    padding: 22px 28px 18px; border-bottom: 1px solid var(--ink);
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+    background: var(--bg-2);
+  }
+  .share-header h2 {
+    font-family: var(--font-display); font-variation-settings: 'opsz' 96;
+    font-weight: 400; font-size: 26px; margin: 0;
+    letter-spacing: var(--display-tracking); line-height: 1.05; color: var(--ink);
+  }
+  .share-header h2 em { font-style: italic; color: var(--accent); font-weight: 300; }
+  .share-header .eyebrow {
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--mute); margin-bottom: 4px;
+  }
+  .share-close {
+    background: none; border: 1px solid var(--ink);
+    width: 28px; height: 28px; cursor: pointer;
+    font-family: var(--font-mono); font-size: 14px; line-height: 1;
+    color: var(--ink); padding: 0; flex-shrink: 0;
+    border-radius: var(--button-radius);
+  }
+  .share-close:hover { background: var(--ink); color: var(--bg); }
+  .share-body { overflow-y: auto; padding: 0 28px 28px; }
+  .share-disclaimer {
+    background: var(--accent-2); border-left: 3px solid var(--accent);
+    padding: 12px 14px; margin: 18px 0;
+    font-family: var(--font-mono); font-size: 11px; line-height: 1.6;
+    color: var(--ink); letter-spacing: 0.01em;
+  }
+  [data-mode="dark"] .share-disclaimer { background: var(--bg-2); }
+  .share-list { display: flex; flex-direction: column; gap: 12px; }
+  .share-card {
+    border: 1px solid var(--rule); padding: 18px 18px 16px;
+    background: var(--bg);
+    border-radius: var(--button-radius);
+    transition: border-color 140ms;
+  }
+  .share-card:hover { border-color: var(--ink); }
+  .share-card-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px; margin-bottom: 8px;
+  }
+  .share-card-name {
+    font-family: var(--font-display); font-variation-settings: 'opsz' 24;
+    font-size: 17px; font-weight: 500; color: var(--ink);
+    letter-spacing: var(--display-tracking);
+  }
+  .share-card-meta {
+    font-family: var(--font-mono); font-size: 9.5px;
+    letter-spacing: 0.1em; color: var(--mute);
+    margin-top: 3px;
+  }
+  .share-badge {
+    font-family: var(--font-mono); font-size: 8.5px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 3px 8px; border: 1px solid var(--ink);
+    background: var(--bg); color: var(--ink);
+    border-radius: var(--pill-radius);
+    white-space: nowrap; line-height: 1.2;
+  }
+  .share-badge.ok      { background: var(--ink); color: var(--bg); }
+  .share-badge.public  { background: var(--bg-2); color: var(--ink); }
+  .share-badge.auth    { background: var(--bg);   color: var(--ink); }
+  .share-badge.secure  { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .share-card-desc {
+    font-size: 12.5px; color: var(--ink-2); line-height: 1.55;
+    margin: 6px 0 12px;
+  }
+  .share-card-desc a { color: var(--accent); }
+  .share-card-desc code {
+    font-family: var(--font-mono); font-size: 11px;
+    background: var(--bg-2); border: 1px solid var(--rule-2);
+    padding: 0 4px; border-radius: 1px;
+  }
+  .share-card-input { margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .share-card-input input[type="password"],
+  .share-card-input input[type="text"] {
+    width: 100%; padding: 8px 10px;
+    font-family: var(--font-mono); font-size: 12px;
+    border: 1px solid var(--rule); background: var(--node-bg); color: var(--ink);
+    border-radius: var(--button-radius);
+  }
+  .share-card-input input:focus { outline: none; border-color: var(--accent); }
+  .pw-mode-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer; }
+  .pw-mode-row input[type="radio"] { margin: 0; cursor: pointer; }
+  .share-card-actions { display: flex; gap: 8px; }
+  .share-action-btn {
+    font-family: var(--font-mono); font-size: 10.5px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    background: var(--ink); color: var(--bg); border: 1px solid var(--ink);
+    padding: 9px 16px; cursor: pointer;
+    border-radius: var(--button-radius);
+    transition: background 140ms, color 140ms;
+  }
+  .share-action-btn:hover { background: var(--accent); border-color: var(--accent); }
+  .share-status {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--mute); margin-top: 10px; min-height: 0;
+    letter-spacing: 0.06em;
+  }
+  .share-status.busy::after {
+    content: ''; display: inline-block; width: 6px; height: 6px;
+    margin-left: 8px; background: var(--accent); border-radius: 50%;
+    animation: share-pulse 900ms ease-in-out infinite;
+  }
+  @keyframes share-pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+  .share-result { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .share-link-row { display: flex; flex-direction: column; gap: 4px; }
+  .share-link-row.secondary { opacity: 0.85; }
+  .share-link-label {
+    font-family: var(--font-mono); font-size: 9px;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--mute);
+  }
+  .share-link-box {
+    display: flex; gap: 0; border: 1px solid var(--ink);
+    border-radius: var(--button-radius); overflow: hidden;
+  }
+  .share-link-box input {
+    flex: 1; min-width: 0; padding: 8px 10px;
+    font-family: var(--font-mono); font-size: 11.5px;
+    border: none; background: var(--node-bg); color: var(--ink);
+    outline: none;
+  }
+  .share-link-box .share-copy-btn,
+  .share-link-box a {
+    background: var(--bg-2); color: var(--ink);
+    border: none; border-left: 1px solid var(--rule);
+    padding: 0 12px; cursor: pointer; font: inherit;
+    font-family: var(--font-mono); font-size: 10.5px;
+    letter-spacing: 0.06em; text-decoration: none;
+    display: flex; align-items: center;
+    transition: background 140ms;
+  }
+  .share-link-box .share-copy-btn:hover,
+  .share-link-box a:hover { background: var(--ink); color: var(--bg); }
+  .share-note {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--mute); line-height: 1.55; margin-top: 4px;
+  }
+  .share-note code {
+    font-family: var(--font-mono); font-size: 10.5px;
+    background: var(--bg-2); padding: 0 4px;
+  }
+  .share-err {
+    font-family: var(--font-mono); font-size: 11.5px;
+    color: #b91c1c; background: rgba(185,28,28,0.06);
+    border: 1px solid #b91c1c; padding: 8px 10px;
+    line-height: 1.5;
+  }
+  [data-mode="dark"] .share-err { background: rgba(248,113,113,0.08); color: #fca5a5; border-color: #fca5a5; }
+
+  /* ============ DECRYPT PROMPT ============ */
+  .decrypt-prompt {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg); border: 1px solid var(--ink);
+    padding: 28px 32px; z-index: 250; width: 460px; max-width: 92vw;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+    border-radius: var(--button-radius);
+  }
+  .decrypt-prompt.hidden { display: none; }
+  .decrypt-prompt h3 {
+    font-family: var(--font-display); font-variation-settings: 'opsz' 60;
+    font-size: 22px; font-weight: 400; margin: 0 0 6px;
+    letter-spacing: var(--display-tracking); color: var(--ink);
+  }
+  .decrypt-prompt h3 em { font-style: italic; color: var(--accent); font-weight: 300; }
+  .decrypt-prompt p {
+    font-family: var(--font-mono); font-size: 10.5px;
+    letter-spacing: 0.06em; color: var(--mute); margin: 0 0 18px; line-height: 1.6;
+  }
+  .decrypt-prompt input {
+    width: 100%; padding: 12px 14px;
+    font-family: var(--font-mono); font-size: 14px;
+    border: 1px solid var(--ink); background: var(--node-bg); color: var(--ink);
+    margin-bottom: 14px; letter-spacing: 0.08em;
+    border-radius: var(--button-radius);
+  }
+  .decrypt-prompt input:focus { outline: none; border-color: var(--accent); }
+  .decrypt-prompt .actions { display: flex; gap: 8px; }
+  .decrypt-prompt button {
+    flex: 1; padding: 10px 14px;
+    font-family: var(--font-mono); font-size: 10.5px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    border: 1px solid var(--ink); background: var(--bg); color: var(--ink);
+    cursor: pointer; border-radius: var(--button-radius);
+  }
+  .decrypt-prompt button.primary { background: var(--ink); color: var(--bg); }
+  .decrypt-prompt button.primary:hover { background: var(--accent); border-color: var(--accent); }
+  .decrypt-prompt button:hover:not(.primary) { background: var(--bg-2); }
+  .decrypt-prompt .err {
+    color: #b91c1c; font-family: var(--font-mono); font-size: 11px;
+    margin-bottom: 12px; min-height: 16px;
+  }
 </style>
 </head>
 <body>
@@ -614,6 +834,9 @@
       <a href="./docs/">docs</a>
       <a href="#" id="reload-link">reload</a>
       <div class="h-actions">
+        <button class="h-icon-btn" id="share-btn" title="Share">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
         <button class="h-icon-btn" id="settings-btn" title="Settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
@@ -684,6 +907,37 @@
   </div>
 </aside>
 
+<div class="share-modal" id="share-modal" aria-hidden="true" role="dialog" aria-labelledby="share-title">
+  <div class="share-header">
+    <div>
+      <div class="eyebrow">share this map</div>
+      <h2 id="share-title">Share <em>· five ways</em></h2>
+    </div>
+    <button class="share-close" id="share-close" aria-label="Close">×</button>
+  </div>
+  <div class="share-body">
+    <div class="share-disclaimer">
+      <strong>These are open-source third-party services.</strong>
+      No uptime or privacy guarantees. You are responsible for the content you share.
+      <strong>Embedded URL</strong> is the only option where data never leaves your browser.
+    </div>
+    <div class="share-list" id="share-list"></div>
+  </div>
+</div>
+<div class="share-scrim" id="share-scrim"></div>
+
+<div class="decrypt-prompt hidden" id="decrypt-prompt" role="dialog" aria-labelledby="decrypt-title">
+  <h3 id="decrypt-title">Encrypted map <em>· enter password</em></h3>
+  <p>This share link is an encrypted PNG. Enter the password the sender gave you.</p>
+  <input type="password" id="decrypt-input" placeholder="password" autocomplete="off">
+  <div class="err" id="decrypt-err"></div>
+  <div class="actions">
+    <button id="decrypt-cancel">Cancel</button>
+    <button class="primary" id="decrypt-go">Decrypt &amp; load</button>
+  </div>
+</div>
+
+<script src="./share.js"></script>
 <script src="./viewer.js"></script>
 </body>
 </html>
