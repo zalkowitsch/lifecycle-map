@@ -612,9 +612,47 @@
 
     const modeMap = {};
     data.meta.modes.forEach(m => { modeMap[m.id] = m; });
+
+    // Auto-discover modes referenced by nodes/modules but missing from meta.modes.
+    // Generates a distinct color per id via golden-ratio HSL distribution so any
+    // ad-hoc string used as `mode:` renders with a unique color instead of grey.
+    const seen = new Set(Object.keys(modeMap));
+    const discovered = [];
+    const visitMode = (id) => {
+      if (!id || typeof id !== 'string' || seen.has(id)) return;
+      seen.add(id);
+      discovered.push(id);
+    };
+    data.nodes.forEach(n => {
+      if (n.today)    visitMode(n.today.mode);
+      if (n.tomorrow) visitMode(n.tomorrow.mode);
+      (n.modules || []).forEach(m => {
+        if (m && typeof m === 'object') { visitMode(m.today); visitMode(m.tomorrow); }
+      });
+    });
+    Object.values(data._moduleCatalog || data.modules || {}).forEach(m => {
+      if (m && typeof m === 'object') { visitMode(m.today); visitMode(m.tomorrow); }
+    });
+    discovered.forEach((id, i) => {
+      modeMap[id] = { id, label: id, color: autoModeColor(i, discovered.length) };
+    });
+
     data._modeMap = modeMap;
     data._moduleCatalog = data.modules || {};
     return data;
+  }
+
+  // Distinct colors via golden-ratio hue rotation. Always saturated and mid-light
+  // so they read against any theme background.
+  function autoModeColor(i, total) {
+    const GOLDEN = 0.61803398875;
+    // start hue at 25° (warm) so the first auto color isn't accidentally the
+    // same blue-purple every theme tends to use for highlights
+    const h = ((25 + i * GOLDEN * 360) % 360);
+    // alternate between two saturation/lightness pairs for extra visual gap
+    const sat = i % 2 === 0 ? 70 : 56;
+    const lig = i % 2 === 0 ? 42 : 50;
+    return `hsl(${h.toFixed(0)}, ${sat}%, ${lig}%)`;
   }
 
   // -------- render --------
@@ -1065,23 +1103,63 @@
         el.setAttribute('class', backward ? 'edge backward' : 'edge');
       });
     }
+    // Width the drawer covers when open (matches .drawer width / max-width).
+    function drawerCoverWidth() {
+      if (!drawer.classList.contains('open')) return 0;
+      const rect = drawer.getBoundingClientRect();
+      return Math.max(0, Math.min(rect.width, window.innerWidth * 0.94));
+    }
     function centerOnPoint(cx, cy) {
       const wrap = document.getElementById('canvas-wrap');
+      // Visible viewport excludes the slice covered by the drawer.
+      const drawerCover = drawerCoverWidth();
+      const visibleW = Math.max(200, wrap.clientWidth - drawerCover);
       wrap.scrollTo({
-        left: Math.max(0, cx - wrap.clientWidth / 2),
+        left: Math.max(0, cx - visibleW / 2),
         top: Math.max(0, cy - wrap.clientHeight / 2),
         behavior: 'smooth',
       });
+    }
+    // Append/remove an absolutely-positioned spacer at the right edge of the
+    // SVG to grow the canvas-wrap's scrollWidth without touching the SVG
+    // itself (so edge routing, sticky layers, and pan logic stay untouched).
+    // Absolute children that exceed their parent's content box still
+    // contribute to scrollWidth.
+    const SPACER_ID = 'canvas-drawer-spacer';
+    function setDrawerPad(open) {
+      const wrap = document.getElementById('canvas-wrap');
+      const svg = document.getElementById('svg');
+      let spacer = document.getElementById(SPACER_ID);
+      if (open) {
+        const cover = drawer.getBoundingClientRect().width || 600;
+        const svgW = parseFloat(svg.getAttribute('width')) || svg.clientWidth || 0;
+        if (!spacer) {
+          spacer = document.createElement('div');
+          spacer.id = SPACER_ID;
+          spacer.style.cssText =
+            'position:absolute;top:0;height:1px;pointer-events:none;' +
+            'background:transparent;';
+          wrap.appendChild(spacer);
+        }
+        spacer.style.left = svgW + 'px';
+        spacer.style.width = cover + 'px';
+      } else if (spacer) {
+        spacer.remove();
+      }
     }
     function openDrawer() {
       drawer.classList.add('open');
       scrim.classList.add('open');
       drawer.setAttribute('aria-hidden', 'false');
+      // Wait one frame so the CSS transition has the drawer's width laid out
+      // before we measure it for the canvas padding.
+      requestAnimationFrame(() => setDrawerPad(true));
     }
     function closeDrawer() {
       drawer.classList.remove('open');
       scrim.classList.remove('open');
       drawer.setAttribute('aria-hidden', 'true');
+      setDrawerPad(false);
       if (activeId || activeEdgeKey) { clearActiveStyles(); activeId = null; activeEdgeKey = null; }
     }
     scrim.addEventListener('click', closeDrawer);
