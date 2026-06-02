@@ -1211,7 +1211,10 @@
     phSvg.setAttribute('width', SVG_W);
     phSvg.setAttribute('height', PHASE_LABEL_H);
     phSvg.setAttribute('viewBox', `0 0 ${SVG_W} ${PHASE_LABEL_H}`);
+    phSvg.setAttribute('overflow', 'visible');
     phSvg.appendChild(svgEl('rect', { x: 0, y: 0, width: SVG_W, height: PHASE_LABEL_H, fill: bgColor }));
+    // bg + bottom-border extensions for the drawer-pad area
+    phSvg.appendChild(svgEl('rect', { x: SVG_W, y: 0, width: DRAWER_EXT_W, height: PHASE_LABEL_H, fill: bgColor, class: 'grid-ext' }));
     phases.forEach((p) => {
       const phase = phaseById[p.id];
       const roman = svgText('phase-roman', phase.x + phase.padX, 30, p.roman);
@@ -1223,6 +1226,7 @@
     });
     // phase-header bottom border starts at LANE_LABEL_W; the segment from 0..LANE_LABEL_W is owned by cornerSvg
     phSvg.appendChild(svgEl('line', { x1: LANE_LABEL_W, y1: PHASE_LABEL_H - 0.5, x2: SVG_W, y2: PHASE_LABEL_H - 0.5, class: 'lane-edge' }));
+    phSvg.appendChild(svgEl('line', { x1: SVG_W, y1: PHASE_LABEL_H - 0.5, x2: SVG_W + DRAWER_EXT_W, y2: PHASE_LABEL_H - 0.5, class: 'lane-edge grid-ext' }));
 
     // sticky corner
     const cornerSvg = document.getElementById('sticky-corner-svg');
