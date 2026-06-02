@@ -127,6 +127,10 @@
   .canvas-wrap.panning { cursor: grabbing; }
   .canvas-wrap.panning * { cursor: grabbing !important; user-select: none !important; }
   svg { display: block; }
+  /* Lane bgs/dividers that extend past the SVG content edge — hidden by
+     default, shown only when the drawer pads the canvas to the right. */
+  #svg .grid-ext { display: none; }
+  .canvas-wrap.drawer-open #svg .grid-ext { display: initial; }
 
   .sticky-layer {
     position: sticky; pointer-events: none; z-index: 3;

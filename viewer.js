@@ -946,7 +946,14 @@
       phaseById[p.id] = { ...p, idx: i, x: xCursor, width, padX: pad };
       xCursor += width;
     });
-    const SVG_W = xCursor + 40;
+    // For small maps, make sure the canvas fills the viewport — otherwise
+    // lanes terminate halfway across the screen and the right half looks
+    // empty/broken. The actual content (nodes, edges, phase columns) is
+    // unaffected; we just stretch lane bgs and the bottom border to cover
+    // the viewport width.
+    const wrapEl = document.getElementById('canvas-wrap');
+    const viewportW = (wrapEl && wrapEl.clientWidth) || window.innerWidth || 1024;
+    const SVG_W = Math.max(xCursor + 40, viewportW);
     const TOTAL_LANES_H = lanes.reduce((acc, l) => acc + LANE_HEIGHT_BY_ID[l.id], 0);
     const SVG_H = PHASE_LABEL_H + BACKWARD_BUS_H + TOTAL_LANES_H + BOTTOM_RAIL_H + 20;
 
@@ -1145,21 +1152,24 @@
     const bgColor = css('--bg') || '#f5f1e8';
     const bg2Color = css('--bg-2') || '#ede8db';
 
-    // lane bgs + dividers. Draw them wide enough to cover the drawer-pad
-    // area when the drawer opens. We use SVG `overflow="visible"` on the
-    // main svg so the painting extends beyond the viewBox without the
-    // browser clipping it. SVG width stays = SVG_W so scrollWidth math
-    // remains driven by the wrap's padding-right (not by the SVG itself).
-    const GRID_EXT_W = SVG_W + Math.max(1200, Math.ceil(window.innerWidth * 0.7));
+    // Lane backgrounds (zebra) + dividers. We need to cover the area that
+    // becomes visible when the drawer opens (canvas-wrap gets padding-right).
+    // To stay reactive without re-rendering, paint extensions as separate
+    // elements with class "grid-ext" that JS can toggle on/off based on
+    // drawer state. Base paint stops at SVG_W (the natural content edge).
+    const DRAWER_EXT_W = Math.max(800, Math.ceil(window.innerWidth * 0.45));
     lanes.forEach((l, i) => {
       const y = LANE_TOP_BY_ID[l.id];
       const h = LANE_HEIGHT_BY_ID[l.id];
       if (i % 2 === 1) {
-        const rect = svgEl('rect', { x: LANE_LABEL_W, y, width: GRID_EXT_W - LANE_LABEL_W, height: h, fill: bg2Color, opacity: '0.5' });
-        lanesG.appendChild(rect);
+        // base zebra (always visible) — covers up to SVG_W
+        lanesG.appendChild(svgEl('rect', { x: LANE_LABEL_W, y, width: SVG_W - LANE_LABEL_W, height: h, fill: bg2Color, opacity: '0.5' }));
+        // extension (hidden by default, shown when drawer opens)
+        lanesG.appendChild(svgEl('rect', { x: SVG_W, y, width: DRAWER_EXT_W, height: h, fill: bg2Color, opacity: '0.5', class: 'grid-ext' }));
       }
       if (i < lanes.length - 1) {
-        lanesG.appendChild(svgEl('line', { x1: LANE_LABEL_W, y1: y + h, x2: GRID_EXT_W, y2: y + h, class: 'lane-divider' }));
+        lanesG.appendChild(svgEl('line', { x1: LANE_LABEL_W, y1: y + h, x2: SVG_W, y2: y + h, class: 'lane-divider' }));
+        lanesG.appendChild(svgEl('line', { x1: SVG_W, y1: y + h, x2: SVG_W + DRAWER_EXT_W, y2: y + h, class: 'lane-divider grid-ext' }));
       }
     });
 
@@ -1334,8 +1344,10 @@
         const visibleW = Math.max(200, wrap.clientWidth - cover);
         const padW = cover + Math.ceil(visibleW / 2);
         wrap.style.paddingRight = padW + 'px';
+        wrap.classList.add('drawer-open');
       } else {
         wrap.style.paddingRight = '';
+        wrap.classList.remove('drawer-open');
       }
     }
     function openDrawer() {
