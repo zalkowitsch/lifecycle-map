@@ -81,6 +81,164 @@
     ko: 'KO · 한국어',
   };
 
+  // UI string dictionary. Keys are stable; values are localized per UI lang.
+  // The viewer chrome (settings drawer, splash, header captions) reads these
+  // via [data-i18n="key"] in the HTML, set on initial load and on lang change.
+  const UI_LANGS = ['en', 'pt', 'es'];
+  const UI = {
+    en: {
+      'header.walkHint':         '<kbd>←</kbd> <kbd>→</kbd> walk · drag empty to pan',
+      'header.docs':             'docs',
+      'header.reload':           'reload',
+      'header.share.title':      'Share',
+      'header.settings.title':   'Settings',
+      'loading':                 'Loading lifecycle data…',
+      'splash.title':            'lifecycle-map <em>— viewer</em>',
+      'splash.eyebrow':          'interactive swim-lane lifecycle viewer',
+      'splash.lead':             'Render any swim-lane lifecycle map from a JSON or YAML source. Five ways to load:',
+      'splash.example.h':        'Try an example →',
+      'splash.example.p':        'Load the hiring-pipeline example to explore the schema and interactions.',
+      'splash.exampleMl.h':      'Try multi-language →',
+      'splash.exampleMl.p':      'A smaller example with strings in <code>en</code>, <code>pt</code>, and <code>es</code>. Switch language in <strong>Settings → Language</strong>.',
+      'splash.url.h':            'Load from URL → <code>?src=https://…</code>',
+      'splash.url.p':            'Pass a JSON or YAML URL as a query param. Works with public Gists, raw GitHub URLs, or any CORS-enabled endpoint.',
+      'splash.hash.h':           'Embed in URL → <code>#data=…</code>',
+      'splash.hash.p':           'Self-contained URLs with gzip-compressed JSON in the fragment. Great for AI agents — no hosting needed.',
+      'splash.dnd.h':            'Or just drag a file in →',
+      'splash.dnd.p':            'Drop a <code>.json</code> or <code>.yaml</code> file anywhere on this page.',
+      'splash.paste.h':          'Paste JSON or YAML',
+      'splash.paste.render':     'Render',
+      'splash.paste.cancel':     'Cancel',
+      'splash.footer.docs':      'Documentation',
+      'splash.footer.github':    'GitHub',
+      'splash.footer.license':   'MIT License',
+      'settings.eyebrow':        'preferences',
+      'settings.title':          'Settings <em>· make it yours</em>',
+      'settings.theme':          'Theme',
+      'settings.appearance':     'Appearance',
+      'settings.language':       'Language',
+      'settings.uiLanguage':     'Interface language',
+      'settings.dataLanguage':   'Map language',
+      'settings.mode.light':     'Light',
+      'settings.mode.dark':      'Dark',
+      'settings.foot.docs':      'Read the docs',
+      'settings.foot.github':    'View on GitHub',
+      'settings.foot.license':   'MIT License',
+      'dnd.title':               'Drop to load',
+      'dnd.sub':                 "Release anywhere — we'll parse JSON or YAML",
+    },
+    pt: {
+      'header.walkHint':         '<kbd>←</kbd> <kbd>→</kbd> caminhar · arraste vazio para pan',
+      'header.docs':             'docs',
+      'header.reload':           'recarregar',
+      'header.share.title':      'Compartilhar',
+      'header.settings.title':   'Configurações',
+      'loading':                 'Carregando dados do lifecycle…',
+      'splash.title':            'lifecycle-map <em>— viewer</em>',
+      'splash.eyebrow':          'visualizador interativo de lifecycle em swim-lane',
+      'splash.lead':             'Renderize qualquer mapa de lifecycle a partir de JSON ou YAML. Cinco formas de carregar:',
+      'splash.example.h':        'Experimente um exemplo →',
+      'splash.example.p':        'Carregue o exemplo do pipeline de contratação para explorar o schema e as interações.',
+      'splash.exampleMl.h':      'Experimente multi-idioma →',
+      'splash.exampleMl.p':      'Um exemplo menor com strings em <code>en</code>, <code>pt</code>, e <code>es</code>. Troque o idioma em <strong>Configurações → Idioma</strong>.',
+      'splash.url.h':            'Carregar por URL → <code>?src=https://…</code>',
+      'splash.url.p':            'Passe uma URL de JSON ou YAML como parâmetro. Funciona com Gists públicos, URLs raw do GitHub, ou qualquer endpoint com CORS.',
+      'splash.hash.h':           'Embutir na URL → <code>#data=…</code>',
+      'splash.hash.p':           'URLs auto-contidas com JSON comprimido em gzip no fragment. Ótimo para agentes de IA — sem hospedagem.',
+      'splash.dnd.h':            'Ou só arraste um arquivo →',
+      'splash.dnd.p':            'Solte um arquivo <code>.json</code> ou <code>.yaml</code> em qualquer lugar desta página.',
+      'splash.paste.h':          'Cole JSON ou YAML',
+      'splash.paste.render':     'Renderizar',
+      'splash.paste.cancel':     'Cancelar',
+      'splash.footer.docs':      'Documentação',
+      'splash.footer.github':    'GitHub',
+      'splash.footer.license':   'Licença MIT',
+      'settings.eyebrow':        'preferências',
+      'settings.title':          'Configurações <em>· do seu jeito</em>',
+      'settings.theme':          'Tema',
+      'settings.appearance':     'Aparência',
+      'settings.language':       'Idioma',
+      'settings.uiLanguage':     'Idioma da interface',
+      'settings.dataLanguage':   'Idioma do mapa',
+      'settings.mode.light':     'Claro',
+      'settings.mode.dark':      'Escuro',
+      'settings.foot.docs':      'Ler os docs',
+      'settings.foot.github':    'Ver no GitHub',
+      'settings.foot.license':   'Licença MIT',
+      'dnd.title':               'Solte para carregar',
+      'dnd.sub':                 'Solte em qualquer lugar — vamos parsear JSON ou YAML',
+    },
+    es: {
+      'header.walkHint':         '<kbd>←</kbd> <kbd>→</kbd> caminar · arrastra vacío para pan',
+      'header.docs':             'docs',
+      'header.reload':           'recargar',
+      'header.share.title':      'Compartir',
+      'header.settings.title':   'Configuración',
+      'loading':                 'Cargando datos del lifecycle…',
+      'splash.title':            'lifecycle-map <em>— viewer</em>',
+      'splash.eyebrow':          'visor interactivo de lifecycle en swim-lane',
+      'splash.lead':             'Renderiza cualquier mapa de lifecycle desde JSON o YAML. Cinco formas de cargar:',
+      'splash.example.h':        'Prueba un ejemplo →',
+      'splash.example.p':        'Carga el ejemplo de pipeline de contratación para explorar el schema y las interacciones.',
+      'splash.exampleMl.h':      'Prueba multi-idioma →',
+      'splash.exampleMl.p':      'Un ejemplo más pequeño con strings en <code>en</code>, <code>pt</code>, y <code>es</code>. Cambia el idioma en <strong>Configuración → Idioma</strong>.',
+      'splash.url.h':            'Cargar desde URL → <code>?src=https://…</code>',
+      'splash.url.p':            'Pasa una URL de JSON o YAML como parámetro. Funciona con Gists públicos, URLs raw de GitHub, o cualquier endpoint con CORS.',
+      'splash.hash.h':           'Embebido en URL → <code>#data=…</code>',
+      'splash.hash.p':           'URLs auto-contenidas con JSON comprimido en el fragment. Excelente para agentes IA — sin hospedaje.',
+      'splash.dnd.h':            'O simplemente arrastra un archivo →',
+      'splash.dnd.p':            'Suelta un archivo <code>.json</code> o <code>.yaml</code> en cualquier lugar de esta página.',
+      'splash.paste.h':          'Pega JSON o YAML',
+      'splash.paste.render':     'Renderizar',
+      'splash.paste.cancel':     'Cancelar',
+      'splash.footer.docs':      'Documentación',
+      'splash.footer.github':    'GitHub',
+      'splash.footer.license':   'Licencia MIT',
+      'settings.eyebrow':        'preferencias',
+      'settings.title':          'Configuración <em>· a tu manera</em>',
+      'settings.theme':          'Tema',
+      'settings.appearance':     'Apariencia',
+      'settings.language':       'Idioma',
+      'settings.uiLanguage':     'Idioma de la interfaz',
+      'settings.dataLanguage':   'Idioma del mapa',
+      'settings.mode.light':     'Claro',
+      'settings.mode.dark':      'Oscuro',
+      'settings.foot.docs':      'Leer la documentación',
+      'settings.foot.github':    'Ver en GitHub',
+      'settings.foot.license':   'Licencia MIT',
+      'dnd.title':               'Suelta para cargar',
+      'dnd.sub':                 'Suelta en cualquier lugar — parseamos JSON o YAML',
+    },
+  };
+  const STORAGE_UI_LANG = 'lifecycle-map.uiLang';
+  let CURRENT_UI_LANG = (function () {
+    const stored = localStorage.getItem(STORAGE_UI_LANG);
+    if (stored && UI[stored]) return stored;
+    const browser = (navigator.language || 'en').slice(0, 2).toLowerCase();
+    return UI[browser] ? browser : 'en';
+  })();
+  function t(key) {
+    return (UI[CURRENT_UI_LANG] && UI[CURRENT_UI_LANG][key])
+        || (UI.en[key])
+        || key;
+  }
+  function applyUILang(lang, persist = true) {
+    if (!UI[lang]) return;
+    CURRENT_UI_LANG = lang;
+    if (persist) localStorage.setItem(STORAGE_UI_LANG, lang);
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      const val = t(key);
+      if (el.dataset.i18nAttr) {
+        el.setAttribute(el.dataset.i18nAttr, val.replace(/<[^>]+>/g, ''));
+      } else {
+        el.innerHTML = val;
+      }
+    });
+    syncSettingsUI();
+  }
+
   // -------- theme + lang state --------
   let CURRENT_LANG = null;     // set after data load; falls back to first key in any localized string
   let AVAILABLE_LANGS = null;  // discovered from the data
@@ -90,6 +248,8 @@
   initThemeAndMode();
   initSettingsDrawer();
   initDragAndDrop();
+  // Translate the UI to whichever language is saved/detected.
+  applyUILang(CURRENT_UI_LANG, false);
 
   function initThemeAndMode() {
     const params = new URLSearchParams(window.location.search);
@@ -163,17 +323,7 @@
       });
     }
 
-    // mode toggle
-    const modeToggle = document.getElementById('mode-toggle');
-    if (modeToggle) {
-      modeToggle.innerHTML = `
-        <button data-mode="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>Light</button>
-        <button data-mode="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Dark</button>
-      `;
-      modeToggle.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('click', () => applyMode(btn.dataset.mode));
-      });
-    }
+    // mode toggle is now built by syncSettingsUI (so labels are localized)
 
     // close on scrim click (overlay scrim from drawer logic, but settings doesn't open scrim — close on outside)
     document.addEventListener('click', (e) => {
@@ -226,9 +376,37 @@
     document.querySelectorAll('.theme-card').forEach(c => {
       c.classList.toggle('active', c.dataset.theme === theme);
     });
+    // mode toggle — rebuild labels because they're localized
+    const modeToggle = document.getElementById('mode-toggle');
+    if (modeToggle && !modeToggle._wired) {
+      modeToggle.innerHTML = `
+        <button data-mode="light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><span data-mode-label="light">${t('settings.mode.light')}</span></button>
+        <button data-mode="dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><span data-mode-label="dark">${t('settings.mode.dark')}</span></button>
+      `;
+      modeToggle.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => applyMode(btn.dataset.mode));
+      });
+      modeToggle._wired = true;
+    }
+    // re-translate mode labels (they may change with UI lang)
+    document.querySelectorAll('#mode-toggle [data-mode-label="light"]').forEach(s => { s.textContent = t('settings.mode.light'); });
+    document.querySelectorAll('#mode-toggle [data-mode-label="dark"]').forEach(s => { s.textContent = t('settings.mode.dark'); });
     document.querySelectorAll('#mode-toggle button').forEach(b => {
       b.classList.toggle('active', b.dataset.mode === mode);
     });
+
+    // UI language toggle (always shown — 3 options EN/PT/ES)
+    const uiToggle = document.getElementById('ui-lang-toggle');
+    if (uiToggle) {
+      uiToggle.innerHTML = UI_LANGS.map(lang =>
+        `<button data-uilang="${lang}" class="${lang === CURRENT_UI_LANG ? 'active' : ''}">${LANG_NAMES[lang] || lang.toUpperCase()}</button>`
+      ).join('');
+      uiToggle.querySelectorAll('button').forEach(b => {
+        b.addEventListener('click', () => applyUILang(b.dataset.uilang));
+      });
+    }
+
+    // Data language toggle (only if 2+ languages found in the data)
     const group = document.getElementById('lang-group');
     const toggle = document.getElementById('lang-toggle');
     if (group && toggle) {
@@ -263,8 +441,8 @@
               <path d="M12 44 L12 52 L52 52 L52 44" stroke-dasharray="2 3"/>
             </svg>
           </div>
-          <div class="dnd-title">Drop to load</div>
-          <div class="dnd-sub">Release anywhere — we'll parse JSON or YAML</div>
+          <div class="dnd-title" data-i18n="dnd.title">Drop to load</div>
+          <div class="dnd-sub" data-i18n="dnd.sub">Release anywhere — we'll parse JSON or YAML</div>
         </div>
       `;
       const style = document.createElement('style');
@@ -299,6 +477,12 @@
       `;
       document.head.appendChild(style);
       document.body.appendChild(overlay);
+      // Apply current UI translations to the freshly-added overlay
+      overlay.querySelectorAll('[data-i18n]').forEach(el => {
+        const v = t(el.dataset.i18n);
+        if (el.dataset.i18nAttr) el.setAttribute(el.dataset.i18nAttr, v.replace(/<[^>]+>/g, ''));
+        else el.innerHTML = v;
+      });
       return overlay;
     }
 
@@ -1123,8 +1307,13 @@
     // Append/remove an absolutely-positioned spacer at the right edge of the
     // SVG to grow the canvas-wrap's scrollWidth without touching the SVG
     // itself (so edge routing, sticky layers, and pan logic stay untouched).
-    // Absolute children that exceed their parent's content box still
-    // contribute to scrollWidth.
+    //
+    // Width math: to center a node that sits at the rightmost edge of the SVG
+    // inside the visible-viewport (which excludes the drawer cover), we need
+    // the scroll container to be able to scroll the node leftwards by
+    // approximately `visibleViewport/2 + drawerCover`. Easiest: pad the right
+    // side by `drawerCover + halfVisibleViewport` — that way any node, even
+    // the rightmost one, can be centered in the visible area.
     const SPACER_ID = 'canvas-drawer-spacer';
     function setDrawerPad(open) {
       const wrap = document.getElementById('canvas-wrap');
@@ -1132,17 +1321,18 @@
       let spacer = document.getElementById(SPACER_ID);
       if (open) {
         const cover = drawer.getBoundingClientRect().width || 600;
+        const visibleW = Math.max(200, wrap.clientWidth - cover);
+        const padW = cover + Math.ceil(visibleW / 2);
         const svgW = parseFloat(svg.getAttribute('width')) || svg.clientWidth || 0;
         if (!spacer) {
           spacer = document.createElement('div');
           spacer.id = SPACER_ID;
           spacer.style.cssText =
-            'position:absolute;top:0;height:1px;pointer-events:none;' +
-            'background:transparent;';
+            'position:absolute;top:0;height:1px;pointer-events:none;background:transparent;';
           wrap.appendChild(spacer);
         }
         spacer.style.left = svgW + 'px';
-        spacer.style.width = cover + 'px';
+        spacer.style.width = padW + 'px';
       } else if (spacer) {
         spacer.remove();
       }

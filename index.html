@@ -779,49 +779,49 @@
 
 <div class="splash hidden" id="splash">
   <div class="splash-inner">
-    <h1>lifecycle-map <em>— viewer</em></h1>
-    <div class="sub">interactive swim-lane lifecycle viewer</div>
-    <p class="lead">Render any swim-lane lifecycle map from a JSON or YAML source. Four ways to load:</p>
+    <h1 data-i18n="splash.title">lifecycle-map <em>— viewer</em></h1>
+    <div class="sub" data-i18n="splash.eyebrow">interactive swim-lane lifecycle viewer</div>
+    <p class="lead" data-i18n="splash.lead">Render any swim-lane lifecycle map from a JSON or YAML source. Five ways to load:</p>
     <div class="ways">
       <div class="way" data-way="example">
-        <h3>Try an example →</h3>
-        <p>Load the hiring-pipeline example to explore the schema and interactions.</p>
+        <h3 data-i18n="splash.example.h">Try an example →</h3>
+        <p data-i18n="splash.example.p">Load the hiring-pipeline example to explore the schema and interactions.</p>
       </div>
       <div class="way" data-way="example-ml">
-        <h3>Try multi-language →</h3>
-        <p>A smaller example with strings in <code>en</code>, <code>pt</code>, and <code>es</code>. Switch language in <strong>Settings → Language</strong>.</p>
+        <h3 data-i18n="splash.exampleMl.h">Try multi-language →</h3>
+        <p data-i18n="splash.exampleMl.p">A smaller example with strings in <code>en</code>, <code>pt</code>, and <code>es</code>. Switch language in <strong>Settings → Language</strong>.</p>
       </div>
       <div class="way" data-way="url">
-        <h3>Load from URL → <code>?src=https://…</code></h3>
-        <p>Pass a JSON or YAML URL as a query param. Works with public Gists, raw GitHub URLs, or any CORS-enabled endpoint.</p>
+        <h3 data-i18n="splash.url.h">Load from URL → <code>?src=https://…</code></h3>
+        <p data-i18n="splash.url.p">Pass a JSON or YAML URL as a query param. Works with public Gists, raw GitHub URLs, or any CORS-enabled endpoint.</p>
       </div>
       <div class="way" data-way="hash">
-        <h3>Embed in URL → <code>#data=…</code></h3>
-        <p>Self-contained URLs with gzip-compressed JSON in the fragment. Great for AI agents — no hosting needed.</p>
+        <h3 data-i18n="splash.hash.h">Embed in URL → <code>#data=…</code></h3>
+        <p data-i18n="splash.hash.p">Self-contained URLs with gzip-compressed JSON in the fragment. Great for AI agents — no hosting needed.</p>
       </div>
       <div class="way" data-way="dnd-hint" style="cursor: default; opacity: 0.85;">
-        <h3>Or just drag a file in →</h3>
-        <p>Drop a <code>.json</code> or <code>.yaml</code> file anywhere on this page.</p>
+        <h3 data-i18n="splash.dnd.h">Or just drag a file in →</h3>
+        <p data-i18n="splash.dnd.p">Drop a <code>.json</code> or <code>.yaml</code> file anywhere on this page.</p>
       </div>
     </div>
     <div id="paste-area" style="display: none;">
-      <h3 style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; margin: 0 0 8px;">Paste JSON or YAML</h3>
+      <h3 data-i18n="splash.paste.h" style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; margin: 0 0 8px;">Paste JSON or YAML</h3>
       <textarea id="paste-input" placeholder='{ "lanes": [...], "phases": [...], "nodes": [...], "edges": [...] }'></textarea>
       <div class="actions">
-        <button class="primary" id="paste-render">Render</button>
-        <button id="paste-cancel">Cancel</button>
+        <button class="primary" id="paste-render" data-i18n="splash.paste.render">Render</button>
+        <button id="paste-cancel" data-i18n="splash.paste.cancel">Cancel</button>
       </div>
     </div>
     <div id="splash-err"></div>
     <div class="footer">
-      <a href="./docs/">Documentation</a> &nbsp;·&nbsp;
-      <a href="https://github.com/zalkowitsch/lifecycle-map">GitHub</a> &nbsp;·&nbsp;
-      MIT License
+      <a href="./docs/" data-i18n="splash.footer.docs">Documentation</a> &nbsp;·&nbsp;
+      <a href="https://github.com/zalkowitsch/lifecycle-map" data-i18n="splash.footer.github">GitHub</a> &nbsp;·&nbsp;
+      <span data-i18n="splash.footer.license">MIT License</span>
     </div>
   </div>
 </div>
 
-<div class="loading hidden" id="loading">Loading lifecycle data…</div>
+<div class="loading hidden" id="loading" data-i18n="loading">Loading lifecycle data…</div>
 
 <header id="main-header" style="display: none;">
   <div class="h-row">
@@ -830,14 +830,14 @@
       <h1 id="h-title"></h1>
     </div>
     <div class="h-meta">
-      <span class="hide-mobile"><kbd>←</kbd> <kbd>→</kbd> walk · drag empty to pan</span>
-      <a href="./docs/">docs</a>
-      <a href="#" id="reload-link">reload</a>
+      <span class="hide-mobile" data-i18n="header.walkHint"><kbd>←</kbd> <kbd>→</kbd> walk · drag empty to pan</span>
+      <a href="./docs/" data-i18n="header.docs">docs</a>
+      <a href="#" id="reload-link" data-i18n="header.reload">reload</a>
       <div class="h-actions">
-        <button class="h-icon-btn" id="share-btn" title="Share">
+        <button class="h-icon-btn" id="share-btn" data-i18n="header.share.title" data-i18n-attr="title" title="Share">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         </button>
-        <button class="h-icon-btn" id="settings-btn" title="Settings">
+        <button class="h-icon-btn" id="settings-btn" data-i18n="header.settings.title" data-i18n-attr="title" title="Settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
       </div>
@@ -881,28 +881,33 @@
 
 <aside class="settings-drawer" id="settings-drawer" aria-hidden="true">
   <div class="settings-inner">
-    <div class="settings-eyebrow">preferences</div>
-    <h2 class="settings-title">Settings <em>· make it yours</em></h2>
+    <div class="settings-eyebrow" data-i18n="settings.eyebrow">preferences</div>
+    <h2 class="settings-title" data-i18n="settings.title">Settings <em>· make it yours</em></h2>
 
     <div class="settings-group">
-      <div class="group-label">Theme</div>
+      <div class="group-label" data-i18n="settings.theme">Theme</div>
       <div class="theme-grid" id="theme-grid"></div>
     </div>
 
     <div class="settings-group">
-      <div class="group-label">Appearance</div>
+      <div class="group-label" data-i18n="settings.appearance">Appearance</div>
       <div class="mode-toggle" id="mode-toggle"></div>
     </div>
 
+    <div class="settings-group">
+      <div class="group-label" data-i18n="settings.uiLanguage">Interface language</div>
+      <div class="lang-toggle" id="ui-lang-toggle"></div>
+    </div>
+
     <div class="settings-group" id="lang-group" style="display: none;">
-      <div class="group-label">Language</div>
+      <div class="group-label" data-i18n="settings.dataLanguage">Map language</div>
       <div class="lang-toggle" id="lang-toggle"></div>
     </div>
 
     <div class="settings-foot">
-      <a href="./docs/">Read the docs</a><br>
-      <a href="https://github.com/zalkowitsch/lifecycle-map">View on GitHub</a><br>
-      MIT License
+      <a href="./docs/" data-i18n="settings.foot.docs">Read the docs</a><br>
+      <a href="https://github.com/zalkowitsch/lifecycle-map" data-i18n="settings.foot.github">View on GitHub</a><br>
+      <span data-i18n="settings.foot.license">MIT License</span>
     </div>
   </div>
 </aside>
@@ -939,5 +944,6 @@
 
 <script src="./share.js"></script>
 <script src="./viewer.js"></script>
+<script src="./version-check.js"></script>
 </body>
 </html>
