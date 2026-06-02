@@ -40,6 +40,17 @@
   const STORAGE_THEME = 'lifecycle-map.theme';
   const STORAGE_MODE  = 'lifecycle-map.mode';
   const STORAGE_LANG  = 'lifecycle-map.lang';
+  const LANG_NAMES = {
+    en: 'EN · English',
+    pt: 'PT · Português',
+    es: 'ES · Español',
+    fr: 'FR · Français',
+    de: 'DE · Deutsch',
+    it: 'IT · Italiano',
+    ja: 'JA · 日本語',
+    zh: 'ZH · 中文',
+    ko: 'KO · 한국어',
+  };
 
   // -------- theme + lang state --------
   let CURRENT_LANG = null;     // set after data load; falls back to first key in any localized string
@@ -68,7 +79,6 @@
     document.documentElement.dataset.theme = theme;
     if (persist) localStorage.setItem(STORAGE_THEME, theme);
     cssCache = null;
-    updateModeIcon();
     syncSettingsUI();
     if (CURRENT_DATA) requestAnimationFrame(rerenderForTheme);
   }
@@ -77,7 +87,6 @@
     document.documentElement.dataset.mode = mode;
     if (persist) localStorage.setItem(STORAGE_MODE, mode);
     cssCache = null;
-    updateModeIcon();
     syncSettingsUI();
     if (CURRENT_DATA) requestAnimationFrame(rerenderForTheme);
   }
@@ -103,28 +112,12 @@
     if (!cssCache) cssCache = getComputedStyle(document.documentElement);
     return cssCache.getPropertyValue(varName).trim();
   }
-  function updateModeIcon() {
-    const icon = document.getElementById('mode-icon');
-    if (!icon) return;
-    const isDark = document.documentElement.dataset.mode === 'dark';
-    if (isDark) {
-      icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
-    } else {
-      icon.innerHTML = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
-    }
-  }
-
   // -------- settings drawer --------
   function initSettingsDrawer() {
     const settingsDrawer = document.getElementById('settings-drawer');
     const settingsBtn = document.getElementById('settings-btn');
-    const modeBtn = document.getElementById('mode-toggle-btn');
 
     if (settingsBtn) settingsBtn.addEventListener('click', () => openSettings());
-    if (modeBtn) modeBtn.addEventListener('click', () => {
-      const cur = document.documentElement.dataset.mode;
-      applyMode(cur === 'dark' ? 'light' : 'dark');
-    });
 
     // theme cards
     const grid = document.getElementById('theme-grid');
@@ -207,17 +200,19 @@
     document.querySelectorAll('#mode-toggle button').forEach(b => {
       b.classList.toggle('active', b.dataset.mode === mode);
     });
-    if (AVAILABLE_LANGS && AVAILABLE_LANGS.length > 1) {
-      const group = document.getElementById('lang-group');
-      const toggle = document.getElementById('lang-toggle');
-      if (group && toggle) {
+    const group = document.getElementById('lang-group');
+    const toggle = document.getElementById('lang-toggle');
+    if (group && toggle) {
+      if (AVAILABLE_LANGS && AVAILABLE_LANGS.length > 1) {
         group.style.display = '';
         toggle.innerHTML = AVAILABLE_LANGS.map(lang =>
-          `<button data-lang="${lang}" class="${lang === CURRENT_LANG ? 'active' : ''}">${lang}</button>`
+          `<button data-lang="${lang}" class="${lang === CURRENT_LANG ? 'active' : ''}">${LANG_NAMES[lang] || lang.toUpperCase()}</button>`
         ).join('');
         toggle.querySelectorAll('button').forEach(b => {
           b.addEventListener('click', () => applyLang(b.dataset.lang));
         });
+      } else {
+        group.style.display = 'none';
       }
     }
   }

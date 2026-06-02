@@ -1,41 +1,41 @@
 {
-  "_comment": "Shared module catalog. Referenced from hiring-pipeline.json via $ref or by id.",
+  "_comment": "Shared module catalog. Referenced from hiring-pipeline.json via $ref or by id. Names and tags can be localized objects { en, pt, es }.",
   "modules": {
     "ats:resume-parser": {
-      "name": "Resume parser",
+      "name": { "en": "Resume parser", "pt": "Parser de currículo", "es": "Parser de CV" },
       "today": "automated",
       "tomorrow": "ai",
-      "tags": ["★ Tablestakes"]
+      "tags": [{ "en": "★ Tablestakes", "pt": "★ Básico", "es": "★ Básico" }]
     },
     "ats:duplicate-detection": {
-      "name": "Duplicate candidate detection",
+      "name": { "en": "Duplicate candidate detection", "pt": "Detecção de candidatos duplicados", "es": "Detección de candidatos duplicados" },
       "today": "assisted",
       "tomorrow": "automated"
     },
     "outreach:templates": {
-      "name": "Outreach template library",
+      "name": { "en": "Outreach template library", "pt": "Biblioteca de templates de outreach", "es": "Biblioteca de plantillas de outreach" },
       "today": "manual",
       "tomorrow": "ai",
-      "tags": ["High-leverage"]
+      "tags": [{ "en": "High-leverage", "pt": "Alto impacto", "es": "Alto impacto" }]
     },
     "outreach:ab-testing": {
-      "name": "Subject line A/B testing",
+      "name": { "en": "Subject line A/B testing", "pt": "A/B testing de assuntos", "es": "A/B testing de asuntos" },
       "today": "n-a",
       "tomorrow": "ai"
     },
     "interview:question-bank": {
-      "name": "Question bank",
+      "name": { "en": "Question bank", "pt": "Banco de perguntas", "es": "Banco de preguntas" },
       "today": "assisted",
       "tomorrow": "ai"
     },
     "interview:transcript": {
-      "name": "Interview transcript",
+      "name": { "en": "Interview transcript", "pt": "Transcrição da entrevista", "es": "Transcripción de entrevista" },
       "today": "n-a",
       "tomorrow": "ai",
-      "tags": ["🛡️ Moat"]
+      "tags": [{ "en": "🛡️ Moat", "pt": "🛡️ Diferencial", "es": "🛡️ Diferencial" }]
     },
     "scheduling:availability-pool": {
-      "name": "Interviewer availability pool",
+      "name": { "en": "Interviewer availability pool", "pt": "Pool de disponibilidade de entrevistadores", "es": "Pool de disponibilidad de entrevistadores" },
       "today": "manual",
       "tomorrow": "automated"
     }

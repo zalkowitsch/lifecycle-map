@@ -1,18 +1,21 @@
 {
-  "meta": { "title": "Minimal Example", "subtitle": "the smallest possible map" },
+  "meta": {
+    "title":    { "en": "Minimal Example",            "pt": "Exemplo Mínimo",                "es": "Ejemplo Mínimo" },
+    "subtitle": { "en": "the smallest possible map",  "pt": "o menor mapa possível",         "es": "el mapa más pequeño posible" }
+  },
   "lanes": [
-    { "id": "user", "label": "User" },
-    { "id": "system", "label": "System" }
+    { "id": "user",   "label": { "en": "User",   "pt": "Usuário", "es": "Usuario" } },
+    { "id": "system", "label": { "en": "System", "pt": "Sistema", "es": "Sistema" } }
   ],
   "phases": [
-    { "id": "request", "label": "Request" },
-    { "id": "response", "label": "Response" }
+    { "id": "request",  "label": { "en": "Request",  "pt": "Pedido",   "es": "Petición"  } },
+    { "id": "response", "label": { "en": "Response", "pt": "Resposta", "es": "Respuesta" } }
   ],
   "nodes": [
-    { "id": "ask",     "lane": "user",   "phase": "request",  "title": "Ask question" },
-    { "id": "process", "lane": "system", "phase": "request",  "title": "Process" },
-    { "id": "reply",   "lane": "system", "phase": "response", "title": "Reply" },
-    { "id": "read",    "lane": "user",   "phase": "response", "title": "Read answer" }
+    { "id": "ask",     "lane": "user",   "phase": "request",  "title": { "en": "Ask question", "pt": "Fazer pergunta", "es": "Hacer pregunta" } },
+    { "id": "process", "lane": "system", "phase": "request",  "title": { "en": "Process",      "pt": "Processar",      "es": "Procesar" } },
+    { "id": "reply",   "lane": "system", "phase": "response", "title": { "en": "Reply",        "pt": "Responder",      "es": "Responder" } },
+    { "id": "read",    "lane": "user",   "phase": "response", "title": { "en": "Read answer",  "pt": "Ler resposta",   "es": "Leer respuesta" } }
   ],
   "edges": [
     { "from": "ask",     "to": "process" },
