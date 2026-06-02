@@ -2,7 +2,7 @@
 
 > Interactive swim-lane viewer for lifecycle maps. Load any JSON or YAML by URL — no build, no server, no install.
 
-[**→ Live demo**](https://arkadyzalko.github.io/lifecycle-map/) · [Docs](https://arkadyzalko.github.io/lifecycle-map/docs/) · [Schema reference](./SCHEMA.md)
+[**→ Live demo**](https://zalkowitsch.github.io/lifecycle-map/) · [Docs](https://zalkowitsch.github.io/lifecycle-map/docs/) · [Schema reference](./SCHEMA.md)
 
 ## What it does
 
@@ -24,7 +24,7 @@ Three ways to load data:
 ### 1. URL parameter
 
 ```
-https://arkadyzalko.github.io/lifecycle-map/?src=https://gist.githubusercontent.com/.../raw/foo.json
+https://zalkowitsch.github.io/lifecycle-map/?src=https://gist.githubusercontent.com/.../raw/foo.json
 ```
 
 Works with any CORS-enabled JSON or YAML URL.
@@ -32,7 +32,7 @@ Works with any CORS-enabled JSON or YAML URL.
 ### 2. Embedded data (hash)
 
 ```
-https://arkadyzalko.github.io/lifecycle-map/#data=<base64-gzipped-json>
+https://zalkowitsch.github.io/lifecycle-map/#data=<base64-gzipped-json>
 ```
 
 Self-contained URLs that work without external hosting. Useful for AI agents.
@@ -40,7 +40,7 @@ Self-contained URLs that work without external hosting. Useful for AI agents.
 ### 3. Paste
 
 ```
-https://arkadyzalko.github.io/lifecycle-map/?paste
+https://zalkowitsch.github.io/lifecycle-map/?paste
 ```
 
 Opens a textarea for direct JSON/YAML paste.
@@ -89,7 +89,7 @@ Agents can generate a lifecycle map and link to a rendered view in one shot.
 ```bash
 JSON='{"lanes":[...],"phases":[...],"nodes":[...],"edges":[...]}'
 ENCODED=$(echo "$JSON" | gzip -9 | base64 | tr -d '\n' | tr '+/' '-_')
-echo "https://arkadyzalko.github.io/lifecycle-map/#data=$ENCODED"
+echo "https://zalkowitsch.github.io/lifecycle-map/#data=$ENCODED"
 ```
 
 **For larger maps:** publish a gist and pass `?src=<raw-url>`:

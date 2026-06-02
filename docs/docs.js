@@ -32,15 +32,15 @@
         <h2>Quickstart</h2>
         <p>Open the viewer with any of these three URLs:</p>
         <h3>1. Load by URL</h3>
-        <pre><code>https://arkadyzalko.github.io/lifecycle-map/?src=https://gist.githubusercontent.com/.../raw/foo.json</code></pre>
+        <pre><code>https://zalkowitsch.github.io/lifecycle-map/?src=https://gist.githubusercontent.com/.../raw/foo.json</code></pre>
         <p>Works with any CORS-enabled JSON or YAML URL — public Gists, raw GitHub URLs, your own server.</p>
 
         <h3>2. Embed in URL (no hosting)</h3>
-        <pre><code>https://arkadyzalko.github.io/lifecycle-map/#data=&lt;base64-gzipped-json&gt;</code></pre>
+        <pre><code>https://zalkowitsch.github.io/lifecycle-map/#data=&lt;base64-gzipped-json&gt;</code></pre>
         <p>The map is encoded in the URL fragment. No external file needed. Best for small maps and AI agents.</p>
 
         <h3>3. Paste it</h3>
-        <pre><code>https://arkadyzalko.github.io/lifecycle-map/?paste</code></pre>
+        <pre><code>https://zalkowitsch.github.io/lifecycle-map/?paste</code></pre>
         <p>Opens a textarea for direct JSON or YAML paste.</p>
 
         <h3>The minimal valid input</h3>
@@ -261,19 +261,19 @@ nodes:
         <pre><code># bash
 JSON='{"lanes":[...],"phases":[...],"nodes":[...],"edges":[...]}'
 ENCODED=$(echo "$JSON" | gzip -9 | base64 | tr -d '\\n' | tr '+/' '-_')
-echo "https://arkadyzalko.github.io/lifecycle-map/#data=$ENCODED"</code></pre>
+echo "https://zalkowitsch.github.io/lifecycle-map/#data=$ENCODED"</code></pre>
 
         <h3>Pattern B — public gist (larger maps)</h3>
         <pre><code># bash + gh CLI
 echo "$JSON" > /tmp/map.json
 URL=$(gh gist create /tmp/map.json --public --filename map.json | tail -1)
 RAW=$(echo "$URL" | sed 's|gist.github.com|gist.githubusercontent.com|; s|$|/raw|')
-echo "https://arkadyzalko.github.io/lifecycle-map/?src=$RAW"</code></pre>
+echo "https://zalkowitsch.github.io/lifecycle-map/?src=$RAW"</code></pre>
 
         <h3>Prompt template for agents</h3>
         <blockquote>
           Generate a lifecycle map for [process X] following the schema at
-          https://github.com/arkadyzalko/lifecycle-map/blob/main/SCHEMA.md.
+          https://github.com/zalkowitsch/lifecycle-map/blob/main/SCHEMA.md.
           Use 4-6 lanes and 4-6 phases. Include today/tomorrow narratives
           for each node. Return only valid JSON.
         </blockquote>
@@ -346,7 +346,7 @@ echo "https://arkadyzalko.github.io/lifecycle-map/?src=$RAW"</code></pre>
           <li><a href="../?src=../examples/with-modules/hiring-pipeline.json">With shared modules</a> · catalog reference pattern</li>
         </ul>
 
-        <p>Source files are in <a href="https://github.com/arkadyzalko/lifecycle-map/tree/main/examples">examples/</a>.</p>
+        <p>Source files are in <a href="https://github.com/zalkowitsch/lifecycle-map/tree/main/examples">examples/</a>.</p>
       ` },
 
       { id: 'faq',        label: 'FAQ',              render: () => `
@@ -399,15 +399,15 @@ echo "https://arkadyzalko.github.io/lifecycle-map/?src=$RAW"</code></pre>
         <h2>Início rápido</h2>
         <p>Abra o viewer com qualquer uma destas três URLs:</p>
         <h3>1. Carregar por URL</h3>
-        <pre><code>https://arkadyzalko.github.io/lifecycle-map/?src=https://gist.githubusercontent.com/.../raw/foo.json</code></pre>
+        <pre><code>https://zalkowitsch.github.io/lifecycle-map/?src=https://gist.githubusercontent.com/.../raw/foo.json</code></pre>
         <p>Funciona com qualquer URL JSON ou YAML que aceite CORS — Gists públicos, URLs raw do GitHub, servidor próprio.</p>
 
         <h3>2. Embed na URL (sem hosting)</h3>
-        <pre><code>https://arkadyzalko.github.io/lifecycle-map/#data=&lt;base64-gzipped-json&gt;</code></pre>
+        <pre><code>https://zalkowitsch.github.io/lifecycle-map/#data=&lt;base64-gzipped-json&gt;</code></pre>
         <p>O mapa fica encoded no fragment da URL. Não precisa de arquivo externo. Melhor pra mapas pequenos e agentes de AI.</p>
 
         <h3>3. Colar direto</h3>
-        <pre><code>https://arkadyzalko.github.io/lifecycle-map/?paste</code></pre>
+        <pre><code>https://zalkowitsch.github.io/lifecycle-map/?paste</code></pre>
         <p>Abre um textarea pra colar JSON ou YAML.</p>
 
         <h3>Input mínimo válido</h3>
@@ -588,19 +588,19 @@ echo '{"lanes":[...]}' | gzip -9 | base64 | tr -d '\\n' | tr '+/' '-_'</code></p
         <pre><code># bash
 JSON='{"lanes":[...],"phases":[...],"nodes":[...],"edges":[...]}'
 ENCODED=$(echo "$JSON" | gzip -9 | base64 | tr -d '\\n' | tr '+/' '-_')
-echo "https://arkadyzalko.github.io/lifecycle-map/#data=$ENCODED"</code></pre>
+echo "https://zalkowitsch.github.io/lifecycle-map/#data=$ENCODED"</code></pre>
 
         <h3>Padrão B — gist público (mapas maiores)</h3>
         <pre><code># bash + gh CLI
 echo "$JSON" > /tmp/map.json
 URL=$(gh gist create /tmp/map.json --public --filename map.json | tail -1)
 RAW=$(echo "$URL" | sed 's|gist.github.com|gist.githubusercontent.com|; s|$|/raw|')
-echo "https://arkadyzalko.github.io/lifecycle-map/?src=$RAW"</code></pre>
+echo "https://zalkowitsch.github.io/lifecycle-map/?src=$RAW"</code></pre>
 
         <h3>Template de prompt pra agentes</h3>
         <blockquote>
           Gere um lifecycle map pra [processo X] seguindo o schema em
-          https://github.com/arkadyzalko/lifecycle-map/blob/main/SCHEMA.md.
+          https://github.com/zalkowitsch/lifecycle-map/blob/main/SCHEMA.md.
           Use 4-6 lanes e 4-6 phases. Inclua narrativas today/tomorrow
           pra cada node. Retorne apenas JSON válido.
         </blockquote>
@@ -722,13 +722,13 @@ echo "https://arkadyzalko.github.io/lifecycle-map/?src=$RAW"</code></pre>
         <h2>Inicio rápido</h2>
         <p>Abre el visor con cualquiera de estas tres URLs:</p>
         <h3>1. Cargar por URL</h3>
-        <pre><code>https://arkadyzalko.github.io/lifecycle-map/?src=https://gist.githubusercontent.com/.../raw/foo.json</code></pre>
+        <pre><code>https://zalkowitsch.github.io/lifecycle-map/?src=https://gist.githubusercontent.com/.../raw/foo.json</code></pre>
 
         <h3>2. Embed en URL (sin hosting)</h3>
-        <pre><code>https://arkadyzalko.github.io/lifecycle-map/#data=&lt;base64-gzipped-json&gt;</code></pre>
+        <pre><code>https://zalkowitsch.github.io/lifecycle-map/#data=&lt;base64-gzipped-json&gt;</code></pre>
 
         <h3>3. Pegar directamente</h3>
-        <pre><code>https://arkadyzalko.github.io/lifecycle-map/?paste</code></pre>
+        <pre><code>https://zalkowitsch.github.io/lifecycle-map/?paste</code></pre>
 
         <h3>Input mínimo válido</h3>
         <pre><code>{
@@ -768,7 +768,7 @@ echo "https://arkadyzalko.github.io/lifecycle-map/?src=$RAW"</code></pre>
         <h2>Estructura</h2>
         <p>El documento tiene 5 claves principales: <code>meta</code>, <code>lanes</code>, <code>phases</code>, <code>nodes</code>, <code>edges</code>.</p>
         <p>Solo <code>lanes</code>, <code>phases</code>, <code>nodes</code> y <code>edges</code> son obligatorios. El resto tiene defaults razonables.</p>
-        <p>Consulta la <a href="https://github.com/arkadyzalko/lifecycle-map/blob/main/SCHEMA.md">referencia completa de schema</a> para todos los campos.</p>
+        <p>Consulta la <a href="https://github.com/zalkowitsch/lifecycle-map/blob/main/SCHEMA.md">referencia completa de schema</a> para todos los campos.</p>
       ` },
 
       { id: 'external',   label: 'Refs externas',    render: () => `

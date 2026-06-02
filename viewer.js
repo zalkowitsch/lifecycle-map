@@ -16,7 +16,7 @@
  * Themes: paper · mono · midcentury · blueprint. Each with light/dark mode.
  * Persisted in localStorage. URL params: ?theme=mono&mode=dark.
  *
- * MIT License · https://github.com/arkadyzalko/lifecycle-map
+ * MIT License · https://github.com/zalkowitsch/lifecycle-map
  */
 (async function () {
   'use strict';
