@@ -40,6 +40,35 @@
   const STORAGE_THEME = 'lifecycle-map.theme';
   const STORAGE_MODE  = 'lifecycle-map.mode';
   const STORAGE_LANG  = 'lifecycle-map.lang';
+
+  // Known example slugs → file paths. Slug appears in URL as #slug.
+  const EXAMPLE_SLUGS = {
+    'hiring-pipeline':         './examples/hiring-pipeline.json',
+    'hiring-pipeline-yaml':    './examples/hiring-pipeline.yaml',
+    'hiring-pipeline-modules': './examples/with-modules/hiring-pipeline.json',
+    'multi-language':          './examples/multi-language.json',
+    'minimal':                 './examples/minimal.json',
+  };
+  function slugify(s) {
+    return String(s || '')
+      .toLowerCase()
+      .replace(/\.(json|ya?ml)$/i, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 64) || 'untitled';
+  }
+  function setHashSlug(slug, replace = false) {
+    if (!slug) return;
+    const newHash = '#' + slug;
+    if (window.location.hash === newHash) return;
+    const url = window.location.pathname + window.location.search + newHash;
+    try {
+      if (replace) history.replaceState(null, '', url);
+      else history.pushState(null, '', url);
+    } catch (_) {
+      window.location.hash = slug;
+    }
+  }
   const LANG_NAMES = {
     en: 'EN · English',
     pt: 'PT · Português',
@@ -309,6 +338,7 @@
       try {
         const text = await file.text();
         const data = parseSource(text, file.name);
+        setHashSlug(slugify(file.name));
         loadDataAndRender(data);
       } catch (err) {
         showError(err);
@@ -327,12 +357,15 @@
   const dataBlob = hashParams.get('data');
   const imgUrl = hashParams.get('img') || params.get('img');
   const showPaste = params.has('paste');
+  // A "slug hash" is a hash that has no `=` (so it's not key=value) and is not 'data' or 'img'.
+  const slugHash = (hash && !hash.includes('=') && hash !== 'data' && hash !== 'img') ? hash : null;
 
   let DATA = null;
   try {
     if (src) DATA = await loadFromUrl(src);
     else if (dataBlob) DATA = await loadFromHash(dataBlob);
     else if (imgUrl) DATA = await loadFromEncryptedImage(imgUrl);
+    else if (slugHash && EXAMPLE_SLUGS[slugHash]) DATA = await loadFromUrl(EXAMPLE_SLUGS[slugHash]);
     else if (showPaste) DATA = await showPasteUI();
     else DATA = await showSplash();
   } catch (err) {
@@ -340,6 +373,25 @@
     return;
   }
   loadDataAndRender(DATA);
+
+  // Listen for back/forward navigation between example slugs.
+  // Only reloads when the hash points to a known example AND differs from current.
+  let LAST_HANDLED_SLUG = slugHash || null;
+  window.addEventListener('hashchange', async () => {
+    const h = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
+    if (h && h.includes('=')) return; // ignore #data= / #img=
+    if (h === LAST_HANDLED_SLUG) return;
+    if (h && EXAMPLE_SLUGS[h]) {
+      LAST_HANDLED_SLUG = h;
+      try {
+        const data = await loadFromUrl(EXAMPLE_SLUGS[h]);
+        loadDataAndRender(data);
+      } catch (e) { showError(e); }
+    } else if (!h) {
+      // user navigated back to root — reload to splash
+      window.location.reload();
+    }
+  });
 
   function loadDataAndRender(data) {
     document.getElementById('splash').classList.add('hidden');
@@ -461,10 +513,16 @@
         w.addEventListener('click', async () => {
           const way = w.dataset.way;
           if (way === 'example') {
-            try { resolve(await loadFromUrl('./examples/hiring-pipeline.json')); }
+            try {
+              setHashSlug('hiring-pipeline', true);
+              resolve(await loadFromUrl('./examples/hiring-pipeline.json'));
+            }
             catch (err) { reject(err); }
           } else if (way === 'example-ml') {
-            try { resolve(await loadFromUrl('./examples/multi-language.json')); }
+            try {
+              setHashSlug('multi-language', true);
+              resolve(await loadFromUrl('./examples/multi-language.json'));
+            }
             catch (err) { reject(err); }
           } else if (way === 'dnd-hint') {
             // no-op — text-only hint
