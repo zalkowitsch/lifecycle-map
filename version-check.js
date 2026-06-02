@@ -17,8 +17,8 @@
 
   const REPO = 'zalkowitsch/lifecycle-map';
   const BRANCH = 'main';
-  const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
-  const INITIAL_DELAY_MS = 30 * 1000;     // first check 30s after load
+  const POLL_INTERVAL_MS = 60 * 1000;     // 1 minute
+  const INITIAL_DELAY_MS = 20 * 1000;     // first check 20s after load
   const API_URL = `https://api.github.com/repos/${REPO}/commits/${BRANCH}`;
 
   let baselineSha = null;

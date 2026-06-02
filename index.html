@@ -119,16 +119,10 @@
 
   .canvas-wrap {
     position: relative; height: calc(100vh - 48px); overflow: auto;
-    background-color: var(--bg);
-    background-image:
-      linear-gradient(to right,  var(--rule-2) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--rule-2) 1px, transparent 1px);
-    background-size: 32px 32px;
-    background-attachment: local;
-    cursor: grab;
+    background: var(--bg); cursor: grab;
     overscroll-behavior: contain;
     transform: translateZ(0);
-    transition: background-color 240ms ease;
+    transition: background 240ms ease;
   }
   .canvas-wrap.panning { cursor: grabbing; }
   .canvas-wrap.panning * { cursor: grabbing !important; user-select: none !important; }

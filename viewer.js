@@ -1140,6 +1140,9 @@
     svg.setAttribute('width', SVG_W);
     svg.setAttribute('height', SVG_H);
     svg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`);
+    // Allow lane bgs/dividers (which we deliberately extend past SVG_W to
+    // cover the drawer-pad area) to render outside the viewBox rectangle.
+    svg.setAttribute('overflow', 'visible');
     const lanesG = document.getElementById('lanes');
     const phasesG = document.getElementById('phases');
     const edgesG = document.getElementById('edges');
@@ -1149,16 +1152,21 @@
     const bgColor = css('--bg') || '#f5f1e8';
     const bg2Color = css('--bg-2') || '#ede8db';
 
-    // lane bgs + dividers
+    // lane bgs + dividers. Draw them wide enough to cover the drawer-pad
+    // area when the drawer opens. We use SVG `overflow="visible"` on the
+    // main svg so the painting extends beyond the viewBox without the
+    // browser clipping it. SVG width stays = SVG_W so scrollWidth math
+    // remains driven by the wrap's padding-right (not by the SVG itself).
+    const GRID_EXT_W = SVG_W + Math.max(1200, Math.ceil(window.innerWidth * 0.7));
     lanes.forEach((l, i) => {
       const y = LANE_TOP_BY_ID[l.id];
       const h = LANE_HEIGHT_BY_ID[l.id];
       if (i % 2 === 1) {
-        const rect = svgEl('rect', { x: LANE_LABEL_W, y, width: SVG_W - LANE_LABEL_W, height: h, fill: bg2Color, opacity: '0.5' });
+        const rect = svgEl('rect', { x: LANE_LABEL_W, y, width: GRID_EXT_W - LANE_LABEL_W, height: h, fill: bg2Color, opacity: '0.5' });
         lanesG.appendChild(rect);
       }
       if (i < lanes.length - 1) {
-        lanesG.appendChild(svgEl('line', { x1: LANE_LABEL_W, y1: y + h, x2: SVG_W, y2: y + h, class: 'lane-divider' }));
+        lanesG.appendChild(svgEl('line', { x1: LANE_LABEL_W, y1: y + h, x2: GRID_EXT_W, y2: y + h, class: 'lane-divider' }));
       }
     });
 
