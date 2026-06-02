@@ -1297,13 +1297,26 @@
     }
     function centerOnPoint(cx, cy) {
       const wrap = document.getElementById('canvas-wrap');
-      // Visible viewport excludes the slice covered by the drawer.
       const drawerCover = drawerCoverWidth();
       const visibleW = Math.max(200, wrap.clientWidth - drawerCover);
-      wrap.scrollTo({
-        left: Math.max(0, cx - visibleW / 2),
-        top: Math.max(0, cy - wrap.clientHeight / 2),
-        behavior: 'smooth',
+      const desiredLeft = Math.max(0, cx - visibleW / 2);
+      const desiredTop = Math.max(0, cy - wrap.clientHeight / 2);
+      // Force a synchronous layout read so the browser registers any spacer
+      // that was just appended (otherwise scrollTo() clamps to the stale
+      // pre-spacer scrollWidth and the rightmost nodes never reach center).
+      void wrap.scrollWidth;
+      wrap.scrollTo({ left: desiredLeft, top: desiredTop, behavior: 'smooth' });
+      // Belt + suspenders: re-issue the scroll on the next two frames in case
+      // the spacer mutation is still being batched into layout.
+      requestAnimationFrame(() => {
+        if (Math.abs(wrap.scrollLeft - desiredLeft) > 2) {
+          wrap.scrollTo({ left: desiredLeft, top: desiredTop, behavior: 'smooth' });
+        }
+        requestAnimationFrame(() => {
+          if (Math.abs(wrap.scrollLeft - desiredLeft) > 2) {
+            wrap.scrollTo({ left: desiredLeft, top: desiredTop, behavior: 'smooth' });
+          }
+        });
       });
     }
     // Append/remove an absolutely-positioned spacer at the right edge of the
