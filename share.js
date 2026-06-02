@@ -7,8 +7,7 @@
  *   1. Embedded URL     — gzip + base64url in URL fragment (no upload, private)
  *   2. catbox.moe       — anonymous file host, permanent, public
  *   3. 0x0.st           — anonymous file host, expires, public, short URL
- *   4. GitHub Gist      — needs GitHub device-flow login, public/secret
- *   5. Encrypted image  — AES-GCM cipher + PNG steganography + catbox upload
+ *   4. Encrypted image  — AES-GCM cipher + PNG steganography + catbox upload
  *
  * Exports a single function attachShareUI() that wires the share button + modal.
  */
@@ -87,38 +86,7 @@
     return { url: `${base}?src=${encodeURIComponent(rawUrl)}`, rawUrl };
   }
 
-  // ============ STRATEGY 4: GITHUB GIST ============
-  // Uses GitHub device flow — user authorizes once, gets back a token (sessionStorage only)
-  const GH_CLIENT_ID = 'Iv1.b507a08c87ecfe98'; // placeholder; this is the public client_id of GitHub CLI which supports gists.
-  // NOTE: in production you'd register your own OAuth App for lifecycle-map. We use GitHub CLI's for demo only.
-  // Actually the device-flow requires server-side polling; for a static site we'd need a PAT or skip this.
-  // Pragmatic path: use a PAT input field. User pastes a fine-grained PAT with gist scope.
-  async function shareGist(jsonText, token) {
-    if (!token) throw new Error('A GitHub personal access token with `gist` scope is required.');
-    const resp = await fetch('https://api.github.com/gists', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        description: 'lifecycle-map share',
-        public: false,
-        files: { 'lifecycle-map.json': { content: jsonText } },
-      }),
-    });
-    if (!resp.ok) {
-      const t = await resp.text();
-      throw new Error(`GitHub API ${resp.status}: ${t.slice(0, 200)}`);
-    }
-    const gist = await resp.json();
-    const rawUrl = gist.files['lifecycle-map.json'].raw_url;
-    const base = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
-    return { url: `${base}?src=${encodeURIComponent(rawUrl)}`, rawUrl, gistUrl: gist.html_url };
-  }
-
-  // ============ STRATEGY 5: ENCRYPTED IMAGE ============
+  // ============ STRATEGY 4: ENCRYPTED IMAGE ============
   // Flow: JSON -> gzip -> AES-GCM (PBKDF2-derived key) -> ciphertext -> embed in PNG LSB
   //        -> upload PNG to catbox.moe -> share URL + password separately
 
@@ -382,14 +350,6 @@
           showLink(result, r.url, 'Viewer URL');
           showLink(result, r.rawUrl, 'Raw JSON', { secondary: true });
         }
-        else if (strategy === 'gist') {
-          const tokenInput = card.querySelector('input[name="gh-token"]');
-          const token = tokenInput?.value.trim();
-          if (!token) throw new Error('Paste a GitHub PAT with `gist` scope.');
-          const r = await shareGist(json, token);
-          showLink(result, r.url, 'Viewer URL');
-          showLink(result, r.gistUrl, 'Gist page', { secondary: true });
-        }
         else if (strategy === 'encrypted') {
           const mode = card.querySelector('input[name="pw-mode"]:checked')?.value || 'auto';
           let password;
@@ -523,25 +483,6 @@
         <p class="share-card-desc">Uploads raw JSON to <a href="https://0x0.st" target="_blank" rel="noopener">0x0.st</a>. Very short URL, but the file expires (longer-lived for smaller files).</p>
         <div class="share-card-actions">
           <button class="share-action-btn" data-action="run">Upload &amp; share</button>
-        </div>
-        <div class="share-status"></div>
-        <div class="share-result"></div>
-      </div>
-
-      <div class="share-card" data-strategy="gist">
-        <div class="share-card-head">
-          <div>
-            <div class="share-card-name">GitHub Gist</div>
-            <div class="share-card-meta">private gist · clean URL · needs PAT</div>
-          </div>
-          <span class="share-badge auth">auth</span>
-        </div>
-        <p class="share-card-desc">Creates a secret Gist on your GitHub account. Paste a <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">fine-grained PAT</a> with <code>gist</code> scope. The token stays in this tab only — never uploaded.</p>
-        <div class="share-card-input">
-          <input type="password" name="gh-token" placeholder="github_pat_..." autocomplete="off">
-        </div>
-        <div class="share-card-actions">
-          <button class="share-action-btn" data-action="run">Create gist &amp; share</button>
         </div>
         <div class="share-status"></div>
         <div class="share-result"></div>
