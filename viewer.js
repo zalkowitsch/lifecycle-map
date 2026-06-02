@@ -89,7 +89,6 @@
     en: {
       'header.walkHint':         '<kbd>←</kbd> <kbd>→</kbd> walk · drag empty to pan',
       'header.docs':             'docs',
-      'header.reload':           'reload',
       'header.share.title':      'Share',
       'header.settings.title':   'Settings',
       'loading':                 'Loading lifecycle data…',
@@ -130,7 +129,6 @@
     pt: {
       'header.walkHint':         '<kbd>←</kbd> <kbd>→</kbd> caminhar · arraste vazio para pan',
       'header.docs':             'docs',
-      'header.reload':           'recarregar',
       'header.share.title':      'Compartilhar',
       'header.settings.title':   'Configurações',
       'loading':                 'Carregando dados do lifecycle…',
@@ -171,7 +169,6 @@
     es: {
       'header.walkHint':         '<kbd>←</kbd> <kbd>→</kbd> caminar · arrastra vacío para pan',
       'header.docs':             'docs',
-      'header.reload':           'recargar',
       'header.share.title':      'Compartir',
       'header.settings.title':   'Configuración',
       'loading':                 'Cargando datos del lifecycle…',
@@ -858,14 +855,6 @@
     document.getElementById('h-title').innerHTML = subStr
       ? `${escapeHtml(titleStr)} <em>— ${escapeHtml(subStr)}</em>`
       : escapeHtml(titleStr);
-    const reload = document.getElementById('reload-link');
-    if (reload && !reload._wired) {
-      reload._wired = true;
-      reload.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.location = window.location.pathname;
-      });
-    }
     document.title = `${titleStr} · lifecycle-map`;
 
     const lanes = DATA.lanes;
