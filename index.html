@@ -127,6 +127,10 @@
   .canvas-wrap.panning { cursor: grabbing; }
   .canvas-wrap.panning * { cursor: grabbing !important; user-select: none !important; }
   svg { display: block; }
+  /* Main canvas SVG paints zebra lanes + dividers past its viewBox to fill
+     the drawer-pad area. SVG-attribute overflow="visible" is unreliable,
+     so we also set the CSS property which all browsers respect. */
+  #svg { overflow: visible; }
   /* Lane bgs/dividers that extend past the SVG content edge — hidden by
      default, shown only when the drawer pads the canvas to the right. */
   .grid-ext { display: none; }

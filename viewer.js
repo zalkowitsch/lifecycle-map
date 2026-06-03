@@ -1227,6 +1227,9 @@
     svg.setAttribute('width', SVG_W);
     svg.setAttribute('height', SVG_H);
     svg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`);
+    // Allow zebra lane bg + dividers (drawn deliberately past SVG_W to fill
+    // the drawer-pad area) to render outside the viewBox.
+    svg.setAttribute('overflow', 'visible');
     const lanesG = document.getElementById('lanes');
     const phasesG = document.getElementById('phases');
     const edgesG = document.getElementById('edges');
