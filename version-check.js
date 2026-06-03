@@ -199,8 +199,16 @@
     requestAnimationFrame(() => badge.classList.add('show'));
 
     badge.querySelector('.vb-refresh').addEventListener('click', () => {
-      try { window.location.reload(); }
-      catch (_) { window.location.href = window.location.href; }
+      // Hard refresh: bust query-string cache so HTML/JS/CSS reload from
+      // origin instead of the browser disk cache. Session state in
+      // sessionStorage survives this (it's keyed by the same origin).
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('_v', Date.now().toString(36));
+        window.location.replace(url.toString());
+      } catch (_) {
+        try { window.location.reload(); } catch (__) { window.location.href = window.location.href; }
+      }
     });
     badge.querySelector('.vb-dismiss').addEventListener('click', () => {
       badge.classList.remove('show');

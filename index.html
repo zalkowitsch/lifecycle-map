@@ -127,11 +127,25 @@
   .canvas-wrap.panning { cursor: grabbing; }
   .canvas-wrap.panning * { cursor: grabbing !important; user-select: none !important; }
   svg { display: block; }
-  /* Lane bgs/dividers + phase-header underline that extend past the SVG
-     content edge — hidden by default, shown only when the drawer pads
-     the canvas to the right. */
+  /* Lane bgs/dividers that extend past the SVG content edge — hidden by
+     default, shown only when the drawer pads the canvas to the right. */
   .grid-ext { display: none; }
   .canvas-wrap.drawer-open .grid-ext { display: initial; }
+
+  /* Phase-header bottom border, drawn as a sticky 1px row spanning the
+     full canvas-wrap width. The SVG-rendered version under #phase-header-svg
+     stops at SVG_W, so this CSS layer covers any extra (sticky-corner area,
+     drawer-pad area, anything past the rightmost phase). */
+  .phase-header-border {
+    position: sticky; top: 51.5px; z-index: 3;
+    height: 0; pointer-events: none;
+    margin-left: var(--lane-label-w, 130px);
+  }
+  .phase-header-border::after {
+    content: ''; display: block;
+    height: 1px; background: var(--ink);
+    width: 100vw; /* covers wrap width (padding included) */
+  }
 
   .sticky-layer {
     position: sticky; pointer-events: none; z-index: 3;
@@ -851,6 +865,7 @@
 
 <div class="canvas-wrap" id="canvas-wrap" style="display: none;">
   <div class="sticky-layer sticky-row"><svg id="phase-header-svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
+  <div class="phase-header-border" aria-hidden="true"></div>
   <div class="sticky-layer sticky-col"><svg id="lane-labels-svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
   <div class="sticky-layer sticky-corner"><svg id="sticky-corner-svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
   <svg id="svg" xmlns="http://www.w3.org/2000/svg">
