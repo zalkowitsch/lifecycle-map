@@ -263,6 +263,30 @@
   let AVAILABLE_LANGS = null;  // discovered from the data
   let CURRENT_DATA = null;     // for re-renders on theme change
   let cssCache = null;         // memoized getComputedStyle values
+  let __PH_BORDER_DIMS = null; // dimensions captured by render() for the
+                               // phase-header bottom border SVG
+
+  // (Re)paints the phase-header bottom-border SVG. Width = canvas-wrap
+  // scrollWidth so the line covers the full scroll content, including any
+  // drawer-pad area or post-SVG_W trailing space. Called from render() and
+  // from setDrawerPad() whenever the canvas-wrap width changes.
+  function updatePhaseHeaderBorder() {
+    if (!__PH_BORDER_DIMS) return;
+    const { LANE_LABEL_W, PHASE_LABEL_H } = __PH_BORDER_DIMS;
+    const borderSvg = document.getElementById('phase-header-border-svg');
+    const wrap = document.getElementById('canvas-wrap');
+    if (!borderSvg || !wrap) return;
+    // scrollWidth reflects padding-right when drawer is open
+    const w = Math.max(wrap.scrollWidth, wrap.clientWidth);
+    borderSvg.setAttribute('width', w);
+    borderSvg.setAttribute('height', 1);
+    borderSvg.setAttribute('viewBox', `0 0 ${w} 1`);
+    borderSvg.innerHTML = '';
+    // Line starts at LANE_LABEL_W (corner area owns the 0..LANE_LABEL_W segment)
+    borderSvg.appendChild(svgEl('line', {
+      x1: LANE_LABEL_W, y1: 0.5, x2: w, y2: 0.5, class: 'lane-edge'
+    }));
+  }
 
   initThemeAndMode();
   initSettingsDrawer();
@@ -1492,8 +1516,12 @@
       phSvg.appendChild(svgText('phase-label', labelX, 22, L(p.label)));
       phSvg.appendChild(svgText('phase-sub', labelX, 36, `${p.subCols} ${p.subCols === 1 ? 'lane' : 'lanes'}`));
     });
-    // phase-header bottom border starts at LANE_LABEL_W; the segment from 0..LANE_LABEL_W is owned by cornerSvg
-    phSvg.appendChild(svgEl('line', { x1: LANE_LABEL_W, y1: PHASE_LABEL_H - 0.5, x2: SVG_W, y2: PHASE_LABEL_H - 0.5, class: 'lane-edge' }));
+    // Phase-header bottom border lives in a dedicated SVG sibling so it can
+    // span the FULL canvas-wrap content width — past SVG_W, into the
+    // drawer-pad area, all the way to the rightmost scrollable pixel.
+    // Stash dimensions so setDrawerPad can re-issue the border on open/close.
+    __PH_BORDER_DIMS = { LANE_LABEL_W, PHASE_LABEL_H, SVG_W };
+    updatePhaseHeaderBorder();
 
     // sticky corner
     const cornerSvg = document.getElementById('sticky-corner-svg');
@@ -1620,6 +1648,8 @@
         wrap.style.paddingRight = '';
         wrap.classList.remove('drawer-open');
       }
+      // Re-paint the phase-header border to span the new scroll width.
+      updatePhaseHeaderBorder();
     }
     function openDrawer() {
       drawer.classList.add('open');
