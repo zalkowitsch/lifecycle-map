@@ -303,7 +303,9 @@
   // content render smaller at the same vector quality, scrollbars adjust
   // naturally, and edge routing/sticky logic don't need to know about it.
   const STORAGE_ZOOM = 'lifecycle-map.zoom';
-  const ZOOM_LEVELS = [0.1, 0.25, 0.4, 0.6, 0.75, 0.9, 1.0, 1.25, 1.5, 2.0];
+  // Discrete zoom steps used by the dropdown + Cmd/Ctrl +/- shortcuts.
+  // Pinch on trackpad is continuous and ignores these.
+  const ZOOM_LEVELS = [0.25, 0.5, 1.0];
   let CURRENT_ZOOM = (function () {
     const stored = parseFloat(localStorage.getItem(STORAGE_ZOOM));
     return (stored && stored > 0.1 && stored <= 4) ? stored : 1.0;
@@ -320,11 +322,19 @@
     if (!__PH_BORDER_DIMS) { applyZoom(1.0); return; }
     const wrap = document.getElementById('canvas-wrap');
     if (!wrap) return;
-    const { SVG_W } = __PH_BORDER_DIMS;
-    // Aim to fit the SVG content width into the viewport, with a tiny margin.
+    const { SVG_W, SVG_H } = __PH_BORDER_DIMS;
+    // Pick the smaller of width-fit and height-fit so the entire map is visible.
     const viewportW = Math.max(200, wrap.clientWidth - 20);
-    const zoom = Math.min(1.0, viewportW / SVG_W);
+    const viewportH = Math.max(200, wrap.clientHeight - 20);
+    const zoomW = viewportW / SVG_W;
+    const zoomH = SVG_H ? viewportH / SVG_H : zoomW;
+    const zoom = Math.max(0.05, Math.min(1.0, Math.min(zoomW, zoomH)));
     applyZoom(zoom);
+    // After re-render scroll to origin so everything is visible from the start
+    requestAnimationFrame(() => {
+      const w = document.getElementById('canvas-wrap');
+      if (w) { w.scrollLeft = 0; w.scrollTop = 0; }
+    });
   }
   function updateZoomLabel() {
     const el = document.getElementById('zoom-label');
@@ -564,10 +574,45 @@
         if (higher) applyZoom(higher);
       }
     });
-    // No wheel/pinch handler — the native browser pinch/scroll behaves
-    // better than a custom one (no jitter, smooth zoom, matches what
-    // users expect from any other web page). Cmd+0/-/+ above + the
-    // dropdown menu give discrete control without fighting the trackpad.
+    // Pinch on the canvas zooms the canvas (not the whole page).
+    // macOS trackpad pinch dispatches `wheel` with ctrlKey=true and small
+    // deltaY. Strategy:
+    //   1. During pinch, apply a CSS transform on a preview wrapper for
+    //      instant smooth feedback (cheap, no re-render)
+    //   2. After pinch idles for ~150ms, commit the final zoom via
+    //      applyZoom() (which re-renders SVG at the right pixel density)
+    const wrap = document.getElementById('canvas-wrap');
+    if (wrap) {
+      let pinchScale = 1;
+      let pinchTimer = null;
+      function commitPinch() {
+        if (Math.abs(pinchScale - 1) < 0.001) { pinchScale = 1; return; }
+        const next = Math.max(0.05, Math.min(3, CURRENT_ZOOM * pinchScale));
+        pinchScale = 1;
+        // Clear the preview transform; the re-render at the new zoom replaces it.
+        document.querySelectorAll('#canvas-wrap > *').forEach(el => {
+          el.style.transform = '';
+          el.style.transformOrigin = '';
+        });
+        applyZoom(next);
+      }
+      wrap.addEventListener('wheel', (e) => {
+        if (!e.ctrlKey) return;
+        e.preventDefault();
+        // Exponential so pinch feels uniform at any scale level.
+        const factor = Math.exp(-e.deltaY * 0.01);
+        pinchScale *= factor;
+        pinchScale = Math.max(0.05 / CURRENT_ZOOM, Math.min(3 / CURRENT_ZOOM, pinchScale));
+        // Live preview: scale all canvas-wrap children with origin at top-left
+        // of the visible viewport so the user's focal point stays in place.
+        document.querySelectorAll('#canvas-wrap > *').forEach(el => {
+          el.style.transformOrigin = '0 0';
+          el.style.transform = `scale(${pinchScale})`;
+        });
+        if (pinchTimer) clearTimeout(pinchTimer);
+        pinchTimer = setTimeout(commitPinch, 150);
+      }, { passive: false });
+    }
     updateZoomLabel();
   }
 
@@ -1920,7 +1965,7 @@
     // span the FULL canvas-wrap content width — past SVG_W, into the
     // drawer-pad area, all the way to the rightmost scrollable pixel.
     // Stash dimensions so setDrawerPad can re-issue the border on open/close.
-    __PH_BORDER_DIMS = { LANE_LABEL_W, PHASE_LABEL_H, SVG_W };
+    __PH_BORDER_DIMS = { LANE_LABEL_W, PHASE_LABEL_H, SVG_W, SVG_H };
     updatePhaseHeaderBorder();
 
     // sticky corner
