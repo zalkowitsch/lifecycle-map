@@ -235,7 +235,10 @@
     z-index: 100; opacity: 0; pointer-events: none; transition: opacity 200ms ease;
   }
   [data-mode="dark"] .scrim { background: rgba(255,255,255,0.04); }
-  .scrim.open { opacity: 1; pointer-events: auto; }
+  /* When the drawer is open the scrim provides visual contrast but
+     stays click-through, so clicking another node on the canvas swaps
+     drawer content directly instead of closing first. */
+  .scrim.open { opacity: 1; }
   .drawer {
     position: fixed; top: 0; right: 0; height: 100vh; width: 600px; max-width: 94vw;
     background: var(--bg); border-left: 1px solid var(--ink);
@@ -417,6 +420,15 @@
   }
   [data-mode="dark"] .settings-drawer { box-shadow: -8px 0 32px rgba(0,0,0,0.45); }
   .settings-drawer.open { transform: translateX(0); }
+  .settings-close {
+    position: absolute; top: 18px; right: 20px;
+    background: none; border: 1px solid var(--ink);
+    width: 28px; height: 28px; cursor: pointer;
+    font-family: var(--font-mono); font-size: 14px;
+    line-height: 1; color: var(--ink); padding: 0; z-index: 2;
+    border-radius: var(--button-radius);
+  }
+  .settings-close:hover { background: var(--ink); color: var(--bg); }
   .settings-inner { padding: 28px 28px 60px; }
   .settings-eyebrow {
     font-family: var(--font-mono); font-size: 10px;
@@ -903,6 +915,7 @@
 </aside>
 
 <aside class="settings-drawer" id="settings-drawer" aria-hidden="true">
+  <button class="settings-close" id="settings-close" aria-label="Close">×</button>
   <div class="settings-inner">
     <div class="settings-eyebrow" data-i18n="settings.eyebrow">preferences</div>
     <h2 class="settings-title" data-i18n="settings.title">Settings <em>· make it yours</em></h2>

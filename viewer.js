@@ -308,6 +308,8 @@
     const settingsBtn = document.getElementById('settings-btn');
 
     if (settingsBtn) settingsBtn.addEventListener('click', () => openSettings());
+    const settingsCloseBtn = document.getElementById('settings-close');
+    if (settingsCloseBtn) settingsCloseBtn.addEventListener('click', () => closeSettings());
 
     // theme cards
     const grid = document.getElementById('theme-grid');
@@ -354,22 +356,30 @@
     if (btn) btn.classList.remove('is-active');
   }
   function renderThemeSwatches() {
-    // sample each theme's palette by temporarily swapping data-theme on a hidden probe
-    const probe = document.createElement('div');
-    probe.style.position = 'absolute'; probe.style.opacity = '0'; probe.style.pointerEvents = 'none';
-    document.body.appendChild(probe);
-    const currentMode = document.documentElement.dataset.mode;
+    // Sample each theme's palette by reading CSS variables off a hidden
+    // probe element. We need to honor the user's current light/dark mode
+    // so the swatches preview the right palette.
+    const currentMode = document.documentElement.dataset.mode || 'light';
     THEMES.forEach(th => {
-      probe.dataset.theme = th.id;
-      probe.dataset.mode = currentMode;
+      // Use a fresh probe per theme — some browsers don't recompute
+      // resolved styles when only attributes change on the same element
+      // mid-loop.
+      const probe = document.createElement('div');
+      probe.setAttribute('data-theme', th.id);
+      probe.setAttribute('data-mode', currentMode);
+      probe.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;visibility:hidden;pointer-events:none;';
+      document.body.appendChild(probe);
+      // force layout so computed styles definitely include the just-set attrs
+      void probe.offsetWidth;
       const cs = getComputedStyle(probe);
-      const colors = ['--bg', '--ink', '--accent', '--node-bg', '--mute'].map(v => cs.getPropertyValue(v).trim() || '#fff');
+      const colors = ['--bg', '--ink', '--accent', '--node-bg', '--mute']
+        .map(v => cs.getPropertyValue(v).trim() || '#fff');
+      probe.remove();
       const el = document.getElementById('sw-' + th.id);
       if (el) {
         el.innerHTML = colors.map(c => `<div class="swatch" style="background:${c}"></div>`).join('');
       }
     });
-    probe.remove();
   }
   function syncSettingsUI() {
     const theme = document.documentElement.dataset.theme;
@@ -1453,9 +1463,21 @@
       if (activeId || activeEdgeKey) { clearActiveStyles(); activeId = null; activeEdgeKey = null; }
       saveSessionState({ activeNodeId: null });
     }
-    scrim.addEventListener('click', closeDrawer);
+    // Scrim is click-through now (see CSS); the drawer closes via the X
+    // button, Escape, or a click on empty canvas (the pan-end handler
+    // below already swallows the first click after a pan, so we only
+    // close on a clean click with no drag.)
     document.getElementById('drawer-close').addEventListener('click', closeDrawer);
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
+    // Close drawer when user clicks on an empty area of the canvas
+    // (i.e. not a node and not an edge).
+    const canvasWrap = document.getElementById('canvas-wrap');
+    canvasWrap.addEventListener('click', (ev) => {
+      if (!drawer.classList.contains('open')) return;
+      const t = ev.target;
+      if (t && t.closest && (t.closest('.node') || t.closest('path.edge') || t.closest('path.edge-hit'))) return;
+      closeDrawer();
+    });
 
     function upstreamOf(id) { return edges.filter(e => e.to === id).map(e => e.from); }
     function downstreamOf(id) { return edges.filter(e => e.from === id).map(e => e.to); }
