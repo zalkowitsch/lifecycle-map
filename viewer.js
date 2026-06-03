@@ -577,36 +577,71 @@
     // Pinch on the canvas zooms the canvas (not the whole page).
     // macOS trackpad pinch dispatches `wheel` with ctrlKey=true and small
     // deltaY. Strategy:
-    //   1. During pinch, apply a CSS transform on a preview wrapper for
-    //      instant smooth feedback (cheap, no re-render)
-    //   2. After pinch idles for ~150ms, commit the final zoom via
-    //      applyZoom() (which re-renders SVG at the right pixel density)
+    //   - During pinch: cheap CSS transform around the POINTER position
+    //     (so zoom focuses on what the user is hovering over)
+    //   - 150ms after pinch idles: commit the final zoom + adjust
+    //     scroll so the same content point stays under the pointer
     const wrap = document.getElementById('canvas-wrap');
     if (wrap) {
       let pinchScale = 1;
       let pinchTimer = null;
+      let pinchOrigin = null;  // { x, y } in content coords (pre-zoom)
+      function getFitZoom() {
+        if (!__PH_BORDER_DIMS) return 0.05;
+        const { SVG_W, SVG_H } = __PH_BORDER_DIMS;
+        const vw = Math.max(200, wrap.clientWidth - 20);
+        const vh = Math.max(200, wrap.clientHeight - 20);
+        return Math.max(0.05, Math.min(1.0, Math.min(vw / SVG_W, SVG_H ? vh / SVG_H : 1.0)));
+      }
       function commitPinch() {
-        if (Math.abs(pinchScale - 1) < 0.001) { pinchScale = 1; return; }
-        const next = Math.max(0.05, Math.min(3, CURRENT_ZOOM * pinchScale));
+        if (Math.abs(pinchScale - 1) < 0.001 || !pinchOrigin) { pinchScale = 1; pinchOrigin = null; return; }
+        const fit = getFitZoom();
+        const next = Math.max(fit, Math.min(3, CURRENT_ZOOM * pinchScale));
+        const actualFactor = next / CURRENT_ZOOM;
+        const origin = pinchOrigin;
         pinchScale = 1;
-        // Clear the preview transform; the re-render at the new zoom replaces it.
+        pinchOrigin = null;
+        // Clear preview transform
         document.querySelectorAll('#canvas-wrap > *').forEach(el => {
           el.style.transform = '';
           el.style.transformOrigin = '';
         });
         applyZoom(next);
+        // After re-render, scroll so the focal content point lands at the
+        // same viewport pixel where it was before the zoom.
+        requestAnimationFrame(() => {
+          const w = document.getElementById('canvas-wrap');
+          if (!w) return;
+          w.scrollLeft = origin.contentX * actualFactor - origin.viewportX;
+          w.scrollTop  = origin.contentY * actualFactor - origin.viewportY;
+        });
       }
       wrap.addEventListener('wheel', (e) => {
         if (!e.ctrlKey) return;
         e.preventDefault();
-        // Exponential so pinch feels uniform at any scale level.
+        // Lock the focal point at the first pinch frame so the preview
+        // stays consistent through the gesture.
+        if (!pinchOrigin) {
+          const rect = wrap.getBoundingClientRect();
+          const viewportX = e.clientX - rect.left;
+          const viewportY = e.clientY - rect.top;
+          pinchOrigin = {
+            viewportX, viewportY,
+            contentX: wrap.scrollLeft + viewportX,
+            contentY: wrap.scrollTop  + viewportY,
+          };
+        }
         const factor = Math.exp(-e.deltaY * 0.01);
-        pinchScale *= factor;
-        pinchScale = Math.max(0.05 / CURRENT_ZOOM, Math.min(3 / CURRENT_ZOOM, pinchScale));
-        // Live preview: scale all canvas-wrap children with origin at top-left
-        // of the visible viewport so the user's focal point stays in place.
+        const fit = getFitZoom();
+        const minScale = fit / CURRENT_ZOOM;
+        const maxScale = 3 / CURRENT_ZOOM;
+        pinchScale = Math.max(minScale, Math.min(maxScale, pinchScale * factor));
+        // Live preview: scale around the pointer position so the user's
+        // focal point stays under the cursor during the gesture.
+        const ox = pinchOrigin.contentX + 'px';
+        const oy = pinchOrigin.contentY + 'px';
         document.querySelectorAll('#canvas-wrap > *').forEach(el => {
-          el.style.transformOrigin = '0 0';
+          el.style.transformOrigin = ox + ' ' + oy;
           el.style.transform = `scale(${pinchScale})`;
         });
         if (pinchTimer) clearTimeout(pinchTimer);
