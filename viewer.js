@@ -95,6 +95,12 @@
       'header.docs':             'docs',
       'header.share.title':      'Share',
       'header.settings.title':   'Settings',
+      'header.code.title':       'View source',
+      'code.eyebrow':            'source',
+      'code.title':              'Code <em>· raw source</em>',
+      'code.copy':               'Copy',
+      'code.download':           'Download',
+      'code.empty':              'No source available for this map.',
       'loading':                 'Loading lifecycle data…',
       'splash.title':            'lifecycle-map <em>— viewer</em>',
       'splash.eyebrow':          'interactive swim-lane lifecycle viewer',
@@ -135,6 +141,12 @@
       'header.docs':             'docs',
       'header.share.title':      'Compartilhar',
       'header.settings.title':   'Configurações',
+      'header.code.title':       'Ver código-fonte',
+      'code.eyebrow':            'código',
+      'code.title':              'Código <em>· fonte bruta</em>',
+      'code.copy':               'Copiar',
+      'code.download':           'Baixar',
+      'code.empty':              'Nenhum código-fonte disponível para este mapa.',
       'loading':                 'Carregando dados do lifecycle…',
       'splash.title':            'lifecycle-map <em>— viewer</em>',
       'splash.eyebrow':          'visualizador interativo de lifecycle em swim-lane',
@@ -175,6 +187,12 @@
       'header.docs':             'docs',
       'header.share.title':      'Compartir',
       'header.settings.title':   'Configuración',
+      'header.code.title':       'Ver código fuente',
+      'code.eyebrow':            'código',
+      'code.title':              'Código <em>· fuente cruda</em>',
+      'code.copy':               'Copiar',
+      'code.download':           'Descargar',
+      'code.empty':              'No hay código fuente disponible para este mapa.',
       'loading':                 'Cargando datos del lifecycle…',
       'splash.title':            'lifecycle-map <em>— viewer</em>',
       'splash.eyebrow':          'visor interactivo de lifecycle en swim-lane',
@@ -248,6 +266,7 @@
 
   initThemeAndMode();
   initSettingsDrawer();
+  initCodeDrawer();
   initDragAndDrop();
   // Translate the UI to whichever language is saved/detected.
   applyUILang(CURRENT_UI_LANG, false);
@@ -381,6 +400,109 @@
       }
     });
   }
+  // -------- code drawer (raw source viewer) --------
+  let CURRENT_CODE_TAB = 0;
+  function initCodeDrawer() {
+    const btn = document.getElementById('code-btn');
+    const drawer = document.getElementById('code-drawer');
+    const closeBtn = document.getElementById('code-close');
+    if (!btn || !drawer) return;
+    btn.addEventListener('click', () => openCodeDrawer());
+    if (closeBtn) closeBtn.addEventListener('click', () => closeCodeDrawer());
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && drawer.classList.contains('open')) closeCodeDrawer();
+    });
+    document.getElementById('code-copy').addEventListener('click', async () => {
+      const src = CURRENT_SOURCES[CURRENT_CODE_TAB];
+      if (!src) return;
+      try {
+        await navigator.clipboard.writeText(src.text);
+        flashCopyButton();
+      } catch (_) {}
+    });
+    document.getElementById('code-download').addEventListener('click', () => {
+      const src = CURRENT_SOURCES[CURRENT_CODE_TAB];
+      if (!src) return;
+      const blob = new Blob([src.text], { type: src.lang === 'yaml' ? 'application/x-yaml' : 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = src.name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+    window.__lifecycleRenderCodeTabs = renderCodeTabs;
+  }
+  function flashCopyButton() {
+    const btn = document.getElementById('code-copy');
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = '✓ ' + orig;
+    setTimeout(() => { btn.textContent = orig; }, 1400);
+  }
+  function openCodeDrawer() {
+    const drawer = document.getElementById('code-drawer');
+    drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
+    const btn = document.getElementById('code-btn');
+    if (btn) btn.classList.add('is-active');
+    renderCodeTabs();
+  }
+  function closeCodeDrawer() {
+    const drawer = document.getElementById('code-drawer');
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+    const btn = document.getElementById('code-btn');
+    if (btn) btn.classList.remove('is-active');
+  }
+  function renderCodeTabs() {
+    const tabsEl = document.getElementById('code-tabs');
+    const content = document.getElementById('code-content');
+    const meta = document.getElementById('code-meta');
+    if (!tabsEl || !content) return;
+    if (!CURRENT_SOURCES.length) {
+      tabsEl.innerHTML = '';
+      content.textContent = t('code.empty');
+      if (meta) meta.textContent = '';
+      return;
+    }
+    if (CURRENT_CODE_TAB >= CURRENT_SOURCES.length) CURRENT_CODE_TAB = 0;
+    tabsEl.innerHTML = CURRENT_SOURCES.map((s, i) =>
+      `<button class="code-tab ${i === CURRENT_CODE_TAB ? 'active' : ''}" data-idx="${i}" role="tab">
+        ${escapeHtml(s.name)}<span class="lang-chip">${escapeHtml(s.lang)}</span>
+      </button>`
+    ).join('');
+    tabsEl.querySelectorAll('.code-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        CURRENT_CODE_TAB = parseInt(tab.dataset.idx, 10);
+        renderCodeTabs();
+      });
+    });
+    const src = CURRENT_SOURCES[CURRENT_CODE_TAB];
+    content.innerHTML = highlight(src.text, src.lang);
+    if (meta) {
+      const lines = src.text.split('\n').length;
+      const kb = (src.text.length / 1024).toFixed(1);
+      meta.textContent = `${lines} lines · ${kb} KB`;
+    }
+  }
+  // very small regex highlighter — enough for editorial-clean look without a lib
+  function highlight(text, lang) {
+    const esc = escapeHtml(text);
+    if (lang === 'yaml') {
+      return esc
+        .replace(/(^|\n)(\s*#[^\n]*)/g, '$1<span class="tok-yaml-comment">$2</span>')
+        .replace(/(^|\n)(\s*-?\s*)([A-Za-z_][\w-]*)(\s*:)/g,
+          '$1$2<span class="tok-yaml-key">$3</span><span class="tok-punct">$4</span>');
+    }
+    // json
+    return esc
+      .replace(/("(?:\\.|[^"\\])*")(\s*:)/g, '<span class="tok-key">$1</span><span class="tok-punct">$2</span>')
+      .replace(/(:\s*)("(?:\\.|[^"\\])*")/g, '$1<span class="tok-str">$2</span>')
+      .replace(/\b(true|false)\b/g, '<span class="tok-bool">$1</span>')
+      .replace(/\bnull\b/g, '<span class="tok-null">null</span>')
+      .replace(/(:\s*)(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g, '$1<span class="tok-num">$2</span>');
+  }
+
   function syncSettingsUI() {
     const theme = document.documentElement.dataset.theme;
     const mode = document.documentElement.dataset.mode;
@@ -536,6 +658,7 @@
         CURRENT_SOURCE = 'dnd';
         CURRENT_SLUG = slugify(file.name);
         setHashSlug(CURRENT_SLUG);
+        setCurrentSources([{ name: file.name, text, lang: detectLang(file.name, text) }]);
         loadDataAndRender(data);
       } catch (err) {
         showError(err);
@@ -577,6 +700,24 @@
 
   // -------- bootstrap --------
   let CURRENT_RAW_JSON = null;  // last raw JSON text — handed to share UI
+  // Original source texts shown in the "Code" drawer. Each entry is
+  // { name, text, lang } where lang is 'json' or 'yaml'. Today we usually
+  // have one entry (the file the user loaded), but multi-file support is
+  // already structured here.
+  let CURRENT_SOURCES = [];
+  function detectLang(name, text) {
+    const lower = (name || '').toLowerCase();
+    if (lower.endsWith('.yaml') || lower.endsWith('.yml')) return 'yaml';
+    if (lower.endsWith('.json')) return 'json';
+    // sniff: JSON starts with `{` or `[`
+    const t = (text || '').trimStart();
+    if (t.startsWith('{') || t.startsWith('[')) return 'json';
+    return 'yaml';
+  }
+  function setCurrentSources(sources) {
+    CURRENT_SOURCES = Array.isArray(sources) ? sources : [];
+    if (window.__lifecycleRenderCodeTabs) window.__lifecycleRenderCodeTabs();
+  }
 
   const params = new URLSearchParams(window.location.search);
   const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
@@ -619,6 +760,11 @@
           CURRENT_SOURCE = restored.source;
           CURRENT_SLUG = restored.slug || null;
           if (CURRENT_SLUG) setHashSlug(CURRENT_SLUG, true);
+          setCurrentSources([{
+            name: (CURRENT_SLUG || 'restored') + '.json',
+            text: restored.rawJson,
+            lang: detectLang('', restored.rawJson),
+          }]);
           RESTORED_STATE = restored;
         } catch (_) { /* fall through to splash */ }
       }
@@ -761,6 +907,15 @@
     const resp = await fetch(url, { redirect: 'follow' });
     if (!resp.ok) throw new Error(`HTTP ${resp.status} fetching ${url}`);
     const text = await resp.text();
+    // Stash the raw text for the Code drawer (using the last segment of the
+    // URL path as filename).
+    try {
+      const u = new URL(url, window.location.href);
+      const name = (u.pathname.split('/').pop() || 'remote') || 'remote';
+      setCurrentSources([{ name, text, lang: detectLang(name, text) }]);
+    } catch (_) {
+      setCurrentSources([{ name: 'remote', text, lang: detectLang('', text) }]);
+    }
     return parseSource(text, url);
   }
 
@@ -772,6 +927,11 @@
       const bytes = new Uint8Array(binStr.length);
       for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
       const inflated = window.pako ? window.pako.ungzip(bytes, { to: 'string' }) : new TextDecoder().decode(bytes);
+      // Re-prettify so the Code drawer shows nice indentation even when
+      // the original was minified.
+      let pretty = inflated;
+      try { pretty = JSON.stringify(JSON.parse(inflated), null, 2); } catch (_) {}
+      setCurrentSources([{ name: 'embedded.json', text: pretty, lang: 'json' }]);
       return JSON.parse(inflated);
     } catch (e) {
       throw new Error('Failed to decode #data: ' + e.message);
@@ -837,8 +997,12 @@
     const cancel = document.getElementById('paste-cancel');
     const input = document.getElementById('paste-input');
     btn.onclick = () => {
-      try { resolve(parseSource(input.value, 'pasted')); }
-      catch (e) { showSplashError(e.message); }
+      try {
+        const text = input.value;
+        const data = parseSource(text, 'pasted');
+        setCurrentSources([{ name: 'pasted', text, lang: detectLang('', text) }]);
+        resolve(data);
+      } catch (e) { showSplashError(e.message); }
     };
     cancel.onclick = () => { document.getElementById('paste-area').style.display = 'none'; };
   }

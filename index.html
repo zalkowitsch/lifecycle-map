@@ -111,6 +111,7 @@
   .h-icon-btn#mode-toggle-btn:hover svg { transform: rotate(-15deg) scale(1.08); }
   .h-icon-btn#settings-btn:hover svg { transform: rotate(45deg); }
   .h-icon-btn#share-btn:hover svg { transform: scale(1.1); }
+  .h-icon-btn#code-btn:hover svg { transform: scale(1.12); }
   kbd {
     font-family: var(--font-mono); font-size: 9px;
     padding: 0 4px; border: 1px solid var(--rule); border-radius: 2px;
@@ -513,6 +514,122 @@
   .settings-foot a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
   .settings-foot a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
+  /* code drawer (raw source viewer) */
+  .code-drawer {
+    position: fixed; top: 0; right: 0; height: 100vh;
+    width: 720px; max-width: 94vw;
+    background: var(--bg); border-left: 1px solid var(--ink);
+    box-shadow: -8px 0 32px rgba(0,0,0,0.08);
+    z-index: 102; transform: translateX(100%);
+    transition: transform 320ms cubic-bezier(.22,.61,.36,1);
+    display: flex; flex-direction: column;
+  }
+  [data-mode="dark"] .code-drawer { box-shadow: -8px 0 32px rgba(0,0,0,0.45); }
+  .code-drawer.open { transform: translateX(0); }
+  .code-close {
+    position: absolute; top: 18px; right: 20px;
+    background: none; border: 1px solid var(--ink);
+    width: 28px; height: 28px; cursor: pointer;
+    font-family: var(--font-mono); font-size: 14px; line-height: 1;
+    color: var(--ink); padding: 0; z-index: 2;
+    border-radius: var(--button-radius);
+  }
+  .code-close:hover { background: var(--ink); color: var(--bg); }
+  .code-header {
+    padding: 22px 28px 14px;
+    border-bottom: 1px solid var(--rule-2);
+    background: var(--bg-2);
+    flex-shrink: 0;
+  }
+  .code-eyebrow {
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--mute); margin-bottom: 4px;
+  }
+  .code-title {
+    font-family: var(--font-display);
+    font-variation-settings: 'opsz' 96;
+    font-weight: 400; font-size: 26px; margin: 0;
+    letter-spacing: var(--display-tracking); line-height: 1.05;
+    color: var(--ink);
+  }
+  .code-title em { font-style: italic; color: var(--accent); font-weight: 300; }
+  .code-tabs {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--ink);
+    background: var(--bg);
+    flex-shrink: 0;
+    scrollbar-width: thin;
+  }
+  .code-tab {
+    flex-shrink: 0;
+    padding: 10px 18px;
+    background: var(--bg);
+    border: none;
+    border-right: 1px solid var(--rule-2);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--mute);
+    transition: background 140ms, color 140ms, border-color 140ms;
+  }
+  .code-tab:hover { background: var(--bg-2); color: var(--ink); }
+  .code-tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+    background: var(--bg-2);
+  }
+  .code-tab .lang-chip {
+    font-size: 8.5px;
+    margin-left: 6px; padding: 1px 5px;
+    border: 1px solid var(--rule); border-radius: 2px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .code-toolbar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--rule-2);
+    background: var(--bg);
+    flex-shrink: 0;
+  }
+  .code-action-btn {
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    background: var(--bg); color: var(--ink);
+    border: 1px solid var(--ink);
+    padding: 6px 12px; cursor: pointer;
+    border-radius: var(--button-radius);
+    transition: background 140ms, color 140ms;
+  }
+  .code-action-btn:hover { background: var(--ink); color: var(--bg); }
+  .code-meta {
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.08em; color: var(--mute);
+    margin-left: auto;
+  }
+  .code-body {
+    flex: 1; min-height: 0; overflow: auto;
+    background: var(--node-bg);
+  }
+  #code-pre {
+    margin: 0; padding: 18px 24px 32px;
+    font-family: var(--font-mono); font-size: 12px;
+    line-height: 1.55;
+    color: var(--ink);
+    white-space: pre;
+  }
+  /* syntax highlighting */
+  .tok-key    { color: var(--accent); }
+  .tok-str    { color: var(--ink); }
+  .tok-num    { color: var(--upstream-stroke); }
+  .tok-bool   { color: var(--upstream-stroke); font-weight: 600; }
+  .tok-null   { color: var(--mute); font-style: italic; }
+  .tok-punct  { color: var(--mute); }
+  .tok-yaml-key { color: var(--accent); }
+  .tok-yaml-comment { color: var(--mute); font-style: italic; }
+
   /* splash */
   .splash {
     position: fixed; inset: 0; z-index: 200;
@@ -868,6 +985,9 @@
       <span class="hide-mobile" data-i18n="header.walkHint"><kbd>←</kbd> <kbd>→</kbd> walk · drag empty to pan</span>
       <a href="./docs/" data-i18n="header.docs">docs</a>
       <div class="h-actions">
+        <button class="h-icon-btn" id="code-btn" data-i18n="header.code.title" data-i18n-attr="title" title="View source">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </button>
         <button class="h-icon-btn" id="share-btn" data-i18n="header.share.title" data-i18n-attr="title" title="Share">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
         </button>
@@ -977,6 +1097,23 @@
     <button class="primary" id="decrypt-go">Decrypt &amp; load</button>
   </div>
 </div>
+
+<aside class="code-drawer" id="code-drawer" aria-hidden="true">
+  <button class="code-close" id="code-close" aria-label="Close">×</button>
+  <div class="code-header">
+    <div class="code-eyebrow" data-i18n="code.eyebrow">source</div>
+    <h2 class="code-title" data-i18n="code.title">Code <em>· raw source</em></h2>
+  </div>
+  <div class="code-tabs" id="code-tabs" role="tablist"></div>
+  <div class="code-toolbar">
+    <button class="code-action-btn" id="code-copy" data-i18n="code.copy">Copy</button>
+    <button class="code-action-btn" id="code-download" data-i18n="code.download">Download</button>
+    <span class="code-meta" id="code-meta"></span>
+  </div>
+  <div class="code-body">
+    <pre id="code-pre"><code id="code-content"></code></pre>
+  </div>
+</aside>
 
 <script src="./share.js"></script>
 <script src="./viewer.js"></script>
