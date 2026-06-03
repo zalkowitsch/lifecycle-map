@@ -25,5 +25,8 @@
     }
   },
   "include": ["src", "vite.config.ts"],
-  "exclude": ["dist", "node_modules", "viewer.js", "share.js", "version-check.js", "docs"]
+  "exclude": [
+    "dist", "node_modules", "viewer.js", "share.js", "version-check.js", "docs",
+    "src/**/*.test.ts", "src/**/*.test.tsx", "src/test/**"
+  ]
 }

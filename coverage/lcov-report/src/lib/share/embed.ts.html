@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/9</span>
+                <span class='fraction'>0/9</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/2</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>8/8</span>
+                <span class='fraction'>0/8</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -108,18 +108,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * Strategy 2: Embedded URL
@@ -136,19 +136,19 @@ import type { ShareResult } from './index';
  * Gzip `text` then encode the bytes as URL-safe base64 (no padding).
  * Chunked String.fromCharCode keeps us from blowing the call-stack on large inputs.
  */
-export async function gzipBase64Url(text: string): Promise&lt;string&gt; {
-  const bytes = pako.gzip(text);
-  let bin = '';
-  const chunk = 0x8000;
-  for (let i = 0; i &lt; bytes.length; i += chunk) {
-    bin += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));
+export async function <span class="fstat-no" title="function not covered" >gzipBase64Url(t</span>ext: string): Promise&lt;string&gt; {
+  const bytes = <span class="cstat-no" title="statement not covered" >pako.gzip(text);</span>
+  let bin = <span class="cstat-no" title="statement not covered" >'';</span>
+  const chunk = <span class="cstat-no" title="statement not covered" >0x8000;</span>
+<span class="cstat-no" title="statement not covered" >  for (let i = <span class="cstat-no" title="statement not covered" >0; i</span> &lt; bytes.length; i += chunk) {</span>
+<span class="cstat-no" title="statement not covered" >    bin += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)));</span>
   }
-  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+<span class="cstat-no" title="statement not covered" >  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');</span>
 }
 &nbsp;
-export async function shareEmbedded(jsonText: string, baseUrl: string): Promise&lt;ShareResult&gt; {
-  const enc = await gzipBase64Url(jsonText);
-  return { url: `${baseUrl}#data=${enc}`, size: enc.length };
+export async function <span class="fstat-no" title="function not covered" >shareEmbedded(j</span>sonText: string, baseUrl: string): Promise&lt;ShareResult&gt; {
+  const enc = <span class="cstat-no" title="statement not covered" >await gzipBase64Url(jsonText);</span>
+<span class="cstat-no" title="statement not covered" >  return { url: `${baseUrl}#data=${enc}`, size: enc.length };</span>
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -157,7 +157,7 @@ export async function shareEmbedded(jsonText: string, baseUrl: string): Promise&
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-03T17:44:34.572Z
+                at 2026-06-03T18:38:45.421Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

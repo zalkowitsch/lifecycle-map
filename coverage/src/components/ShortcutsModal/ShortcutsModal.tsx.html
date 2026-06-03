@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>18/18</span>
+                <span class='fraction'>0/18</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">58.69% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>27/46</span>
+                <span class='fraction'>0/46</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>7/7</span>
+                <span class='fraction'>0/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>14/14</span>
+                <span class='fraction'>0/14</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -192,7 +192,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -205,20 +205,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -252,7 +252,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -269,14 +269,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">55x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">90x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -308,7 +308,7 @@ export interface ShortcutsModalProps {
   onClose: () =&gt; void;
 }
 &nbsp;
-const CMD = navigator.platform.toLowerCase().includes('mac') ? '⌘' : 'Ctrl';
+const CMD = <span class="cstat-no" title="statement not covered" >navigator.platform.toLowerCase().includes('mac') ? '⌘' : 'Ctrl';</span>
 &nbsp;
 interface Shortcut {
   keys: string[];
@@ -320,79 +320,79 @@ interface ShortcutSection {
   items: Shortcut[];
 }
 &nbsp;
-export function ShortcutsModal({ open, onClose }: ShortcutsModalProps): JSX.Element | null {
-  const { t } = useI18n();
+export function <span class="fstat-no" title="function not covered" >ShortcutsModal({</span> open, onClose }: ShortcutsModalProps): JSX.Element | null {
+  const { <span class="cstat-no" title="statement not covered" >t } = useI18n();</span>
 &nbsp;
-  useEffect(() =&gt; {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent): void =&gt; {
-      <span class="missing-if-branch" title="else path not taken" >E</span>if (e.key === 'Escape') onClose();
+<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >  useEffect(() =&gt; {</span></span>
+<span class="cstat-no" title="statement not covered" >    if (!open) <span class="cstat-no" title="statement not covered" >return;</span></span>
+    const <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >onKey = (e</span>: KeyboardEvent): void =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >      if (e.key === 'Escape') <span class="cstat-no" title="statement not covered" >onClose();</span></span>
     };
-    document.addEventListener('keydown', onKey);
-    return () =&gt; document.removeEventListener('keydown', onKey);
+<span class="cstat-no" title="statement not covered" >    document.addEventListener('keydown', onKey);</span>
+<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >    return () =&gt; <span class="cstat-no" title="statement not covered" >d</span>ocument.removeEventListener('keydown', onKey);</span></span>
   }, [open, onClose]);
 &nbsp;
-  if (!open) return null;
+<span class="cstat-no" title="statement not covered" >  if (!open) <span class="cstat-no" title="statement not covered" >return null;</span></span>
 &nbsp;
-  const sections: ShortcutSection[] = [
+  const sections: ShortcutSection[] = <span class="cstat-no" title="statement not covered" >[</span>
     {
-      title: t('shortcuts.navigation') || <span class="branch-1 cbranch-no" title="branch not covered" >'Navigation',</span>
+      title: t('shortcuts.navigation') || 'Navigation',
       items: [
-        { keys: ['←'], description: t('shortcuts.walkPrev') || <span class="branch-1 cbranch-no" title="branch not covered" >'Previous step' }</span>,
-        { keys: ['→'], description: t('shortcuts.walkNext') || <span class="branch-1 cbranch-no" title="branch not covered" >'Next step' }</span>,
-        { keys: ['drag empty'], description: t('shortcuts.pan') || <span class="branch-1 cbranch-no" title="branch not covered" >'Pan canvas' }</span>,
-        { keys: ['Esc'], description: t('shortcuts.escape') || <span class="branch-1 cbranch-no" title="branch not covered" >'Close drawer / modal' }</span>,
+        { keys: ['←'], description: t('shortcuts.walkPrev') || 'Previous step' },
+        { keys: ['→'], description: t('shortcuts.walkNext') || 'Next step' },
+        { keys: ['drag empty'], description: t('shortcuts.pan') || 'Pan canvas' },
+        { keys: ['Esc'], description: t('shortcuts.escape') || 'Close drawer / modal' },
       ],
     },
     {
-      title: t('shortcuts.search') || <span class="branch-1 cbranch-no" title="branch not covered" >'Search',</span>
+      title: t('shortcuts.search') || 'Search',
       items: [
-        { keys: [CMD, 'K'], description: t('shortcuts.openSearch') || <span class="branch-1 cbranch-no" title="branch not covered" >'Open search' }</span>,
+        { keys: [CMD, 'K'], description: t('shortcuts.openSearch') || 'Open search' },
       ],
     },
     {
-      title: t('shortcuts.zoom') || <span class="branch-1 cbranch-no" title="branch not covered" >'Zoom',</span>
+      title: t('shortcuts.zoom') || 'Zoom',
       items: [
-        { keys: [CMD, '0'], description: t('shortcuts.zoomReset') || <span class="branch-1 cbranch-no" title="branch not covered" >'Reset to 100%' }</span>,
-        { keys: [CMD, '-'], description: t('shortcuts.zoomOut') || <span class="branch-1 cbranch-no" title="branch not covered" >'Zoom out' }</span>,
-        { keys: [CMD, '+'], description: t('shortcuts.zoomIn') || <span class="branch-1 cbranch-no" title="branch not covered" >'Zoom in' }</span>,
-        { keys: ['pinch'], description: t('shortcuts.pinch') || <span class="branch-1 cbranch-no" title="branch not covered" >'Trackpad pinch on canvas' }</span>,
+        { keys: [CMD, '0'], description: t('shortcuts.zoomReset') || 'Reset to 100%' },
+        { keys: [CMD, '-'], description: t('shortcuts.zoomOut') || 'Zoom out' },
+        { keys: [CMD, '+'], description: t('shortcuts.zoomIn') || 'Zoom in' },
+        { keys: ['pinch'], description: t('shortcuts.pinch') || 'Trackpad pinch on canvas' },
       ],
     },
     {
-      title: t('shortcuts.editor') || <span class="branch-1 cbranch-no" title="branch not covered" >'Source editor',</span>
+      title: t('shortcuts.editor') || 'Source editor',
       items: [
-        { keys: [CMD, 'Z'], description: t('shortcuts.undo') || <span class="branch-1 cbranch-no" title="branch not covered" >'Undo' }</span>,
-        { keys: [CMD, '⇧', 'Z'], description: t('shortcuts.redo') || <span class="branch-1 cbranch-no" title="branch not covered" >'Redo' }</span>,
+        { keys: [CMD, 'Z'], description: t('shortcuts.undo') || 'Undo' },
+        { keys: [CMD, '⇧', 'Z'], description: t('shortcuts.redo') || 'Redo' },
       ],
     },
   ];
 &nbsp;
-  return (
+<span class="cstat-no" title="statement not covered" >  return (</span>
     &lt;div className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="shortcuts-title"&gt;
       &lt;div className={styles.scrim} onClick={onClose} /&gt;
       &lt;div className={styles.panel}&gt;
         &lt;header className={styles.header}&gt;
           &lt;div&gt;
-            &lt;div className={styles.eyebrow}&gt;{t('shortcuts.eyebrow') || <span class="branch-1 cbranch-no" title="branch not covered" >'reference'}&lt;/div&gt;</span>
+            &lt;div className={styles.eyebrow}&gt;{t('shortcuts.eyebrow') || 'reference'}&lt;/div&gt;
             &lt;h2 id="shortcuts-title" className={styles.title}&gt;
-              {t('shortcuts.title') || <span class="branch-1 cbranch-no" title="branch not covered" >'Shortcuts'}{'</span> '}
-              &lt;em&gt;· {t('shortcuts.subtitle') || <span class="branch-1 cbranch-no" title="branch not covered" >'navigate faster'}&lt;/em&gt;</span>
+              {t('shortcuts.title') || 'Shortcuts'}{' '}
+              &lt;em&gt;· {t('shortcuts.subtitle') || 'navigate faster'}&lt;/em&gt;
             &lt;/h2&gt;
           &lt;/div&gt;
           &lt;button className={styles.close} onClick={onClose} aria-label="Close"&gt;×&lt;/button&gt;
         &lt;/header&gt;
 &nbsp;
         &lt;div className={styles.body}&gt;
-          {sections.map((s) =&gt; (
-            &lt;section key={s.title} className={styles.section}&gt;
+          {sections.<span class="fstat-no" title="function not covered" >map((s</span>) =&gt; (
+<span class="cstat-no" title="statement not covered" >            &lt;section key={s.title} className={styles.section}&gt;</span>
               &lt;h3 className={styles.sectionTitle}&gt;{s.title}&lt;/h3&gt;
               &lt;ul className={styles.list}&gt;
-                {s.items.map((item, i) =&gt; (
-                  &lt;li key={`${s.title}-${i}`} className={styles.row}&gt;
+                {s.items.<span class="fstat-no" title="function not covered" >map((i</span>tem, i) =&gt; (
+<span class="cstat-no" title="statement not covered" >                  &lt;li key={`${s.title}-${i}`} className={styles.row}&gt;</span>
                     &lt;span className={styles.keys}&gt;
-                      {item.keys.map((k, j) =&gt; (
-                        &lt;span key={j}&gt;
+                      {item.keys.<span class="fstat-no" title="function not covered" >map((k</span>, j) =&gt; (
+<span class="cstat-no" title="statement not covered" >                        &lt;span key={j}&gt;</span>
                           {j &gt; 0 &amp;&amp; &lt;span className={styles.plus}&gt;+&lt;/span&gt;}
                           &lt;kbd className={styles.kbd}&gt;{k}&lt;/kbd&gt;
                         &lt;/span&gt;
@@ -418,7 +418,7 @@ export default ShortcutsModal;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-03T17:44:34.537Z
+                at 2026-06-03T18:38:45.386Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

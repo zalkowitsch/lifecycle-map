@@ -1,14 +1,111 @@
 // Tests for src/hooks/useViewerState.ts
 //
-// Focuses on the pure exports — `slugify` and `normalize`. The hook itself
-// touches fetch, window.location, hashchange listeners, and session storage,
-// which makes it a poor fit for a unit test; integration coverage lives
-// elsewhere.
+// Covers the pure exports (`slugify` + `normalize`) and the `useViewerState`
+// hook itself — bootstrap from URL, hash, slug, encrypted-image, paste; plus
+// the manual entry points (`loadFromUrl`, `handleFileDrop`, `handlePaste`,
+// `decryptImage`, `loadFromText`, `showPasteUI`).
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook, waitFor } from '@testing-library/react';
 
-import { normalize, slugify } from '@/hooks/useViewerState';
+import { normalize, slugify, useViewerState } from '@/hooks/useViewerState';
+import { encodeHashData } from '@/lib/parseSource';
 import type { LifecycleMap } from '@/types/lifecycle-map';
+
+// ---------------------------------------------------------------------------
+// Mock the encrypted-image decoder so `decryptImage` is deterministic.
+// ---------------------------------------------------------------------------
+vi.mock('@/lib/share/encrypted', () => ({
+  decodeFromImageUrl: vi.fn(async (_url: string, password: string) => {
+    if (password === 'right') {
+      return JSON.stringify({
+        meta: { title: 'Decrypted' },
+        lanes: [],
+        phases: [],
+        nodes: [],
+        edges: [],
+      });
+    }
+    throw new Error('Wrong password');
+  }),
+}));
+
+// ---------------------------------------------------------------------------
+// Helpers — fetch + window.location stubs.
+// ---------------------------------------------------------------------------
+
+const SAMPLE_MAP = {
+  meta: { title: 'Hiring' },
+  lanes: [{ id: 'l1', label: 'Lane 1' }],
+  phases: [{ id: 'p1', label: 'Phase 1' }],
+  nodes: [{ id: 'n1', lane: 'l1', phase: 'p1', title: 'Node 1' }],
+  edges: [],
+};
+
+function installFetchMock(): void {
+  globalThis.fetch = vi.fn(async (input: RequestInfo | URL) => {
+    const url = typeof input === 'string' ? input : input.toString();
+    if (url.includes('hiring-pipeline') || url.includes('examples/')) {
+      return {
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify(SAMPLE_MAP),
+      } as Response;
+    }
+    if (url.includes('good-remote')) {
+      return {
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify(SAMPLE_MAP),
+      } as Response;
+    }
+    if (url.includes('bad-json')) {
+      return {
+        ok: true,
+        status: 200,
+        text: async () => '{{{ not parseable',
+      } as Response;
+    }
+    return {
+      ok: false,
+      status: 404,
+      text: async () => 'Not found',
+    } as Response;
+  }) as unknown as typeof fetch;
+}
+
+interface LocationOverrides {
+  search?: string;
+  hash?: string;
+  pathname?: string;
+  hostname?: string;
+  href?: string;
+}
+
+function setLocation(overrides: LocationOverrides): void {
+  const current = window.location;
+  const next = {
+    ...current,
+    search: overrides.search ?? '',
+    hash: overrides.hash ?? '',
+    pathname: overrides.pathname ?? '/',
+    hostname: overrides.hostname ?? current.hostname,
+    href:
+      overrides.href
+      ?? `http://localhost${overrides.pathname ?? '/'}${overrides.search ?? ''}${overrides.hash ?? ''}`,
+    origin: 'http://localhost',
+    protocol: 'http:',
+    host: 'localhost',
+    replace: vi.fn(),
+    reload: vi.fn(),
+    assign: vi.fn(),
+  };
+  Object.defineProperty(window, 'location', {
+    value: next,
+    writable: true,
+    configurable: true,
+  });
+}
 
 describe('slugify', () => {
   it('lowercases and replaces spaces with dashes', () => {
@@ -50,7 +147,6 @@ describe('slugify', () => {
   });
 
   it('treats null-ish input as empty (no throw)', () => {
-    // slugify uses String(s ?? '') so null/undefined are safe.
     expect(slugify(null as unknown as string)).toBe('untitled');
     expect(slugify(undefined as unknown as string)).toBe('untitled');
   });
@@ -210,5 +306,310 @@ describe('normalize', () => {
       phases: [{ id: 'p1', label: 'Phase 1' }],
     });
     expect(out.phases[0]?.subCols).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// useViewerState hook
+// ---------------------------------------------------------------------------
+
+describe('useViewerState (hook)', () => {
+  beforeEach(() => {
+    sessionStorage.clear();
+    localStorage.clear();
+    installFetchMock();
+    setLocation({ search: '', hash: '', pathname: '/' });
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('settles to loading=false with no source (splash)', async () => {
+    const { result } = renderHook(() => useViewerState());
+    // Note: the bootstrap effect can finish synchronously in test environments
+    // when no fetch is needed, so we don't assert loading=true here — just
+    // assert the final settled state.
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+    expect(result.current.state.data).toBeNull();
+    expect(result.current.state.error).toBeNull();
+    expect(result.current.state.needsPaste).toBe(false);
+    expect(result.current.state.needsPassword).toBeNull();
+  });
+
+  it('loads via ?src= and sets source="url"', async () => {
+    setLocation({ search: '?src=good-remote.json' });
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+    expect(result.current.state.error).toBeNull();
+    expect(result.current.state.data).not.toBeNull();
+    expect(result.current.state.source).toBe('url');
+    expect(result.current.state.data?.meta.title).toBe('Hiring');
+  });
+
+  it('reports an error when ?src= fetch fails', async () => {
+    setLocation({ search: '?src=missing.json' });
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+    expect(result.current.state.error).toMatch(/HTTP 404/);
+    expect(result.current.state.data).toBeNull();
+  });
+
+  it('reports a parse error for malformed remote source', async () => {
+    setLocation({ search: '?src=bad-json.json' });
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() =>
+      expect(result.current.state.error).not.toBeNull(),
+    );
+    expect(result.current.state.error).toMatch(/parse|JSON|YAML/i);
+  });
+
+  it('decodes #data= base64 payload into the map (source="hash")', async () => {
+    const encoded = await encodeHashData(JSON.stringify(SAMPLE_MAP));
+    setLocation({ hash: `#data=${encoded}` });
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+    expect(result.current.state.error).toBeNull();
+    expect(result.current.state.source).toBe('hash');
+    expect(result.current.state.data?.meta.title).toBe('Hiring');
+  });
+
+  it('reports an error when #data= is malformed', async () => {
+    setLocation({ hash: '#data=not-a-valid-blob!!!' });
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+    expect(result.current.state.error).toMatch(/decode|#data/i);
+  });
+
+  it('loads an example map from a known slug hash', async () => {
+    setLocation({ hash: '#hiring-pipeline' });
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+    expect(result.current.state.error).toBeNull();
+    expect(result.current.state.source).toBe('slug');
+    expect(result.current.state.slug).toBe('hiring-pipeline');
+  });
+
+  it('ignores an unknown slug hash and falls through to splash', async () => {
+    setLocation({ hash: '#totally-unknown-slug' });
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+    expect(result.current.state.data).toBeNull();
+    expect(result.current.state.error).toBeNull();
+  });
+
+  it('?paste sets needsPaste=true', async () => {
+    setLocation({ search: '?paste' });
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+    expect(result.current.state.needsPaste).toBe(true);
+  });
+
+  it('#img= sets needsPassword with the image URL', async () => {
+    setLocation({ hash: '#img=https://files.example/blob.png' });
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+    expect(result.current.state.needsPassword).toEqual({
+      url: 'https://files.example/blob.png',
+    });
+  });
+
+  it('loadFromUrl() can be called manually after mount', async () => {
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.loadFromUrl('good-remote.json');
+    });
+
+    expect(result.current.state.error).toBeNull();
+    expect(result.current.state.source).toBe('url');
+    expect(result.current.state.data?.meta.title).toBe('Hiring');
+  });
+
+  it('loadFromUrl() surfaces fetch errors', async () => {
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.loadFromUrl('missing.json');
+    });
+
+    expect(result.current.state.error).toMatch(/HTTP 404/);
+  });
+
+  it('handleFileDrop() loads the file text and sets source="dnd" + slug from filename', async () => {
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+
+    const file = new File([JSON.stringify(SAMPLE_MAP)], 'My Plan.json', {
+      type: 'application/json',
+    });
+
+    await act(async () => {
+      await result.current.handleFileDrop(file);
+    });
+
+    expect(result.current.state.source).toBe('dnd');
+    expect(result.current.state.slug).toBe('my-plan');
+    expect(result.current.state.data?.meta.title).toBe('Hiring');
+    // Source persisted to session storage for restore-after-reload.
+    expect(sessionStorage.getItem('lifecycle-map.session')).not.toBeNull();
+  });
+
+  it('handlePaste() loads pasted text and sets source="paste"', async () => {
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.handlePaste(JSON.stringify(SAMPLE_MAP));
+    });
+
+    expect(result.current.state.source).toBe('paste');
+    expect(result.current.state.data?.meta.title).toBe('Hiring');
+  });
+
+  it('loadFromText surfaces parse errors without unsetting loading', async () => {
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.loadFromText('{{ not parseable', 'broken', 'paste');
+    });
+
+    expect(result.current.state.error).toMatch(/parse|JSON|YAML/i);
+  });
+
+  it('loadFromText preserves an explicit slug when passed', async () => {
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.loadFromText(
+        JSON.stringify(SAMPLE_MAP),
+        'whatever.json',
+        'restored',
+        'preserved-slug',
+      );
+    });
+
+    expect(result.current.state.slug).toBe('preserved-slug');
+    expect(result.current.state.source).toBe('restored');
+  });
+
+  it('decryptImage() success: sets data + source="img"', async () => {
+    setLocation({ hash: '#img=https://files.example/blob.png' });
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+    expect(result.current.state.needsPassword).not.toBeNull();
+
+    await act(async () => {
+      await result.current.decryptImage('https://files.example/blob.png', 'right');
+    });
+
+    expect(result.current.state.error).toBeNull();
+    expect(result.current.state.source).toBe('img');
+    expect(result.current.state.needsPassword).toBeNull();
+    expect(result.current.state.data?.meta.title).toBe('Decrypted');
+  });
+
+  it('decryptImage() failure: sets error + clears loading', async () => {
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.decryptImage('https://files.example/blob.png', 'wrong');
+    });
+
+    expect(result.current.state.error).toMatch(/Wrong password|Decryption failed/i);
+    expect(result.current.state.loading).toBe(false);
+  });
+
+  it('showPasteUI() flips needsPaste=true', async () => {
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+    expect(result.current.state.needsPaste).toBe(false);
+
+    act(() => {
+      result.current.showPasteUI();
+    });
+
+    expect(result.current.state.needsPaste).toBe(true);
+  });
+
+  it('loadFromExample with an unknown slug sets an error', async () => {
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+
+    await act(async () => {
+      await result.current.loadFromExample('bogus-slug');
+    });
+
+    expect(result.current.state.error).toMatch(/Unknown example/i);
+  });
+
+  it('hashchange listener loads a different example when slug hash changes', async () => {
+    setLocation({ hash: '#hiring-pipeline' });
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.slug).toBe('hiring-pipeline'));
+
+    // Now flip the hash to another known slug and fire the event.
+    setLocation({ hash: '#minimal' });
+    await act(async () => {
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+      await Promise.resolve();
+    });
+
+    await waitFor(() => expect(result.current.state.slug).toBe('minimal'));
+  });
+
+  it('hashchange listener ignores hashes that already match the current slug', async () => {
+    setLocation({ hash: '#hiring-pipeline' });
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.slug).toBe('hiring-pipeline'));
+
+    const fetchCalls = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls.length;
+
+    await act(async () => {
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+      await Promise.resolve();
+    });
+
+    // No new fetch — listener should have early-returned on the same slug.
+    expect((globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls.length).toBe(fetchCalls);
+  });
+
+  it('hashchange listener ignores #data= / #img= style hashes', async () => {
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+
+    setLocation({ hash: '#data=blob' });
+    await act(async () => {
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+      await Promise.resolve();
+    });
+
+    // We never tried to load it as a slug, so still on splash.
+    expect(result.current.state.data).toBeNull();
+    expect(result.current.state.error).toBeNull();
+  });
+
+  it('restores a previous dnd session when no URL signal is present', async () => {
+    sessionStorage.setItem(
+      'lifecycle-map.session',
+      JSON.stringify({
+        source: 'dnd',
+        slug: 'my-restored',
+        rawJson: JSON.stringify(SAMPLE_MAP),
+        ts: Date.now(),
+      }),
+    );
+
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+
+    expect(result.current.state.source).toBe('restored');
+    expect(result.current.state.slug).toBe('my-restored');
+    expect(result.current.state.data?.meta.title).toBe('Hiring');
   });
 });

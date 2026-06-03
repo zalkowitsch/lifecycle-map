@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">40% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>12/30</span>
+                <span class='fraction'>0/30</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">60% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>6/10</span>
+                <span class='fraction'>0/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">16.66% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/6</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">40.74% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>11/27</span>
+                <span class='fraction'>0/27</span>
             </div>
         
             
@@ -158,14 +158,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -176,17 +174,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7x</span>
-<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -247,12 +247,12 @@
 // The React layer lives in src/hooks/useVersionCheck.ts and
 // src/components/VersionBadge.tsx.
 &nbsp;
-export const REPO = 'zalkowitsch/lifecycle-map';
-export const BRANCH = 'main';
-export const POLL_INTERVAL_MS = 60_000;
-export const INITIAL_DELAY_MS = 20_000;
+export const REPO = <span class="cstat-no" title="statement not covered" >'zalkowitsch/lifecycle-map';</span>
+export const BRANCH = <span class="cstat-no" title="statement not covered" >'main';</span>
+export const POLL_INTERVAL_MS = <span class="cstat-no" title="statement not covered" >60_000;</span>
+export const INITIAL_DELAY_MS = <span class="cstat-no" title="statement not covered" >20_000;</span>
 &nbsp;
-const API_URL = `https://api.github.com/repos/${REPO}/commits/${BRANCH}`;
+const API_URL = <span class="cstat-no" title="statement not covered" >`https://api.github.com/repos/${REPO}/commits/${BRANCH}`;</span>
 &nbsp;
 interface CommitResponse {
   sha?: string;
@@ -264,18 +264,18 @@ interface CommitResponse {
  * Returns `null` on any failure (offline, rate-limited, non-2xx, malformed
  * payload). Callers should treat `null` as "no signal" and not as an error.
  */
-export async function fetchLatestSha(): Promise&lt;string | null&gt; {
-  try {
-    const resp = await fetch(API_URL, {
+export async function <span class="fstat-no" title="function not covered" >fetchLatestSha(): Promise&lt;string | null&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  try {</span>
+    const resp = <span class="cstat-no" title="statement not covered" >await fetch(API_URL, {</span>
       method: 'GET',
       cache: 'no-store',
       headers: { Accept: 'application/vnd.github+json' },
     });
-    if (!resp.ok) return null;
-    const json = (await resp.json()) as CommitResponse;
-    return json &amp;&amp; typeof json.sha === 'string' ? json.sha : null;
+<span class="cstat-no" title="statement not covered" >    if (!resp.ok) <span class="cstat-no" title="statement not covered" >return null;</span></span>
+    const json = (<span class="cstat-no" title="statement not covered" >await resp.json()) as CommitResponse;</span>
+<span class="cstat-no" title="statement not covered" >    return json &amp;&amp; typeof json.sha === 'string' ? json.sha : null;</span>
   } catch (_) {
-    return null;
+<span class="cstat-no" title="statement not covered" >    return null;</span>
   }
 }
 &nbsp;
@@ -337,7 +337,7 @@ export async function <span class="fstat-no" title="function not covered" >hardR
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-03T17:44:34.572Z
+                at 2026-06-03T18:38:45.421Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -39,9 +39,7 @@ interface CanvasProps {
 // above, the pointerup handler swallows the click that would follow.
 const DRAG_THRESHOLD = 4;
 
-// Pinch-zoom: gesture is "complete" after this much idle time (ms).
-const PINCH_FLUSH_MS = 80;
-// Wheel delta → zoom factor sensitivity.
+// Wheel delta → zoom factor sensitivity. Smaller = smoother but slower.
 const PINCH_SENSITIVITY = 0.01;
 // Clamp the final zoom value.
 const ZOOM_MIN = 0.1;
@@ -154,14 +152,13 @@ export function Canvas({
   }, []);
 
   // ---- pinch zoom (trackpad pinch fires wheel + ctrlKey on all browsers) ----
-  // We attach a non-passive wheel listener directly so we can preventDefault()
-  // — React's onWheel is passive by default. The handler debounces deltaY for
-  // 80ms, then computes a new zoom factor and emits via onZoom().
+  // We attach a non-passive wheel listener so we can preventDefault() — React's
+  // onWheel is passive by default. The handler emits onZoom on EVERY wheel
+  // event (coalesced to one per animation frame) so the user gets live visual
+  // feedback as they pinch, not just at the end of the gesture.
   //
-  // Origin is not adjusted (no scroll-position correction) — keeps the
-  // implementation simple at the cost of a small focus drift during zoom.
-  // Latest zoom is read through a ref so the effect doesn't re-bind on every
-  // zoom tick (which would lose the in-flight gesture).
+  // Sticky headers don't grow because they're rendered outside the scaled
+  // wrapper — only the .canvas-content div is scaled.
   const zoomRef = useRef(zoom);
   useEffect(() => { zoomRef.current = zoom; }, [zoom]);
   const onZoomRef = useRef(onZoom);
@@ -170,14 +167,14 @@ export function Canvas({
   useEffect(() => {
     const wrap = wrapRef.current;
     if (!wrap) return;
-    let accum = 0;
-    let timer: number | null = null;
-    const flush = (): void => {
-      if (accum === 0) return;
-      const factor = Math.exp(-accum * PINCH_SENSITIVITY);
+    let pendingDelta = 0;
+    let raf: number | null = null;
+    const apply = (): void => {
+      raf = null;
+      if (pendingDelta === 0) return;
+      const factor = Math.exp(-pendingDelta * PINCH_SENSITIVITY);
+      pendingDelta = 0;
       const next = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomRef.current * factor));
-      accum = 0;
-      timer = null;
       onZoomRef.current?.(next);
     };
     const onWheel = (ev: WheelEvent): void => {
@@ -185,14 +182,15 @@ export function Canvas({
       // Ctrl+wheel on a real mouse is also a "zoom" gesture by convention.
       if (!ev.ctrlKey) return;
       ev.preventDefault();
-      accum += ev.deltaY;
-      if (timer !== null) window.clearTimeout(timer);
-      timer = window.setTimeout(flush, PINCH_FLUSH_MS);
+      pendingDelta += ev.deltaY;
+      // Coalesce multiple wheel events fired in one frame into a single zoom
+      // update — keeps things smooth without dropping intermediate gestures.
+      if (raf === null) raf = requestAnimationFrame(apply);
     };
     wrap.addEventListener('wheel', onWheel, { passive: false });
     return () => {
       wrap.removeEventListener('wheel', onWheel);
-      if (timer !== null) window.clearTimeout(timer);
+      if (raf !== null) cancelAnimationFrame(raf);
     };
   }, []);
 

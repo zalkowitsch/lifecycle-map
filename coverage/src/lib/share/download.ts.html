@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>11/11</span>
+                <span class='fraction'>0/11</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>3/3</span>
+                <span class='fraction'>0/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>10/10</span>
+                <span class='fraction'>0/10</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -93,19 +93,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * Strategy 1: Download JSON
@@ -114,20 +114,20 @@
  * Triggers a synthetic anchor click to save the file.
  */
 &nbsp;
-function makeJsonBlob(text: string): Blob {
-  return new Blob([text], { type: 'application/json' });
+function <span class="fstat-no" title="function not covered" >makeJsonBlob(t</span>ext: string): Blob {
+<span class="cstat-no" title="statement not covered" >  return new Blob([text], { type: 'application/json' });</span>
 }
 &nbsp;
-export function downloadJson(text: string, filename: string): void {
-  const blob = makeJsonBlob(text);
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() =&gt; URL.revokeObjectURL(url), 1000);
+export function <span class="fstat-no" title="function not covered" >downloadJson(t</span>ext: string, filename: string): void {
+  const blob = <span class="cstat-no" title="statement not covered" >makeJsonBlob(text);</span>
+  const url = <span class="cstat-no" title="statement not covered" >URL.createObjectURL(blob);</span>
+  const a = <span class="cstat-no" title="statement not covered" >document.createElement('a');</span>
+<span class="cstat-no" title="statement not covered" >  a.href = url;</span>
+<span class="cstat-no" title="statement not covered" >  a.download = filename;</span>
+<span class="cstat-no" title="statement not covered" >  document.body.appendChild(a);</span>
+<span class="cstat-no" title="statement not covered" >  a.click();</span>
+<span class="cstat-no" title="statement not covered" >  a.remove();</span>
+<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >  setTimeout(() =&gt; <span class="cstat-no" title="statement not covered" >U</span>RL.revokeObjectURL(url), 1</span>000);</span>
 }
 &nbsp;</pre></td></tr></table></pre>
 
@@ -136,7 +136,7 @@ export function downloadJson(text: string, filename: string): void {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-03T17:44:34.537Z
+                at 2026-06-03T18:38:45.386Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
