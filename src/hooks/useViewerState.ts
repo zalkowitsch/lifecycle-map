@@ -301,6 +301,7 @@ export function useViewerState() {
   return {
     state,
     loadFromExample,
+    loadFromText,
     loadFromUrl,
     handleFileDrop,
     handlePaste,

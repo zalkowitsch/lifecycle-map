@@ -13,7 +13,7 @@
 // transform on the wrapper keeps zoom interactive. The sticky layers stay
 // at natural size because they sit OUTSIDE the scaled wrapper.
 
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { CSSProperties, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 import { computeLayout } from '@/lib/layout';
 import { LAYOUT_CONSTANTS } from '@/lib/layout';
@@ -31,12 +31,21 @@ interface CanvasProps {
   onEdgeClick: (fromId: string, toId: string) => void;
   onEmptyClick: () => void;
   zoom: number;
+  onZoom?: (z: number) => void;  // optional zoom delta callback (pinch on canvas)
   L: (value: unknown) => string;
 }
 
 // Pan-on-drag threshold (px). Movement below this is treated as a click;
 // above, the pointerup handler swallows the click that would follow.
 const DRAG_THRESHOLD = 4;
+
+// Pinch-zoom: gesture is "complete" after this much idle time (ms).
+const PINCH_FLUSH_MS = 80;
+// Wheel delta → zoom factor sensitivity.
+const PINCH_SENSITIVITY = 0.01;
+// Clamp the final zoom value.
+const ZOOM_MIN = 0.1;
+const ZOOM_MAX = 3;
 
 export function Canvas({
   data,
@@ -45,6 +54,7 @@ export function Canvas({
   onEdgeClick,
   onEmptyClick,
   zoom,
+  onZoom,
   L,
 }: CanvasProps) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -80,6 +90,9 @@ export function Canvas({
     scrollTop: number;
     moved: boolean;
   } | null>(null);
+  // Set true by endPan when the user actually panned; consumed (and cleared)
+  // by the very next click on the wrap so we don't fire onEmptyClick.
+  const suppressNextClickRef = useRef<boolean>(false);
 
   const handlePointerDown = useCallback((ev: ReactPointerEvent<HTMLDivElement>) => {
     // Don't initiate pan when starting on an interactive element. We let the
@@ -128,6 +141,9 @@ export function Canvas({
     if (!st || !wrap) return;
     if (st.moved) {
       wrap.classList.remove(styles.panning ?? 'panning');
+      // Tell the synthetic click that follows pointerup to do nothing —
+      // otherwise pan-and-release on empty canvas closes the drawer.
+      suppressNextClickRef.current = true;
     }
     try {
       if (wrap.hasPointerCapture(ev.pointerId)) wrap.releasePointerCapture(ev.pointerId);
@@ -137,11 +153,58 @@ export function Canvas({
     panStateRef.current = null;
   }, []);
 
+  // ---- pinch zoom (trackpad pinch fires wheel + ctrlKey on all browsers) ----
+  // We attach a non-passive wheel listener directly so we can preventDefault()
+  // — React's onWheel is passive by default. The handler debounces deltaY for
+  // 80ms, then computes a new zoom factor and emits via onZoom().
+  //
+  // Origin is not adjusted (no scroll-position correction) — keeps the
+  // implementation simple at the cost of a small focus drift during zoom.
+  // Latest zoom is read through a ref so the effect doesn't re-bind on every
+  // zoom tick (which would lose the in-flight gesture).
+  const zoomRef = useRef(zoom);
+  useEffect(() => { zoomRef.current = zoom; }, [zoom]);
+  const onZoomRef = useRef(onZoom);
+  useEffect(() => { onZoomRef.current = onZoom; }, [onZoom]);
+
+  useEffect(() => {
+    const wrap = wrapRef.current;
+    if (!wrap) return;
+    let accum = 0;
+    let timer: number | null = null;
+    const flush = (): void => {
+      if (accum === 0) return;
+      const factor = Math.exp(-accum * PINCH_SENSITIVITY);
+      const next = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomRef.current * factor));
+      accum = 0;
+      timer = null;
+      onZoomRef.current?.(next);
+    };
+    const onWheel = (ev: WheelEvent): void => {
+      // Trackpad pinch maps to wheel with ctrlKey on macOS, Win, Linux.
+      // Ctrl+wheel on a real mouse is also a "zoom" gesture by convention.
+      if (!ev.ctrlKey) return;
+      ev.preventDefault();
+      accum += ev.deltaY;
+      if (timer !== null) window.clearTimeout(timer);
+      timer = window.setTimeout(flush, PINCH_FLUSH_MS);
+    };
+    wrap.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      wrap.removeEventListener('wheel', onWheel);
+      if (timer !== null) window.clearTimeout(timer);
+    };
+  }, []);
+
   // Empty-canvas click — fires only when the user didn't pan and clicked on
   // a non-interactive part of the SVG (lane bg, phase divider, empty space).
   const handleClick = useCallback(
-    (ev: ReactPointerEvent<HTMLDivElement>) => {
+    (ev: ReactMouseEvent<HTMLDivElement>) => {
       // If a drag actually happened, swallow the synthetic click.
+      if (suppressNextClickRef.current) {
+        suppressNextClickRef.current = false;
+        return;
+      }
       const target = ev.target as Element | null;
       if (target && target.closest && (target.closest('.node') || target.closest('.edge') || target.closest('.edge-hit'))) {
         return;
@@ -165,6 +228,7 @@ export function Canvas({
     <div
       ref={wrapRef}
       className={styles.canvasWrap}
+      data-canvas-wrap
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={endPan}

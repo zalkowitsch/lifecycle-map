@@ -13,6 +13,8 @@ import { CodeDrawer } from '@/components/CodeDrawer';
 import ShareModal from '@/components/ShareModal';
 import SearchModal from '@/components/SearchModal';
 import { VersionBadge } from '@/components/VersionBadge';
+import { ZoomControl } from '@/components/ZoomControl';
+import ShortcutsModal from '@/components/ShortcutsModal';
 import './App.css';
 
 function AppShell() {
@@ -26,6 +28,14 @@ function AppShell() {
     const stored = parseFloat(localStorage.getItem('lifecycle-map.zoom') ?? '1');
     return Number.isFinite(stored) && stored > 0 ? stored : 1;
   });
+  // Imperative setter used by the ZoomControl dropdown and Canvas pinch zoom.
+  // Clamps to the same [0.1, 3] range as zoomIn/zoomOut and persists to LS.
+  const setZoom = useCallback((z: number) => {
+    if (!Number.isFinite(z)) return;
+    const next = Math.max(0.1, Math.min(3, z));
+    setZoomValue(next);
+    localStorage.setItem('lifecycle-map.zoom', String(next));
+  }, []);
   const zoom = {
     zoom: zoomValue,
     reset: () => { setZoomValue(1); localStorage.setItem('lifecycle-map.zoom', '1'); },
@@ -61,6 +71,7 @@ function AppShell() {
   const [shareOpen, setShareOpen] = useState(false);
   const [codeOpen, setCodeOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   // Decrypt prompt state
   const [decryptPassword, setDecryptPassword] = useState('');
@@ -155,16 +166,37 @@ function AppShell() {
       setShareOpen(false);
       setCodeOpen(false);
       setSettingsOpen(false);
+      setShortcutsOpen(false);
       if (activeNodeId || activeEdge) handleCloseNodeDrawer();
     },
     onArrowLeft: walkPrev,
     onArrowRight: walkNext,
   });
 
+  // "?" key opens shortcuts modal
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === '?' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault();
+        setShortcutsOpen((o) => !o);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
   const handleCodeEdit = useCallback((idx: number, newText: string) => {
-    if (idx === 0) {
-      viewer.handlePaste(newText).catch(() => { /* parseSource already throws on error */ });
-    }
+    if (idx !== 0) return;
+    const existing = viewer.state.rawSources[0];
+    const existingSource = viewer.state.source;
+    if (!existing) return;
+    // Re-parse + re-render, preserving source identity (don't switch to 'paste').
+    viewer.loadFromText(
+      newText,
+      existing.name,
+      existingSource ?? 'paste',
+      viewer.state.slug ?? undefined,
+    ).catch(() => { /* parseSource already surfaces errors via state.error */ });
   }, [viewer]);
 
   const getJsonText = useCallback((): string => {
@@ -259,17 +291,15 @@ function AppShell() {
             </h1>
           </div>
           <div className="h-meta">
-            <span className="hide-mobile">
-              <kbd>←</kbd> <kbd>→</kbd> {t('header.walkHint').replace(/<\/?kbd>/g, '').replace(/<.*?>/g, '')}
-            </span>
             <a href="./docs/">{t('header.docs')}</a>
             <div className="h-actions">
+              <button className="h-icon-btn" title={(t('header.shortcuts.title') || 'Shortcuts') + ' (?)'} onClick={() => setShortcutsOpen(true)} aria-label="Shortcuts">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M8 14h8"/></svg>
+              </button>
               <button className="h-icon-btn" title={t('header.search.title')} onClick={() => setSearchOpen(true)} aria-label="Search">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.65" y2="16.65"/></svg>
               </button>
-              <button className="h-icon-btn zoom-trigger" title="Zoom" onClick={() => zoom.fitToScreen()}>
-                <span>{Math.round(zoom.zoom * 100)}%</span>
-              </button>
+              <ZoomControl zoom={zoom.zoom} onSetZoom={setZoom} onFitToScreen={zoom.fitToScreen} />
               <button className="h-icon-btn" title={t('header.code.title')} onClick={() => setCodeOpen(true)} aria-label="View source">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
               </button>
@@ -291,6 +321,7 @@ function AppShell() {
         onEdgeClick={handleEdgeClick}
         onEmptyClick={handleCloseNodeDrawer}
         zoom={zoom.zoom}
+        onZoom={setZoom}
         L={L}
       />
 
@@ -332,6 +363,11 @@ function AppShell() {
         data={data}
         L={L}
         onSelect={(id) => { handleNodeClick(id); setSearchOpen(false); }}
+      />
+
+      <ShortcutsModal
+        open={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
       />
 
       <VersionBadge />

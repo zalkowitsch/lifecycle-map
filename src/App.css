@@ -136,7 +136,24 @@ kbd {
 }
 
 @media (max-width: 768px) {
-  .h-eyebrow, .h-meta .hide-mobile { display: none; }
+  .main-header { padding: 8px 14px; }
+  .h-row { gap: 8px; }
+  .h-left { gap: 8px; min-width: 0; }
+  .h-eyebrow,
+  .h-meta .hide-mobile { display: none; }
   h1 { font-size: 14px; }
+  .h-meta { gap: 8px; }
+  .h-actions { gap: 4px; }
   .h-icon-btn { width: 32px; height: 32px; }
+  .h-icon-btn svg { width: 16px; height: 16px; }
+  .h-icon-btn.zoom-trigger {
+    min-width: 48px; padding: 0 6px; font-size: 10px;
+  }
+  /* No physical keyboard on touch — hide kbd hints */
+  kbd { display: none; }
+
+  /* Decrypt prompt — anchor near top, tighter padding */
+  .decrypt-prompt {
+    width: 92vw; padding: 22px 20px;
+  }
 }

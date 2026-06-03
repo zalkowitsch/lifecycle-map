@@ -187,4 +187,19 @@
     padding-top: 0;
     align-items: stretch;
   }
+  /* Drop scrim + blur for perf on touch */
+  .scrim {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .panel {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    max-height: 100vh;
+    border: none;
+    border-radius: 0;
+  }
+  .foot { display: none; }
 }

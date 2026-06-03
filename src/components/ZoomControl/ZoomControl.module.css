@@ -1,0 +1,37 @@
+.wrap { position: relative; display: inline-block; }
+.trigger {
+  width: auto; min-width: 56px;
+  padding: 0 10px;
+  background: var(--bg); border: 1px solid var(--rule);
+  color: var(--ink);
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border-radius: var(--button-radius);
+  height: 28px;
+  transition: background 140ms, color 140ms, border-color 140ms;
+}
+.trigger:hover {
+  background: var(--bg-2); border-color: var(--ink); color: var(--accent);
+}
+.menu {
+  position: absolute; top: calc(100% + 4px); right: 0;
+  background: var(--bg); border: 1px solid var(--ink);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  z-index: 50; min-width: 140px;
+  display: flex; flex-direction: column;
+  border-radius: var(--button-radius);
+}
+[data-mode="dark"] .menu { box-shadow: 0 12px 32px rgba(0,0,0,0.55); }
+.menu button {
+  background: var(--bg); border: none;
+  text-align: left; padding: 8px 14px;
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.04em; color: var(--ink);
+  cursor: pointer; line-height: 1.2;
+  border-bottom: 1px solid var(--rule-2);
+}
+.menu button:last-child { border-bottom: none; }
+.menu button:hover { background: var(--bg-2); color: var(--accent); }
+.menu button.active { background: var(--ink); color: var(--bg); }
+.separator { height: 1px; background: var(--ink); margin: 0; }

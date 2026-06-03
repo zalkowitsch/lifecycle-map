@@ -247,3 +247,17 @@
 :global(.arrow-downstream-fill) {
   fill: var(--downstream-stroke);
 }
+
+@media (max-width: 768px) {
+  /* Touch: no grab cursor (browsers ignore but keep it neat); keep native
+     horizontal scroll so the swim-lane reads like a panorama. */
+  .canvasWrap {
+    cursor: default;
+  }
+  .canvasWrap.panning {
+    cursor: default;
+  }
+  .canvasWrap.panning * {
+    cursor: default !important;
+  }
+}

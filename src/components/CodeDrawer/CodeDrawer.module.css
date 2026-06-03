@@ -148,3 +148,24 @@
   background: rgba(248, 113, 113, 0.08);
   color: #fca5a5; border-top-color: #fca5a5;
 }
+
+@media (max-width: 768px) {
+  .drawer {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-left: none !important;
+  }
+  .close {
+    top: 14px; right: 14px;
+    width: 36px; height: 36px; font-size: 18px;
+  }
+  .header { padding: 16px 18px 10px; }
+  .title { font-size: 22px; }
+  .tabs { font-size: 10px; }
+  .tab { padding: 8px 12px; font-size: 10px; }
+  .toolbar { padding: 8px 14px; flex-wrap: wrap; gap: 6px; }
+  .actionBtn { padding: 6px 10px; font-size: 9.5px; }
+  .editor { padding: 14px 16px 24px; font-size: 12px; }
+}

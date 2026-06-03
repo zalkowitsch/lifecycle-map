@@ -439,9 +439,18 @@
     left: 0 !important;
     transform: none !important;
     border-radius: 0;
+    border: none;
   }
 
   .modal.open {
     transform: none !important;
   }
+
+  /* Drop scrim entirely on mobile — modal is fullscreen */
+  .scrim {
+    display: none;
+  }
+
+  .header { padding: 16px 18px 12px; }
+  .body { padding: 0 16px 24px; }
 }
