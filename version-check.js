@@ -198,10 +198,30 @@
     document.body.appendChild(badge);
     requestAnimationFrame(() => badge.classList.add('show'));
 
-    badge.querySelector('.vb-refresh').addEventListener('click', () => {
-      // Hard refresh: bust query-string cache so HTML/JS/CSS reload from
-      // origin instead of the browser disk cache. Session state in
-      // sessionStorage survives this (it's keyed by the same origin).
+    badge.querySelector('.vb-refresh').addEventListener('click', async (ev) => {
+      const btn = ev.currentTarget;
+      const origText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '…';
+      // True hard refresh: explicitly re-fetch every same-origin asset
+      // with cache: 'reload' to invalidate the browser cache, then reload
+      // with a cache-busting query so the HTML itself isn't disk-cached.
+      // Session state in sessionStorage survives (same origin, same tab).
+      try {
+        const sameOriginAssets = Array.from(
+          document.querySelectorAll('script[src], link[rel="stylesheet"][href]')
+        )
+          .map(el => el.tagName === 'SCRIPT' ? el.src : el.href)
+          .filter(u => {
+            try { return new URL(u, window.location.href).origin === window.location.origin; }
+            catch (_) { return false; }
+          });
+        await Promise.all(
+          sameOriginAssets.map(u =>
+            fetch(u, { cache: 'reload', credentials: 'same-origin' }).catch(() => null)
+          )
+        );
+      } catch (_) { /* fall through to reload regardless */ }
       try {
         const url = new URL(window.location.href);
         url.searchParams.set('_v', Date.now().toString(36));
@@ -209,6 +229,8 @@
       } catch (_) {
         try { window.location.reload(); } catch (__) { window.location.href = window.location.href; }
       }
+      // restore in case reload is blocked (extension etc.)
+      setTimeout(() => { btn.disabled = false; btn.textContent = origText; }, 4000);
     });
     badge.querySelector('.vb-dismiss').addEventListener('click', () => {
       badge.classList.remove('show');
