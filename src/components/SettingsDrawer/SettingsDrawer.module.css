@@ -1,0 +1,115 @@
+/* SettingsDrawer styles — ported from index-legacy.html (.settings-drawer,
+   .settings-close, .settings-eyebrow/title, .settings-group, .theme-grid,
+   .theme-card, .mode-toggle, .lang-toggle, .settings-foot). */
+
+.drawer {
+  position: fixed; top: 0; right: 0; height: 100vh; width: 360px; max-width: 92vw;
+  background: var(--bg); border-left: 1px solid var(--ink);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.08);
+  z-index: 102; transform: translateX(100%);
+  transition: transform 320ms cubic-bezier(.22, .61, .36, 1);
+  overflow-y: auto;
+}
+:global([data-mode="dark"]) .drawer { box-shadow: -8px 0 32px rgba(0, 0, 0, 0.45); }
+.drawer.open { transform: translateX(0); }
+
+.close {
+  position: absolute; top: 18px; right: 20px;
+  background: none; border: 1px solid var(--ink);
+  width: 28px; height: 28px; cursor: pointer;
+  font-family: var(--font-mono); font-size: 14px;
+  line-height: 1; color: var(--ink); padding: 0; z-index: 2;
+  border-radius: var(--button-radius);
+}
+.close:hover { background: var(--ink); color: var(--bg); }
+
+.inner { padding: 28px 28px 60px; }
+
+.eyebrow {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--mute); margin-bottom: 6px;
+}
+.title {
+  font-family: var(--font-display); font-variation-settings: 'opsz' 96;
+  font-weight: 400; font-size: 28px; margin: 0 0 28px;
+  letter-spacing: var(--display-tracking); line-height: 1.05; color: var(--ink);
+}
+.title em { font-style: italic; color: var(--accent); font-weight: 300; }
+
+.group { margin-bottom: 28px; }
+.groupLabel {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--mute); margin-bottom: 10px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--rule-2);
+}
+
+.themeGrid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.themeCard {
+  border: 1px solid var(--rule); padding: 12px 12px 10px;
+  cursor: pointer; background: var(--bg); color: var(--ink);
+  border-radius: var(--button-radius);
+  transition: border-color 140ms, background 140ms;
+  text-align: left; font-family: inherit;
+}
+.themeCard:hover { border-color: var(--ink); }
+.themeCard.active { border-color: var(--accent); border-width: 1.5px; }
+.swatches {
+  display: flex; gap: 0; margin-bottom: 8px;
+  border: 1px solid var(--rule-2);
+}
+.swatch { flex: 1; aspect-ratio: 2 / 1; }
+.themeName {
+  font-family: var(--font-display); font-variation-settings: 'opsz' 24;
+  font-size: 14px; font-weight: 500; color: var(--ink);
+  letter-spacing: var(--display-tracking);
+}
+.themeDesc {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.08em; color: var(--mute);
+  margin-top: 2px;
+}
+
+.modeToggle {
+  display: flex; border: 1px solid var(--ink);
+  border-radius: var(--button-radius); overflow: hidden;
+}
+.modeToggle button {
+  flex: 1; background: var(--bg); border: none; padding: 10px 12px;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  cursor: pointer; color: var(--ink);
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: background 140ms, color 140ms;
+}
+.modeToggle button:not(:last-child) { border-right: 1px solid var(--ink); }
+.modeToggle button.active { background: var(--ink); color: var(--bg); }
+.modeToggle button svg { width: 12px; height: 12px; stroke-width: 1.5; }
+
+.langToggle {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--ink);
+  border-radius: var(--button-radius); overflow: hidden;
+}
+.langToggle button {
+  background: var(--bg); border: none; padding: 10px 14px;
+  font-family: var(--font-mono); font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-align: left;
+  cursor: pointer; color: var(--ink);
+  transition: background 140ms, color 140ms;
+}
+.langToggle button:not(:last-child) { border-bottom: 1px solid var(--rule-2); }
+.langToggle button:hover { background: var(--bg-2); }
+.langToggle button.active { background: var(--ink); color: var(--bg); }
+
+.foot {
+  margin-top: 36px; padding-top: 18px; border-top: 1px solid var(--rule-2);
+  font-family: var(--font-mono); font-size: 9.5px;
+  letter-spacing: 0.12em; color: var(--mute); line-height: 1.7;
+}
+.foot a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
+.foot a:hover { color: var(--accent); border-bottom-color: var(--accent); }

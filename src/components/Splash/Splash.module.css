@@ -1,0 +1,226 @@
+/* Splash — initial landing screen, ported from .splash styles in
+   index-legacy.html (~lines 817-884). */
+
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--bg);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.inner {
+  width: 100%;
+  max-width: 720px;
+  margin: auto;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 144;
+  font-weight: 400;
+  font-size: 42px;
+  margin: 0 0 8px;
+  letter-spacing: var(--display-tracking);
+  line-height: 1.05;
+  white-space: normal;
+  overflow: visible;
+  color: var(--ink);
+}
+
+.title em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--accent);
+}
+
+.sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mute);
+  margin-bottom: 28px;
+}
+
+.lead {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink-2);
+  margin-bottom: 32px;
+  max-width: 540px;
+}
+
+.ways {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.way {
+  border: 1px solid var(--ink);
+  padding: 16px 18px;
+  background: var(--bg);
+  cursor: pointer;
+  border-radius: var(--button-radius);
+  transition: background 140ms;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  display: block;
+}
+
+.way:hover {
+  background: var(--node-bg-hover);
+}
+
+.wayInert {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.wayInert:hover {
+  background: var(--bg);
+}
+
+.way h3 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+
+.way p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--mute);
+  line-height: 1.55;
+}
+
+.way code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--bg-2);
+  border: 1px solid var(--rule-2);
+  padding: 1px 5px;
+  border-radius: 1px;
+  color: var(--ink);
+}
+
+.pasteArea {
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.pasteHeading {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 240px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 12px;
+  background: var(--node-bg);
+  border: 1px solid var(--ink);
+  resize: vertical;
+  color: var(--ink);
+  box-sizing: border-box;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.button {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 16px;
+  border: 1px solid var(--ink);
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: var(--button-radius);
+}
+
+.button:hover {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.buttonPrimary {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.buttonPrimary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.err {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(185, 28, 28, 0.08);
+  border: 1px solid #b91c1c;
+  color: #b91c1c;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.footer {
+  margin-top: 32px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--mute);
+}
+
+.footer a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+
+.footer a:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .splash {
+    padding: 24px 16px;
+  }
+
+  .title {
+    font-size: 30px;
+  }
+
+  .ways {
+    gap: 10px;
+  }
+
+  .way {
+    padding: 12px 14px;
+  }
+}

@@ -1,0 +1,142 @@
+/* App shell + header — minimal port of the legacy header chrome */
+
+.app-shell {
+  height: 100vh;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+.main-header {
+  position: relative;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--ink);
+  background: var(--bg);
+  z-index: 5;
+  flex-shrink: 0;
+  transition: background 240ms ease, border-color 240ms ease;
+}
+.h-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.h-left { display: flex; align-items: baseline; gap: 14px; min-width: 0; flex: 1; }
+.h-eyebrow {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--mute); white-space: nowrap; flex-shrink: 0;
+}
+h1 {
+  font-family: var(--font-display); font-weight: 400;
+  font-variation-settings: 'opsz' 60;
+  font-size: 18px; margin: 0;
+  letter-spacing: var(--display-tracking);
+  line-height: 1.1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: var(--ink);
+}
+h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
+.h-meta {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.04em; color: var(--mute); line-height: 1.4;
+  white-space: nowrap; display: flex; gap: 14px; align-items: center;
+}
+.h-meta a {
+  color: var(--ink); text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+.h-meta a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+.h-actions { display: flex; gap: 6px; align-items: center; }
+.h-icon-btn {
+  background: var(--bg); border: 1px solid var(--rule);
+  width: 28px; height: 28px; padding: 0;
+  cursor: pointer; color: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--button-radius);
+  transition: background 140ms, border-color 140ms, color 140ms;
+}
+.h-icon-btn:hover {
+  background: var(--bg-2);
+  border-color: var(--ink);
+  color: var(--accent);
+}
+.h-icon-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.h-icon-btn svg {
+  width: 14px; height: 14px;
+  stroke-width: 1.5;
+  transition: transform 200ms ease;
+}
+.h-icon-btn:hover svg { transform: scale(1.1); }
+.h-icon-btn.zoom-trigger {
+  width: auto;
+  min-width: 56px;
+  padding: 0 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+kbd {
+  font-family: var(--font-mono); font-size: 9px;
+  padding: 0 4px; border: 1px solid var(--rule); border-radius: 2px;
+  background: var(--bg-2); color: var(--ink);
+}
+
+.loading {
+  display: flex; align-items: center; justify-content: center;
+  height: 100vh;
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--mute);
+  background: var(--bg);
+}
+
+/* Decrypt prompt */
+.decrypt-prompt-overlay {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.32);
+  z-index: 250;
+}
+.decrypt-prompt {
+  background: var(--bg); border: 1px solid var(--ink);
+  padding: 28px 32px; width: 460px; max-width: 92vw;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+  border-radius: var(--button-radius);
+}
+.decrypt-prompt h3 {
+  font-family: var(--font-display); font-variation-settings: 'opsz' 60;
+  font-size: 22px; font-weight: 400; margin: 0 0 6px;
+  letter-spacing: var(--display-tracking); color: var(--ink);
+}
+.decrypt-prompt h3 em { font-style: italic; color: var(--accent); font-weight: 300; }
+.decrypt-prompt p {
+  font-family: var(--font-mono); font-size: 10.5px;
+  letter-spacing: 0.06em; color: var(--mute); margin: 0 0 18px; line-height: 1.6;
+}
+.decrypt-prompt input {
+  width: 100%; padding: 12px 14px;
+  font-family: var(--font-mono); font-size: 14px;
+  border: 1px solid var(--ink); background: var(--node-bg); color: var(--ink);
+  margin-bottom: 14px; letter-spacing: 0.08em;
+  border-radius: var(--button-radius);
+}
+.decrypt-prompt input:focus { outline: none; border-color: var(--accent); }
+.decrypt-prompt .actions { display: flex; gap: 8px; }
+.decrypt-prompt button {
+  flex: 1; padding: 10px 14px;
+  font-family: var(--font-mono); font-size: 10.5px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  border: 1px solid var(--ink); background: var(--bg); color: var(--ink);
+  cursor: pointer; border-radius: var(--button-radius);
+}
+.decrypt-prompt button.primary { background: var(--ink); color: var(--bg); }
+.decrypt-prompt button.primary:hover { background: var(--accent); border-color: var(--accent); }
+.decrypt-prompt button:hover:not(.primary) { background: var(--bg-2); }
+.decrypt-prompt .err {
+  color: #b91c1c; font-family: var(--font-mono); font-size: 11px;
+  margin-bottom: 12px; min-height: 16px;
+}
+
+@media (max-width: 768px) {
+  .h-eyebrow, .h-meta .hide-mobile { display: none; }
+  h1 { font-size: 14px; }
+  .h-icon-btn { width: 32px; height: 32px; }
+}

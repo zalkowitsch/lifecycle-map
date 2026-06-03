@@ -1,0 +1,249 @@
+/*
+ * Canvas styles — ported from index-legacy.html (lines ~155-270).
+ * Layout: a scrollable wrap holds (1) sticky corner / col / row layers
+ * and (2) a `.canvas-content` div that gets CSS `transform: scale(zoom)`
+ * applied. The sticky layers live OUTSIDE the scaled wrapper so their
+ * SVG text stays at natural size and the sticky positioning math doesn't
+ * fight the transform.
+ *
+ * CSS-module class names lose the global `.canvas-wrap` etc style — but
+ * we still want SVG element classes (`.node`, `.edge`, `.node-rect`, ...)
+ * to be globally addressable so the rest of the app's CSS variables apply.
+ * That's why we use both module-scoped wrapper classes AND `:global(...)`
+ * for SVG-internal selectors.
+ */
+
+.canvasWrap {
+  position: relative;
+  height: 100%;
+  overflow: auto;
+  background: var(--bg);
+  cursor: grab;
+  overscroll-behavior: contain;
+  transform: translateZ(0);
+  transition: background 240ms ease;
+}
+.canvasWrap.panning {
+  cursor: grabbing;
+}
+.canvasWrap.panning * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+
+/* The wrapper that gets scaled by zoom. Holds the main SVG. */
+.canvasContent {
+  position: relative;
+  transform-origin: 0 0;
+  /* width/height set inline so layout reflects scaled size */
+}
+
+.canvasContent svg {
+  display: block;
+  overflow: visible;
+}
+
+/* Sticky layers — same approach as legacy. */
+.stickyLayer {
+  position: sticky;
+  pointer-events: none;
+  z-index: 3;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+.stickyRow {
+  top: 0;
+  height: 0;
+  z-index: 4;
+}
+.stickyCol {
+  left: 0;
+  width: 0;
+  z-index: 3;
+}
+.stickyCorner {
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  z-index: 5;
+}
+.stickyLayer > svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: var(--bg);
+  pointer-events: none;
+}
+
+/* SVG element classes — kept global so they match what the layout/router
+ * builds and what themes.css variables expect. */
+:global(.lane-edge) {
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+:global(.lane-divider) {
+  stroke: var(--rule-2);
+  stroke-width: 1;
+}
+:global(.phase-divider) {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+:global(.subphase-divider) {
+  stroke: var(--rule-2);
+  stroke-width: 1;
+  stroke-dasharray: 1 4;
+}
+
+:global(.node) {
+  cursor: pointer;
+}
+:global(.node-rect) {
+  fill: var(--node-bg);
+  stroke: var(--ink);
+  stroke-width: 1;
+  cursor: pointer;
+  rx: var(--node-radius);
+  ry: var(--node-radius);
+  transition: fill 160ms ease, stroke-width 160ms ease;
+}
+:global(.node:hover .node-rect) {
+  stroke-width: 1.5;
+  fill: var(--node-bg-hover);
+}
+:global(.node.active .node-rect) {
+  fill: var(--node-active-bg);
+  stroke: var(--accent);
+  stroke-width: 1.8;
+}
+:global(.node.upstream .node-rect) {
+  fill: var(--upstream-bg);
+  stroke: var(--upstream-stroke);
+}
+:global(.node.downstream .node-rect) {
+  fill: var(--downstream-bg);
+  stroke: var(--downstream-stroke);
+}
+:global(.node-title) {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 14;
+  font-size: 14px;
+  font-weight: 500;
+  fill: var(--ink);
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: var(--display-tracking);
+}
+:global(.node-sub) {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.03em;
+  fill: var(--mute);
+  pointer-events: none;
+  user-select: none;
+}
+:global(.node-id) {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  fill: var(--mute);
+  opacity: 0.7;
+  pointer-events: none;
+  user-select: none;
+  text-transform: uppercase;
+}
+
+:global(.edge) {
+  stroke: var(--ink-2);
+  stroke-width: 1;
+  fill: none;
+  pointer-events: stroke;
+  opacity: 0.62;
+  cursor: pointer;
+  transition: stroke 140ms, opacity 140ms, stroke-width 140ms;
+}
+:global(.edge:hover) {
+  stroke: var(--accent);
+  opacity: 1;
+  stroke-width: 1.6;
+}
+:global(.edge.backward) {
+  stroke: var(--mute);
+  stroke-dasharray: 3 4;
+  opacity: 0.5;
+}
+:global(.edge.upstream) {
+  stroke: var(--upstream-stroke);
+  opacity: 1;
+  stroke-width: 1.7;
+  stroke-dasharray: none;
+}
+:global(.edge.downstream) {
+  stroke: var(--downstream-stroke);
+  opacity: 1;
+  stroke-width: 1.7;
+  stroke-dasharray: none;
+}
+:global(.edge-hit) {
+  stroke: transparent;
+  stroke-width: 16;
+  fill: none;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+:global(.edge.active) {
+  stroke: var(--accent);
+  stroke-width: 2;
+  opacity: 1;
+  stroke-dasharray: none;
+}
+
+:global(.phase-roman) {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-variation-settings: 'opsz' 144;
+  font-weight: 300;
+  font-size: calc(22px * var(--text-scale, 1));
+  fill: var(--accent);
+}
+:global(.phase-label) {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: calc(10px * var(--text-scale, 1));
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  fill: var(--ink);
+}
+:global(.phase-sub) {
+  font-family: var(--font-mono);
+  font-size: calc(8px * var(--text-scale, 1));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  fill: var(--mute);
+}
+:global(.lane-label) {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 18;
+  font-size: calc(11.5px * var(--text-scale, 1));
+  font-weight: 500;
+  fill: var(--ink);
+  letter-spacing: var(--display-tracking);
+}
+:global(.lane-sub) {
+  font-family: var(--font-mono);
+  font-size: calc(8px * var(--text-scale, 1));
+  letter-spacing: 0.06em;
+  fill: var(--mute);
+}
+
+/* arrow marker fills (defs are inline in Canvas.tsx) */
+:global(.arrow-fill) {
+  fill: var(--ink-2);
+}
+:global(.arrow-upstream-fill) {
+  fill: var(--upstream-stroke);
+}
+:global(.arrow-downstream-fill) {
+  fill: var(--downstream-stroke);
+}

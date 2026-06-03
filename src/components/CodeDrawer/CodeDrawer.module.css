@@ -1,0 +1,150 @@
+/* CodeDrawer styles — ported from index-legacy.html (.code-drawer,
+   .code-header, .code-tabs/.code-tab, .code-toolbar, .code-body, .code-error,
+   .code-status). */
+
+.drawer {
+  position: fixed; top: 0; right: 0; height: 100vh;
+  width: 720px; max-width: 94vw;
+  background: var(--bg); border-left: 1px solid var(--ink);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.08);
+  z-index: 102; transform: translateX(100%);
+  transition: transform 320ms cubic-bezier(.22, .61, .36, 1);
+  display: flex; flex-direction: column;
+}
+:global([data-mode="dark"]) .drawer { box-shadow: -8px 0 32px rgba(0, 0, 0, 0.45); }
+.drawer.open { transform: translateX(0); }
+
+.close {
+  position: absolute; top: 18px; right: 20px;
+  background: none; border: 1px solid var(--ink);
+  width: 28px; height: 28px; cursor: pointer;
+  font-family: var(--font-mono); font-size: 14px; line-height: 1;
+  color: var(--ink); padding: 0; z-index: 2;
+  border-radius: var(--button-radius);
+}
+.close:hover { background: var(--ink); color: var(--bg); }
+
+.header {
+  padding: 22px 28px 14px;
+  border-bottom: 1px solid var(--rule-2);
+  background: var(--bg-2);
+  flex-shrink: 0;
+}
+.eyebrow {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--mute); margin-bottom: 4px;
+}
+.title {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 96;
+  font-weight: 400; font-size: 26px; margin: 0;
+  letter-spacing: var(--display-tracking); line-height: 1.05;
+  color: var(--ink);
+}
+.title em { font-style: italic; color: var(--accent); font-weight: 300; }
+
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--ink);
+  background: var(--bg);
+  flex-shrink: 0;
+  scrollbar-width: thin;
+}
+.tab {
+  flex-shrink: 0;
+  padding: 10px 18px;
+  background: var(--bg);
+  border: none;
+  border-right: 1px solid var(--rule-2);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--mute);
+  transition: background 140ms, color 140ms, border-color 140ms;
+}
+.tab:hover { background: var(--bg-2); color: var(--ink); }
+.tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+  background: var(--bg-2);
+}
+.langChip {
+  font-size: 8.5px;
+  margin-left: 6px; padding: 1px 5px;
+  border: 1px solid var(--rule); border-radius: 2px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+}
+
+.toolbar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--rule-2);
+  background: var(--bg);
+  flex-shrink: 0;
+}
+.actionBtn {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  background: var(--bg); color: var(--ink);
+  border: 1px solid var(--ink);
+  padding: 6px 12px; cursor: pointer;
+  border-radius: var(--button-radius);
+  transition: background 140ms, color 140ms;
+}
+.actionBtn:hover:not(:disabled) { background: var(--ink); color: var(--bg); }
+.actionBtn:disabled { opacity: 0.3; cursor: not-allowed; }
+.actionBtn:disabled:hover { background: var(--bg); color: var(--ink); }
+.toolbarSep {
+  width: 1px; height: 18px; background: var(--rule);
+  align-self: center;
+}
+.meta {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.08em; color: var(--mute);
+  margin-left: auto;
+}
+.status {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.06em; color: var(--mute);
+}
+.status.saved   { color: var(--downstream-stroke); }
+.status.dirty   { color: var(--mute); }
+.status.error   { color: #b91c1c; }
+:global([data-mode="dark"]) .status.error { color: #fca5a5; }
+
+.body {
+  flex: 1; min-height: 0; display: flex; flex-direction: column;
+  background: var(--node-bg);
+  position: relative;
+}
+.editor {
+  flex: 1; min-height: 0;
+  width: 100%; border: none; outline: none;
+  background: transparent; color: var(--ink);
+  padding: 18px 24px 32px;
+  font-family: var(--font-mono); font-size: 12px;
+  line-height: 1.55;
+  resize: none;
+  tab-size: 2;
+  white-space: pre;
+}
+.editor::placeholder { color: var(--mute); font-style: italic; }
+
+.error {
+  flex-shrink: 0;
+  padding: 10px 18px;
+  background: rgba(185, 28, 28, 0.08);
+  border-top: 1px solid #b91c1c;
+  font-family: var(--font-mono); font-size: 11px;
+  line-height: 1.5;
+  color: #b91c1c;
+  max-height: 30%;
+  overflow-y: auto;
+}
+:global([data-mode="dark"]) .error {
+  background: rgba(248, 113, 113, 0.08);
+  color: #fca5a5; border-top-color: #fca5a5;
+}
