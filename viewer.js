@@ -98,6 +98,9 @@
       'header.code.title':       'View source',
       'header.zoom.title':       'Zoom',
       'header.zoom.fit':         'Fit to screen',
+      'header.search.title':     'Search (⌘K)',
+      'search.placeholder':      'Search nodes…',
+      'search.empty':            'No nodes match.',
       'code.eyebrow':            'source',
       'code.title':              'Code <em>· raw source</em>',
       'code.copy':               'Copy',
@@ -146,6 +149,9 @@
       'header.code.title':       'Ver código-fonte',
       'header.zoom.title':       'Zoom',
       'header.zoom.fit':         'Caber na tela',
+      'header.search.title':     'Buscar (⌘K)',
+      'search.placeholder':      'Buscar nodes…',
+      'search.empty':            'Nenhum node encontrado.',
       'code.eyebrow':            'código',
       'code.title':              'Código <em>· fonte bruta</em>',
       'code.copy':               'Copiar',
@@ -194,6 +200,9 @@
       'header.code.title':       'Ver código fuente',
       'header.zoom.title':       'Zoom',
       'header.zoom.fit':         'Ajustar a la pantalla',
+      'header.search.title':     'Buscar (⌘K)',
+      'search.placeholder':      'Buscar nodes…',
+      'search.empty':            'Ningún node coincide.',
       'code.eyebrow':            'código',
       'code.title':              'Código <em>· fuente cruda</em>',
       'code.copy':               'Copiar',
@@ -339,6 +348,7 @@
   initSettingsDrawer();
   initCodeDrawer();
   initZoomControl();
+  initSearch();
   initDragAndDrop();
   // Translate the UI to whichever language is saved/detected.
   applyUILang(CURRENT_UI_LANG, false);
@@ -552,6 +562,137 @@
       }, { passive: false });
     }
     updateZoomLabel();
+  }
+
+  // -------- search (Cmd+K) --------
+  let SEARCH_RESULTS = [];
+  let SEARCH_ACTIVE_IDX = 0;
+  function initSearch() {
+    const btn = document.getElementById('search-btn');
+    const modal = document.getElementById('search-modal');
+    const input = document.getElementById('search-input');
+    const scrim = document.getElementById('search-scrim');
+    if (!btn || !modal || !input) return;
+
+    input.placeholder = t('search.placeholder');
+
+    btn.addEventListener('click', () => openSearch());
+    scrim.addEventListener('click', () => closeSearch());
+
+    document.addEventListener('keydown', (e) => {
+      // Cmd/Ctrl + K opens search
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        if (modal.classList.contains('open')) closeSearch();
+        else openSearch();
+        return;
+      }
+      if (!modal.classList.contains('open')) return;
+      if (e.key === 'Escape') { e.preventDefault(); closeSearch(); }
+      else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (SEARCH_RESULTS.length) {
+          SEARCH_ACTIVE_IDX = Math.min(SEARCH_ACTIVE_IDX + 1, SEARCH_RESULTS.length - 1);
+          updateSearchActive();
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (SEARCH_RESULTS.length) {
+          SEARCH_ACTIVE_IDX = Math.max(SEARCH_ACTIVE_IDX - 1, 0);
+          updateSearchActive();
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const r = SEARCH_RESULTS[SEARCH_ACTIVE_IDX];
+        if (r) selectSearchResult(r.id);
+      }
+    });
+
+    input.addEventListener('input', () => runSearch(input.value));
+  }
+  function openSearch() {
+    const modal = document.getElementById('search-modal');
+    const input = document.getElementById('search-input');
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    input.value = '';
+    SEARCH_ACTIVE_IDX = 0;
+    runSearch('');
+    setTimeout(() => input.focus(), 0);
+  }
+  function closeSearch() {
+    const modal = document.getElementById('search-modal');
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+  function runSearch(query) {
+    const list = document.getElementById('search-results');
+    if (!list) return;
+    if (!CURRENT_DATA || !CURRENT_DATA.nodes) {
+      list.innerHTML = `<div class="search-empty">${escapeHtml(t('search.empty'))}</div>`;
+      SEARCH_RESULTS = [];
+      return;
+    }
+    const q = (query || '').trim().toLowerCase();
+    const all = CURRENT_DATA.nodes.map(n => ({
+      id: n.id,
+      title: L(n.title) || n.id,
+      sub: L(n.sub) || '',
+      objective: L(n.objective) || '',
+      laneLabel: (CURRENT_DATA.lanes.find(l => l.id === n.lane) ? L(CURRENT_DATA.lanes.find(l => l.id === n.lane).label) : ''),
+      phaseLabel: (CURRENT_DATA.phases.find(p => p.id === n.phase) ? L(CURRENT_DATA.phases.find(p => p.id === n.phase).label) : ''),
+    }));
+    const matches = !q ? all : all.filter(n => {
+      const hay = (n.id + ' ' + n.title + ' ' + n.sub + ' ' + n.objective + ' ' + n.laneLabel + ' ' + n.phaseLabel).toLowerCase();
+      return hay.includes(q);
+    });
+    SEARCH_RESULTS = matches.slice(0, 50);
+    SEARCH_ACTIVE_IDX = 0;
+    if (!SEARCH_RESULTS.length) {
+      list.innerHTML = `<div class="search-empty">${escapeHtml(t('search.empty'))}</div>`;
+      return;
+    }
+    list.innerHTML = SEARCH_RESULTS.map((n, i) => `
+      <div class="search-result ${i === 0 ? 'active' : ''}" data-id="${escapeHtml(n.id)}" data-idx="${i}" role="option">
+        <div class="search-result-title">${highlightMatch(n.title, q)}</div>
+        <div class="search-result-meta">
+          <span class="id-chip">${escapeHtml(n.id)}</span>
+          ${n.laneLabel ? ' · ' + escapeHtml(n.laneLabel) : ''}
+          ${n.phaseLabel ? ' · ' + escapeHtml(n.phaseLabel) : ''}
+          ${n.sub ? ' · ' + highlightMatch(n.sub, q) : ''}
+        </div>
+      </div>
+    `).join('');
+    list.querySelectorAll('.search-result').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        SEARCH_ACTIVE_IDX = parseInt(el.dataset.idx, 10);
+        updateSearchActive();
+      });
+      el.addEventListener('click', () => selectSearchResult(el.dataset.id));
+    });
+  }
+  function highlightMatch(text, q) {
+    if (!q) return escapeHtml(text);
+    const escapedText = escapeHtml(text);
+    const idx = text.toLowerCase().indexOf(q);
+    if (idx < 0) return escapedText;
+    // re-find in escaped text — easier: split original then escape each part
+    const before = escapeHtml(text.slice(0, idx));
+    const match = escapeHtml(text.slice(idx, idx + q.length));
+    const after = escapeHtml(text.slice(idx + q.length));
+    return `${before}<mark>${match}</mark>${after}`;
+  }
+  function updateSearchActive() {
+    const items = document.querySelectorAll('.search-result');
+    items.forEach((el, i) => el.classList.toggle('active', i === SEARCH_ACTIVE_IDX));
+    const activeEl = items[SEARCH_ACTIVE_IDX];
+    if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+  }
+  function selectSearchResult(nodeId) {
+    closeSearch();
+    if (typeof window.__lifecycleSetActive === 'function') {
+      window.__lifecycleSetActive(nodeId);
+    }
   }
 
   // -------- code drawer (raw source viewer) --------
