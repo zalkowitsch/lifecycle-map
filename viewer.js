@@ -314,7 +314,10 @@
     z = Math.max(0.1, Math.min(4, z));
     CURRENT_ZOOM = z;
     if (persist) localStorage.setItem(STORAGE_ZOOM, String(z));
-    // Re-render: SVG widths/heights need to be recomputed against the new zoom
+    // text-scale = 1/zoom, clamped so labels never blow up nor go invisible
+    // when the user zooms far in or out.
+    const textScale = Math.max(0.65, Math.min(1.8, 1 / z));
+    document.documentElement.style.setProperty('--text-scale', String(textScale));
     if (CURRENT_DATA) rerenderForTheme();
     updateZoomLabel();
   }
@@ -576,16 +579,16 @@
     });
     // Pinch on the canvas zooms the canvas (not the whole page).
     // macOS trackpad pinch dispatches `wheel` with ctrlKey=true and small
-    // deltaY. Strategy:
-    //   - During pinch: cheap CSS transform around the POINTER position
-    //     (so zoom focuses on what the user is hovering over)
-    //   - 150ms after pinch idles: commit the final zoom + adjust
-    //     scroll so the same content point stays under the pointer
+    // deltaY. We accumulate the gesture and ONLY re-render at the end
+    // (no live CSS transform preview) — the live preview deformed sticky
+    // headers in ugly ways while the gesture was in flight. The pinch
+    // feels less "live" but the result is clean: prev frame → final
+    // zoom in one snap, no intermediate broken states.
     const wrap = document.getElementById('canvas-wrap');
     if (wrap) {
       let pinchScale = 1;
       let pinchTimer = null;
-      let pinchOrigin = null;  // { x, y } in content coords (pre-zoom)
+      let pinchOrigin = null;
       function getFitZoom() {
         if (!__PH_BORDER_DIMS) return 0.05;
         const { SVG_W, SVG_H } = __PH_BORDER_DIMS;
@@ -601,14 +604,9 @@
         const origin = pinchOrigin;
         pinchScale = 1;
         pinchOrigin = null;
-        // Clear preview transform
-        document.querySelectorAll('#canvas-wrap > *').forEach(el => {
-          el.style.transform = '';
-          el.style.transformOrigin = '';
-        });
         applyZoom(next);
-        // After re-render, scroll so the focal content point lands at the
-        // same viewport pixel where it was before the zoom.
+        // Adjust scroll so the focal content point lands under the same
+        // viewport pixel after the re-render.
         requestAnimationFrame(() => {
           const w = document.getElementById('canvas-wrap');
           if (!w) return;
@@ -619,8 +617,6 @@
       wrap.addEventListener('wheel', (e) => {
         if (!e.ctrlKey) return;
         e.preventDefault();
-        // Lock the focal point at the first pinch frame so the preview
-        // stays consistent through the gesture.
         if (!pinchOrigin) {
           const rect = wrap.getBoundingClientRect();
           const viewportX = e.clientX - rect.left;
@@ -636,16 +632,8 @@
         const minScale = fit / CURRENT_ZOOM;
         const maxScale = 3 / CURRENT_ZOOM;
         pinchScale = Math.max(minScale, Math.min(maxScale, pinchScale * factor));
-        // Live preview: scale around the pointer position so the user's
-        // focal point stays under the cursor during the gesture.
-        const ox = pinchOrigin.contentX + 'px';
-        const oy = pinchOrigin.contentY + 'px';
-        document.querySelectorAll('#canvas-wrap > *').forEach(el => {
-          el.style.transformOrigin = ox + ' ' + oy;
-          el.style.transform = `scale(${pinchScale})`;
-        });
         if (pinchTimer) clearTimeout(pinchTimer);
-        pinchTimer = setTimeout(commitPinch, 150);
+        pinchTimer = setTimeout(commitPinch, 80);
       }, { passive: false });
     }
     updateZoomLabel();

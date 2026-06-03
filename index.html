@@ -236,26 +236,33 @@
   .edge-hit { stroke: transparent; stroke-width: 16; fill: none; pointer-events: stroke; cursor: pointer; }
   .edge.active { stroke: var(--accent); stroke-width: 2; opacity: 1; stroke-dasharray: none; }
 
+  /* Sticky-area text uses --text-scale (1/zoom, clamped) so the
+     phase header + lane label typography stays roughly the same
+     apparent size at any zoom level — readable when zoomed-out,
+     not gigantic when zoomed-in. */
   .phase-roman {
     font-family: var(--font-display); font-style: italic;
     font-variation-settings: 'opsz' 144; font-weight: 300;
-    font-size: 22px; fill: var(--accent);
+    font-size: calc(22px * var(--text-scale, 1)); fill: var(--accent);
   }
   .phase-label {
-    font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+    font-family: var(--font-mono); font-weight: 600;
+    font-size: calc(10px * var(--text-scale, 1));
     letter-spacing: 0.22em; text-transform: uppercase; fill: var(--ink);
   }
   .phase-sub {
-    font-family: var(--font-mono); font-size: 8px;
+    font-family: var(--font-mono);
+    font-size: calc(8px * var(--text-scale, 1));
     letter-spacing: 0.14em; text-transform: uppercase; fill: var(--mute);
   }
   .lane-label {
     font-family: var(--font-display); font-variation-settings: 'opsz' 18;
-    font-size: 11.5px; font-weight: 500; fill: var(--ink);
+    font-size: calc(11.5px * var(--text-scale, 1)); font-weight: 500; fill: var(--ink);
     letter-spacing: var(--display-tracking);
   }
   .lane-sub {
-    font-family: var(--font-mono); font-size: 8px;
+    font-family: var(--font-mono);
+    font-size: calc(8px * var(--text-scale, 1));
     letter-spacing: 0.06em; fill: var(--mute);
   }
   .lane-divider { stroke: var(--rule-2); stroke-width: 1; }
