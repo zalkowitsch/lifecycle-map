@@ -106,6 +106,11 @@
       'code.copy':               'Copy',
       'code.download':           'Download',
       'code.empty':              'No source available for this map.',
+      'code.undo':               'Undo (⌘Z)',
+      'code.redo':               'Redo (⌘⇧Z)',
+      'code.status.saved':       'applied',
+      'code.status.editing':     'editing',
+      'code.status.error':       'invalid — keeping previous',
       'loading':                 'Loading lifecycle data…',
       'splash.title':            'lifecycle-map <em>— viewer</em>',
       'splash.eyebrow':          'interactive swim-lane lifecycle viewer',
@@ -157,6 +162,11 @@
       'code.copy':               'Copiar',
       'code.download':           'Baixar',
       'code.empty':              'Nenhum código-fonte disponível para este mapa.',
+      'code.undo':               'Desfazer (⌘Z)',
+      'code.redo':               'Refazer (⌘⇧Z)',
+      'code.status.saved':       'aplicado',
+      'code.status.editing':     'editando',
+      'code.status.error':       'inválido — mantendo anterior',
       'loading':                 'Carregando dados do lifecycle…',
       'splash.title':            'lifecycle-map <em>— viewer</em>',
       'splash.eyebrow':          'visualizador interativo de lifecycle em swim-lane',
@@ -208,6 +218,11 @@
       'code.copy':               'Copiar',
       'code.download':           'Descargar',
       'code.empty':              'No hay código fuente disponible para este mapa.',
+      'code.undo':               'Deshacer (⌘Z)',
+      'code.redo':               'Rehacer (⌘⇧Z)',
+      'code.status.saved':       'aplicado',
+      'code.status.editing':     'editando',
+      'code.status.error':       'inválido — manteniendo anterior',
       'loading':                 'Cargando datos del lifecycle…',
       'splash.title':            'lifecycle-map <em>— viewer</em>',
       'splash.eyebrow':          'visor interactivo de lifecycle en swim-lane',
@@ -697,23 +712,34 @@
 
   // -------- code drawer (raw source viewer) --------
   let CURRENT_CODE_TAB = 0;
+  // Per-tab undo/redo stacks. Each entry is a text snapshot.
+  const UNDO_STACK = {};  // tabIdx → [snapshots]
+  const REDO_STACK = {};  // tabIdx → [snapshots]
+  let __codeDebounce = null;
   function initCodeDrawer() {
     const btn = document.getElementById('code-btn');
     const drawer = document.getElementById('code-drawer');
     const closeBtn = document.getElementById('code-close');
-    if (!btn || !drawer) return;
+    const editor = document.getElementById('code-editor');
+    if (!btn || !drawer || !editor) return;
     btn.addEventListener('click', () => openCodeDrawer());
     if (closeBtn) closeBtn.addEventListener('click', () => closeCodeDrawer());
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && drawer.classList.contains('open')) closeCodeDrawer();
+      if (e.key === 'Escape' && drawer.classList.contains('open') &&
+          document.activeElement !== editor) closeCodeDrawer();
+      // Undo/redo when focused in editor
+      if (document.activeElement === editor) {
+        if ((e.metaKey || e.ctrlKey) && (e.key === 'z' || e.key === 'Z')) {
+          e.preventDefault();
+          if (e.shiftKey) codeRedo(); else codeUndo();
+        }
+      }
     });
     document.getElementById('code-copy').addEventListener('click', async () => {
       const src = CURRENT_SOURCES[CURRENT_CODE_TAB];
       if (!src) return;
-      try {
-        await navigator.clipboard.writeText(src.text);
-        flashCopyButton();
-      } catch (_) {}
+      try { await navigator.clipboard.writeText(src.text); flashCopyButton(); }
+      catch (_) {}
     });
     document.getElementById('code-download').addEventListener('click', () => {
       const src = CURRENT_SOURCES[CURRENT_CODE_TAB];
@@ -725,7 +751,132 @@
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     });
+    document.getElementById('code-undo').addEventListener('click', () => codeUndo());
+    document.getElementById('code-redo').addEventListener('click', () => codeRedo());
+    editor.addEventListener('input', () => {
+      const idx = CURRENT_CODE_TAB;
+      const src = CURRENT_SOURCES[idx];
+      if (!src) return;
+      setStatus('dirty');
+      // debounce parse + apply
+      if (__codeDebounce) clearTimeout(__codeDebounce);
+      __codeDebounce = setTimeout(() => tryApplyEdit(editor.value, idx, true), 600);
+    });
     window.__lifecycleRenderCodeTabs = renderCodeTabs;
+  }
+  function tryApplyEdit(newText, tabIdx, pushUndo) {
+    const src = CURRENT_SOURCES[tabIdx];
+    if (!src) return;
+    const prevText = src.text;
+    if (newText === prevText) { setStatus('saved'); return; }
+    let parsed;
+    try {
+      parsed = parseSource(newText, src.name);
+    } catch (e) {
+      showCodeError(e.message || String(e));
+      setStatus('error');
+      return;
+    }
+    // sanity: must be a plain object with at least lanes/phases/nodes/edges (or
+    // we'd render garbage). For the root source only.
+    if (!parsed || typeof parsed !== 'object') {
+      showCodeError('Top-level must be an object.');
+      setStatus('error');
+      return;
+    }
+    hideCodeError();
+    // push prev onto undo, clear redo
+    if (pushUndo) {
+      (UNDO_STACK[tabIdx] ||= []).push(prevText);
+      if (UNDO_STACK[tabIdx].length > 50) UNDO_STACK[tabIdx].shift();
+      REDO_STACK[tabIdx] = [];
+    }
+    src.text = newText;
+    // If this is the root source (idx 0), re-render the map.
+    if (tabIdx === 0) {
+      const activeBefore = (typeof window.__lifecycleGetActive === 'function')
+        ? window.__lifecycleGetActive() : null;
+      try {
+        loadDataAndRender(parsed);
+        // restore active node if still present
+        if (activeBefore && CURRENT_DATA && CURRENT_DATA.nodes.some(n => n.id === activeBefore)) {
+          requestAnimationFrame(() => {
+            if (typeof window.__lifecycleSetActive === 'function') {
+              window.__lifecycleSetActive(activeBefore);
+            }
+          });
+        }
+      } catch (e) {
+        showCodeError('Render failed: ' + (e.message || e));
+        setStatus('error');
+        // revert
+        src.text = prevText;
+        return;
+      }
+    }
+    setStatus('saved');
+    updateUndoRedoButtons();
+    updateCodeMeta();
+  }
+  function codeUndo() {
+    const idx = CURRENT_CODE_TAB;
+    const stack = UNDO_STACK[idx];
+    const src = CURRENT_SOURCES[idx];
+    if (!src || !stack || !stack.length) return;
+    const prev = stack.pop();
+    (REDO_STACK[idx] ||= []).push(src.text);
+    const editor = document.getElementById('code-editor');
+    editor.value = prev;
+    tryApplyEdit(prev, idx, false);
+    setStatus('saved');
+    updateUndoRedoButtons();
+  }
+  function codeRedo() {
+    const idx = CURRENT_CODE_TAB;
+    const stack = REDO_STACK[idx];
+    const src = CURRENT_SOURCES[idx];
+    if (!src || !stack || !stack.length) return;
+    const next = stack.pop();
+    (UNDO_STACK[idx] ||= []).push(src.text);
+    const editor = document.getElementById('code-editor');
+    editor.value = next;
+    tryApplyEdit(next, idx, false);
+    setStatus('saved');
+    updateUndoRedoButtons();
+  }
+  function updateUndoRedoButtons() {
+    const idx = CURRENT_CODE_TAB;
+    const undoBtn = document.getElementById('code-undo');
+    const redoBtn = document.getElementById('code-redo');
+    if (undoBtn) undoBtn.disabled = !(UNDO_STACK[idx] && UNDO_STACK[idx].length);
+    if (redoBtn) redoBtn.disabled = !(REDO_STACK[idx] && REDO_STACK[idx].length);
+  }
+  function showCodeError(msg) {
+    const el = document.getElementById('code-error');
+    if (!el) return;
+    el.textContent = msg;
+    el.hidden = false;
+  }
+  function hideCodeError() {
+    const el = document.getElementById('code-error');
+    if (el) el.hidden = true;
+  }
+  function setStatus(state) {
+    const el = document.getElementById('code-status');
+    if (!el) return;
+    el.classList.remove('saved', 'dirty', 'error');
+    if (state === 'saved')      { el.classList.add('saved'); el.textContent = '✓ ' + t('code.status.saved'); }
+    else if (state === 'dirty') { el.classList.add('dirty'); el.textContent = '… ' + t('code.status.editing'); }
+    else if (state === 'error') { el.classList.add('error'); el.textContent = '⚠ ' + t('code.status.error'); }
+    else el.textContent = '';
+  }
+  function updateCodeMeta() {
+    const meta = document.getElementById('code-meta');
+    const src = CURRENT_SOURCES[CURRENT_CODE_TAB];
+    if (!meta || !src) return;
+    const lines = src.text.split('\n').length;
+    const kb = (src.text.length / 1024).toFixed(1);
+    meta.textContent = `${lines} lines · ${kb} KB`;
   }
   function flashCopyButton() {
     const btn = document.getElementById('code-copy');
@@ -751,13 +902,16 @@
   }
   function renderCodeTabs() {
     const tabsEl = document.getElementById('code-tabs');
-    const content = document.getElementById('code-content');
+    const editor = document.getElementById('code-editor');
     const meta = document.getElementById('code-meta');
-    if (!tabsEl || !content) return;
+    if (!tabsEl || !editor) return;
     if (!CURRENT_SOURCES.length) {
       tabsEl.innerHTML = '';
-      content.textContent = t('code.empty');
+      editor.value = '';
+      editor.placeholder = t('code.empty');
       if (meta) meta.textContent = '';
+      setStatus('');
+      updateUndoRedoButtons();
       return;
     }
     if (CURRENT_CODE_TAB >= CURRENT_SOURCES.length) CURRENT_CODE_TAB = 0;
@@ -773,29 +927,11 @@
       });
     });
     const src = CURRENT_SOURCES[CURRENT_CODE_TAB];
-    content.innerHTML = highlight(src.text, src.lang);
-    if (meta) {
-      const lines = src.text.split('\n').length;
-      const kb = (src.text.length / 1024).toFixed(1);
-      meta.textContent = `${lines} lines · ${kb} KB`;
-    }
-  }
-  // very small regex highlighter — enough for editorial-clean look without a lib
-  function highlight(text, lang) {
-    const esc = escapeHtml(text);
-    if (lang === 'yaml') {
-      return esc
-        .replace(/(^|\n)(\s*#[^\n]*)/g, '$1<span class="tok-yaml-comment">$2</span>')
-        .replace(/(^|\n)(\s*-?\s*)([A-Za-z_][\w-]*)(\s*:)/g,
-          '$1$2<span class="tok-yaml-key">$3</span><span class="tok-punct">$4</span>');
-    }
-    // json
-    return esc
-      .replace(/("(?:\\.|[^"\\])*")(\s*:)/g, '<span class="tok-key">$1</span><span class="tok-punct">$2</span>')
-      .replace(/(:\s*)("(?:\\.|[^"\\])*")/g, '$1<span class="tok-str">$2</span>')
-      .replace(/\b(true|false)\b/g, '<span class="tok-bool">$1</span>')
-      .replace(/\bnull\b/g, '<span class="tok-null">null</span>')
-      .replace(/(:\s*)(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g, '$1<span class="tok-num">$2</span>');
+    editor.value = src.text;
+    hideCodeError();
+    setStatus('saved');
+    updateUndoRedoButtons();
+    updateCodeMeta();
   }
 
   function syncSettingsUI() {
@@ -1978,6 +2114,7 @@
     }
     // expose for the bootstrap restore path
     window.__lifecycleSetActive = setActive;
+    window.__lifecycleGetActive = () => activeId;
 
     function setActiveEdge(fromId, toId) {
       activeId = null;
