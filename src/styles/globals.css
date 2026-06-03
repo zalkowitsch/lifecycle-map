@@ -1,0 +1,41 @@
+/* Base reset + globals — keep tiny, themes.css does most theming */
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body {
+  font-family: var(--font-body, system-ui, -apple-system, sans-serif);
+  color: var(--ink, #0d0d0d);
+  background: var(--bg, #f5f1e8);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app-shell {
+  display: flex; flex-direction: column;
+  height: 100vh;
+}
+.dev-header {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--rule, #b8b2a0);
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+}
+.dev-header .dev-meta {
+  float: right;
+  color: var(--mute, #837d70);
+  font-size: 11px;
+}
+.dev-main {
+  flex: 1;
+  padding: 32px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dev-notice {
+  max-width: 540px;
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--ink-2, #2a2a28);
+  text-align: center;
+}
