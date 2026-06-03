@@ -96,6 +96,8 @@
       'header.share.title':      'Share',
       'header.settings.title':   'Settings',
       'header.code.title':       'View source',
+      'header.zoom.title':       'Zoom',
+      'header.zoom.fit':         'Fit to screen',
       'code.eyebrow':            'source',
       'code.title':              'Code <em>· raw source</em>',
       'code.copy':               'Copy',
@@ -142,6 +144,8 @@
       'header.share.title':      'Compartilhar',
       'header.settings.title':   'Configurações',
       'header.code.title':       'Ver código-fonte',
+      'header.zoom.title':       'Zoom',
+      'header.zoom.fit':         'Caber na tela',
       'code.eyebrow':            'código',
       'code.title':              'Código <em>· fonte bruta</em>',
       'code.copy':               'Copiar',
@@ -188,6 +192,8 @@
       'header.share.title':      'Compartir',
       'header.settings.title':   'Configuración',
       'header.code.title':       'Ver código fuente',
+      'header.zoom.title':       'Zoom',
+      'header.zoom.fit':         'Ajustar a la pantalla',
       'code.eyebrow':            'código',
       'code.title':              'Código <em>· fuente cruda</em>',
       'code.copy':               'Copiar',
@@ -266,6 +272,45 @@
   let __PH_BORDER_DIMS = null; // dimensions captured by render() for the
                                // phase-header bottom border SVG
 
+  // -------- zoom --------
+  // CURRENT_ZOOM = 1.0 default (100%). Lower = see more at once (zoom out).
+  // Implementation: keep SVG viewBox at logical dimensions, but scale the
+  // SVG element's width/height attributes by zoom. That makes all SVG
+  // content render smaller at the same vector quality, scrollbars adjust
+  // naturally, and edge routing/sticky logic don't need to know about it.
+  const STORAGE_ZOOM = 'lifecycle-map.zoom';
+  const ZOOM_LEVELS = [0.25, 0.4, 0.6, 0.75, 0.9, 1.0, 1.25, 1.5, 2.0];
+  let CURRENT_ZOOM = (function () {
+    const stored = parseFloat(localStorage.getItem(STORAGE_ZOOM));
+    return (stored && stored > 0.1 && stored <= 4) ? stored : 1.0;
+  })();
+  function applyZoom(z, persist = true) {
+    z = Math.max(0.1, Math.min(4, z));
+    CURRENT_ZOOM = z;
+    if (persist) localStorage.setItem(STORAGE_ZOOM, String(z));
+    // Re-render: SVG widths/heights need to be recomputed against the new zoom
+    if (CURRENT_DATA) rerenderForTheme();
+    updateZoomLabel();
+  }
+  function fitToScreen() {
+    if (!__PH_BORDER_DIMS) { applyZoom(1.0); return; }
+    const wrap = document.getElementById('canvas-wrap');
+    if (!wrap) return;
+    const { SVG_W } = __PH_BORDER_DIMS;
+    // Aim to fit the SVG content width into the viewport, with a tiny margin.
+    const viewportW = Math.max(200, wrap.clientWidth - 20);
+    const zoom = Math.min(1.0, viewportW / SVG_W);
+    applyZoom(zoom);
+  }
+  function updateZoomLabel() {
+    const el = document.getElementById('zoom-label');
+    if (el) el.textContent = Math.round(CURRENT_ZOOM * 100) + '%';
+    document.querySelectorAll('#zoom-menu [data-zoom]').forEach(b => {
+      const val = parseFloat(b.dataset.zoom);
+      b.classList.toggle('active', Math.abs(val - CURRENT_ZOOM) < 0.001);
+    });
+  }
+
   // (Re)paints the phase-header bottom-border SVG. Width = canvas-wrap
   // scrollWidth so the line covers the full scroll content, including any
   // drawer-pad area or post-SVG_W trailing space. Called from render() and
@@ -278,19 +323,22 @@
     if (!borderSvg || !wrap) return;
     // scrollWidth reflects padding-right when drawer is open
     const w = Math.max(wrap.scrollWidth, wrap.clientWidth);
+    // Also honor zoom — border y-offset must match the scaled phase header
+    const Z = CURRENT_ZOOM;
     borderSvg.setAttribute('width', w);
     borderSvg.setAttribute('height', 1);
     borderSvg.setAttribute('viewBox', `0 0 ${w} 1`);
+    borderSvg.style.top = (PHASE_LABEL_H * Z - 1) + 'px';
     borderSvg.innerHTML = '';
-    // Line starts at LANE_LABEL_W (corner area owns the 0..LANE_LABEL_W segment)
     borderSvg.appendChild(svgEl('line', {
-      x1: LANE_LABEL_W, y1: 0.5, x2: w, y2: 0.5, class: 'lane-edge'
+      x1: LANE_LABEL_W * Z, y1: 0.5, x2: w, y2: 0.5, class: 'lane-edge'
     }));
   }
 
   initThemeAndMode();
   initSettingsDrawer();
   initCodeDrawer();
+  initZoomControl();
   initDragAndDrop();
   // Translate the UI to whichever language is saved/detected.
   applyUILang(CURRENT_UI_LANG, false);
@@ -445,6 +493,67 @@
       }
     });
   }
+  // -------- zoom control --------
+  function initZoomControl() {
+    const btn = document.getElementById('zoom-btn');
+    const menu = document.getElementById('zoom-menu');
+    if (!btn || !menu) return;
+    function toggleMenu(open) {
+      const willOpen = open != null ? open : menu.hasAttribute('hidden');
+      if (willOpen) {
+        menu.removeAttribute('hidden');
+        btn.classList.add('is-active');
+      } else {
+        menu.setAttribute('hidden', '');
+        btn.classList.remove('is-active');
+      }
+    }
+    btn.addEventListener('click', (e) => { e.stopPropagation(); toggleMenu(); });
+    menu.addEventListener('click', (e) => {
+      const t = e.target.closest('button');
+      if (!t) return;
+      if (t.id === 'zoom-fit') {
+        fitToScreen();
+      } else if (t.dataset.zoom) {
+        applyZoom(parseFloat(t.dataset.zoom));
+      }
+      toggleMenu(false);
+    });
+    document.addEventListener('click', (e) => {
+      if (menu.hasAttribute('hidden')) return;
+      if (menu.contains(e.target) || btn.contains(e.target)) return;
+      toggleMenu(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.hasAttribute('hidden')) toggleMenu(false);
+      // Cmd/Ctrl + 0 / - / + for quick zoom
+      if (!e.metaKey && !e.ctrlKey) return;
+      if (e.key === '0') { e.preventDefault(); applyZoom(1.0); }
+      else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        const lower = [...ZOOM_LEVELS].reverse().find(z => z < CURRENT_ZOOM - 0.001);
+        if (lower) applyZoom(lower);
+      } else if (e.key === '=' || e.key === '+') {
+        e.preventDefault();
+        const higher = ZOOM_LEVELS.find(z => z > CURRENT_ZOOM + 0.001);
+        if (higher) applyZoom(higher);
+      }
+    });
+    // Cmd/Ctrl + scroll over the canvas = zoom in/out
+    const wrap = document.getElementById('canvas-wrap');
+    if (wrap) {
+      wrap.addEventListener('wheel', (e) => {
+        if (!e.metaKey && !e.ctrlKey) return;
+        e.preventDefault();
+        const dir = e.deltaY < 0 ? 1 : -1;
+        const list = dir > 0 ? ZOOM_LEVELS : [...ZOOM_LEVELS].reverse();
+        const next = list.find(z => dir > 0 ? z > CURRENT_ZOOM + 0.001 : z < CURRENT_ZOOM - 0.001);
+        if (next) applyZoom(next);
+      }, { passive: false });
+    }
+    updateZoomLabel();
+  }
+
   // -------- code drawer (raw source viewer) --------
   let CURRENT_CODE_TAB = 0;
   function initCodeDrawer() {
@@ -1449,9 +1558,13 @@
     }
 
     // ---- DOM rendering ----
+    // Apply CURRENT_ZOOM by scaling SVG element pixel size; viewBox stays
+    // logical so all internal coords (edge routing, sticky math, etc.) are
+    // untouched.
+    const Z = CURRENT_ZOOM;
     const svg = document.getElementById('svg');
-    svg.setAttribute('width', SVG_W);
-    svg.setAttribute('height', SVG_H);
+    svg.setAttribute('width', SVG_W * Z);
+    svg.setAttribute('height', SVG_H * Z);
     svg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`);
     // Allow zebra lane bg + dividers (drawn deliberately past SVG_W to fill
     // the drawer-pad area) to render outside the viewBox.
@@ -1488,8 +1601,8 @@
 
     // sticky lane labels svg
     const laneSvg = document.getElementById('lane-labels-svg');
-    laneSvg.setAttribute('width', LANE_LABEL_W);
-    laneSvg.setAttribute('height', SVG_H);
+    laneSvg.setAttribute('width', LANE_LABEL_W * Z);
+    laneSvg.setAttribute('height', SVG_H * Z);
     laneSvg.setAttribute('viewBox', `0 0 ${LANE_LABEL_W} ${SVG_H}`);
     laneSvg.appendChild(svgEl('rect', { x: 0, y: 0, width: LANE_LABEL_W, height: SVG_H, fill: bgColor }));
     // bottom border below the corner area is drawn by phSvg/cornerSvg — skip here
@@ -1521,8 +1634,8 @@
 
     // sticky phase header
     const phSvg = document.getElementById('phase-header-svg');
-    phSvg.setAttribute('width', SVG_W);
-    phSvg.setAttribute('height', PHASE_LABEL_H);
+    phSvg.setAttribute('width', SVG_W * Z);
+    phSvg.setAttribute('height', PHASE_LABEL_H * Z);
     phSvg.setAttribute('viewBox', `0 0 ${SVG_W} ${PHASE_LABEL_H}`);
     phSvg.appendChild(svgEl('rect', { x: 0, y: 0, width: SVG_W, height: PHASE_LABEL_H, fill: bgColor }));
     phases.forEach((p) => {
@@ -1543,8 +1656,8 @@
 
     // sticky corner
     const cornerSvg = document.getElementById('sticky-corner-svg');
-    cornerSvg.setAttribute('width', LANE_LABEL_W);
-    cornerSvg.setAttribute('height', PHASE_LABEL_H);
+    cornerSvg.setAttribute('width', LANE_LABEL_W * Z);
+    cornerSvg.setAttribute('height', PHASE_LABEL_H * Z);
     cornerSvg.setAttribute('viewBox', `0 0 ${LANE_LABEL_W} ${PHASE_LABEL_H}`);
     cornerSvg.appendChild(svgEl('rect', { x: 0, y: 0, width: LANE_LABEL_W, height: PHASE_LABEL_H, fill: bgColor }));
     cornerSvg.appendChild(svgEl('line', { x1: LANE_LABEL_W - 1, y1: 0, x2: LANE_LABEL_W - 1, y2: PHASE_LABEL_H, class: 'lane-edge' }));

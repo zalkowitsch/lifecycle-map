@@ -112,6 +112,39 @@
   .h-icon-btn#settings-btn:hover svg { transform: rotate(45deg); }
   .h-icon-btn#share-btn:hover svg { transform: scale(1.1); }
   .h-icon-btn#code-btn:hover svg { transform: scale(1.12); }
+
+  /* Zoom dropdown */
+  .zoom-control { position: relative; display: inline-block; }
+  .zoom-trigger {
+    width: auto !important;
+    min-width: 56px;
+    padding: 0 10px !important;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+  }
+  .zoom-menu {
+    position: absolute; top: calc(100% + 4px); right: 0;
+    background: var(--bg); border: 1px solid var(--ink);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+    z-index: 50; min-width: 140px;
+    display: flex; flex-direction: column;
+    border-radius: var(--button-radius);
+  }
+  [data-mode="dark"] .zoom-menu { box-shadow: 0 12px 32px rgba(0,0,0,0.55); }
+  .zoom-menu[hidden] { display: none; }
+  .zoom-menu button {
+    background: var(--bg); border: none;
+    text-align: left; padding: 8px 14px;
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.04em; color: var(--ink);
+    cursor: pointer; line-height: 1.2;
+    border-bottom: 1px solid var(--rule-2);
+  }
+  .zoom-menu button:last-child { border-bottom: none; }
+  .zoom-menu button:hover { background: var(--bg-2); color: var(--accent); }
+  .zoom-menu button.active { background: var(--ink); color: var(--bg); }
+  .zoom-menu-sep { height: 1px; background: var(--ink); margin: 0; }
   kbd {
     font-family: var(--font-mono); font-size: 9px;
     padding: 0 4px; border: 1px solid var(--rule); border-radius: 2px;
@@ -986,6 +1019,24 @@
       <span class="hide-mobile" data-i18n="header.walkHint"><kbd>←</kbd> <kbd>→</kbd> walk · drag empty to pan</span>
       <a href="./docs/" data-i18n="header.docs">docs</a>
       <div class="h-actions">
+        <div class="zoom-control" id="zoom-control">
+          <button class="h-icon-btn zoom-trigger" id="zoom-btn" data-i18n="header.zoom.title" data-i18n-attr="title" title="Zoom">
+            <span id="zoom-label">100%</span>
+          </button>
+          <div class="zoom-menu" id="zoom-menu" hidden>
+            <button data-zoom="0.25">25%</button>
+            <button data-zoom="0.4">40%</button>
+            <button data-zoom="0.6">60%</button>
+            <button data-zoom="0.75">75%</button>
+            <button data-zoom="0.9">90%</button>
+            <button data-zoom="1.0">100%</button>
+            <button data-zoom="1.25">125%</button>
+            <button data-zoom="1.5">150%</button>
+            <button data-zoom="2.0">200%</button>
+            <div class="zoom-menu-sep"></div>
+            <button id="zoom-fit" data-i18n="header.zoom.fit">Fit to screen</button>
+          </div>
+        </div>
         <button class="h-icon-btn" id="code-btn" data-i18n="header.code.title" data-i18n-attr="title" title="View source">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
         </button>
