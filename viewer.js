@@ -403,27 +403,45 @@
   }
   function renderThemeSwatches() {
     // Sample each theme's palette by reading CSS variables off a hidden
-    // probe element. We need to honor the user's current light/dark mode
-    // so the swatches preview the right palette.
+    // probe element. Apply the sampled colors as INLINE styles to the card
+    // (background, border, name color, desc color) — relying on CSS var
+    // inheritance from data attributes on the card itself proved
+    // unreliable (the html-level data-theme/data-mode cascades override
+    // the card-level ones for var(--bg) inside .theme-card { background:
+    // var(--bg) }).
     const currentMode = document.documentElement.dataset.mode || 'light';
     THEMES.forEach(th => {
-      // Use a fresh probe per theme — some browsers don't recompute
-      // resolved styles when only attributes change on the same element
-      // mid-loop.
       const probe = document.createElement('div');
       probe.setAttribute('data-theme', th.id);
       probe.setAttribute('data-mode', currentMode);
       probe.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;visibility:hidden;pointer-events:none;';
       document.body.appendChild(probe);
-      // force layout so computed styles definitely include the just-set attrs
       void probe.offsetWidth;
       const cs = getComputedStyle(probe);
-      const colors = ['--bg', '--ink', '--accent', '--node-bg', '--mute']
-        .map(v => cs.getPropertyValue(v).trim() || '#fff');
+      const bg     = cs.getPropertyValue('--bg').trim()      || '#fff';
+      const bg2    = cs.getPropertyValue('--bg-2').trim()    || bg;
+      const ink    = cs.getPropertyValue('--ink').trim()     || '#000';
+      const mute   = cs.getPropertyValue('--mute').trim()    || '#888';
+      const accent = cs.getPropertyValue('--accent').trim()  || ink;
+      const rule   = cs.getPropertyValue('--rule').trim()    || mute;
+      const nodeBg = cs.getPropertyValue('--node-bg').trim() || bg;
       probe.remove();
-      const el = document.getElementById('sw-' + th.id);
-      if (el) {
-        el.innerHTML = colors.map(c => `<div class="swatch" style="background:${c}"></div>`).join('');
+      // paint swatches
+      const sw = document.getElementById('sw-' + th.id);
+      if (sw) {
+        const colors = [bg, ink, accent, nodeBg, mute];
+        sw.innerHTML = colors.map(c => `<div class="swatch" style="background:${c}"></div>`).join('');
+      }
+      // paint card chrome (bg + border + text colors)
+      const card = document.querySelector('.theme-card[data-theme="' + th.id + '"]');
+      if (card) {
+        card.style.backgroundColor = bg;
+        card.style.borderColor = card.classList.contains('active') ? accent : rule;
+        card.style.color = ink;
+        const name = card.querySelector('.name');
+        const desc = card.querySelector('.desc');
+        if (name) name.style.color = ink;
+        if (desc) desc.style.color = mute;
       }
     });
   }
