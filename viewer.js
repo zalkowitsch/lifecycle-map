@@ -303,7 +303,7 @@
   // content render smaller at the same vector quality, scrollbars adjust
   // naturally, and edge routing/sticky logic don't need to know about it.
   const STORAGE_ZOOM = 'lifecycle-map.zoom';
-  const ZOOM_LEVELS = [0.25, 0.4, 0.6, 0.75, 0.9, 1.0, 1.25, 1.5, 2.0];
+  const ZOOM_LEVELS = [0.1, 0.25, 0.4, 0.6, 0.75, 0.9, 1.0, 1.25, 1.5, 2.0];
   let CURRENT_ZOOM = (function () {
     const stored = parseFloat(localStorage.getItem(STORAGE_ZOOM));
     return (stored && stored > 0.1 && stored <= 4) ? stored : 1.0;
@@ -564,18 +564,10 @@
         if (higher) applyZoom(higher);
       }
     });
-    // Cmd/Ctrl + scroll over the canvas = zoom in/out
-    const wrap = document.getElementById('canvas-wrap');
-    if (wrap) {
-      wrap.addEventListener('wheel', (e) => {
-        if (!e.metaKey && !e.ctrlKey) return;
-        e.preventDefault();
-        const dir = e.deltaY < 0 ? 1 : -1;
-        const list = dir > 0 ? ZOOM_LEVELS : [...ZOOM_LEVELS].reverse();
-        const next = list.find(z => dir > 0 ? z > CURRENT_ZOOM + 0.001 : z < CURRENT_ZOOM - 0.001);
-        if (next) applyZoom(next);
-      }, { passive: false });
-    }
+    // No wheel/pinch handler — the native browser pinch/scroll behaves
+    // better than a custom one (no jitter, smooth zoom, matches what
+    // users expect from any other web page). Cmd+0/-/+ above + the
+    // dropdown menu give discrete control without fighting the trackpad.
     updateZoomLabel();
   }
 
