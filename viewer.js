@@ -330,11 +330,14 @@
     const settingsCloseBtn = document.getElementById('settings-close');
     if (settingsCloseBtn) settingsCloseBtn.addEventListener('click', () => closeSettings());
 
-    // theme cards
+    // theme cards — each card sets its own data-theme + data-mode so the
+    // CSS variables resolve to that theme's palette, making the card a true
+    // mini-preview that follows the current light/dark mode.
     const grid = document.getElementById('theme-grid');
     if (grid) {
+      const currentMode = document.documentElement.dataset.mode || 'light';
       grid.innerHTML = THEMES.map(th => `
-        <div class="theme-card" data-theme="${th.id}">
+        <div class="theme-card" data-theme="${th.id}" data-mode="${currentMode}">
           <div class="swatches" id="sw-${th.id}"></div>
           <div class="name">${th.name}</div>
           <div class="desc">${th.desc}</div>
@@ -508,7 +511,14 @@
     const mode = document.documentElement.dataset.mode;
     document.querySelectorAll('.theme-card').forEach(c => {
       c.classList.toggle('active', c.dataset.theme === theme);
+      // keep each card's data-mode in sync with the global mode so the
+      // mini-preview uses the right palette for the user's current mode
+      c.dataset.mode = mode;
     });
+    // re-render swatches so the dots inside also use the mode-correct palette
+    if (document.getElementById('settings-drawer').classList.contains('open')) {
+      renderThemeSwatches();
+    }
     // mode toggle — rebuild labels because they're localized
     const modeToggle = document.getElementById('mode-toggle');
     if (modeToggle && !modeToggle._wired) {

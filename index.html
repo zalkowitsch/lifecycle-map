@@ -137,19 +137,17 @@
   .grid-ext { display: none; }
   .canvas-wrap.drawer-open .grid-ext { display: initial; }
 
-  /* Phase-header bottom border, drawn as a sticky 1px row spanning the
-     full canvas-wrap width. The SVG-rendered version under #phase-header-svg
-     stops at SVG_W, so this CSS layer covers any extra (sticky-corner area,
-     drawer-pad area, anything past the rightmost phase). */
-  .phase-header-border {
-    position: sticky; top: 51.5px; z-index: 3;
-    height: 0; pointer-events: none;
-    margin-left: var(--lane-label-w, 130px);
-  }
-  .phase-header-border::after {
-    content: ''; display: block;
-    height: 1px; background: var(--ink);
-    width: 100vw; /* covers wrap width (padding included) */
+  /* Dedicated SVG that draws ONLY the phase-header bottom border, spanning
+     the entire canvas-wrap content width (set by JS to scrollWidth on each
+     render and on drawer open/close). Lives inside .sticky-row so it
+     scrolls horizontally with the rest of the header but stays pinned at
+     the top vertically. */
+  #phase-header-border-svg {
+    position: absolute !important;
+    top: 51px; left: 0;
+    height: 1px;
+    background: transparent;
+    pointer-events: none;
   }
 
   .sticky-layer {
@@ -452,9 +450,12 @@
   .theme-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
   }
+  /* Each card carries its own data-theme + data-mode so all the CSS vars
+     below resolve to that theme's palette — turning the card itself into
+     a true mini-preview that honors the current light/dark mode. */
   .theme-card {
     border: 1px solid var(--rule); padding: 12px 12px 10px;
-    cursor: pointer; background: var(--bg);
+    cursor: pointer; background: var(--bg); color: var(--ink);
     border-radius: var(--button-radius);
     transition: border-color 140ms, background 140ms;
   }
@@ -1000,8 +1001,10 @@
 </header>
 
 <div class="canvas-wrap" id="canvas-wrap" style="display: none;">
-  <div class="sticky-layer sticky-row"><svg id="phase-header-svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
-  <div class="phase-header-border" aria-hidden="true"></div>
+  <div class="sticky-layer sticky-row">
+    <svg id="phase-header-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+    <svg id="phase-header-border-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
   <div class="sticky-layer sticky-col"><svg id="lane-labels-svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
   <div class="sticky-layer sticky-corner"><svg id="sticky-corner-svg" xmlns="http://www.w3.org/2000/svg"></svg></div>
   <svg id="svg" xmlns="http://www.w3.org/2000/svg">
