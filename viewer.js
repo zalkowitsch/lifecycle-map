@@ -312,11 +312,11 @@
     // theme cards
     const grid = document.getElementById('theme-grid');
     if (grid) {
-      grid.innerHTML = THEMES.map(t => `
-        <div class="theme-card" data-theme="${t.id}">
-          <div class="swatches" id="sw-${t.id}"></div>
-          <div class="name">${t.name}</div>
-          <div class="desc">${t.desc}</div>
+      grid.innerHTML = THEMES.map(th => `
+        <div class="theme-card" data-theme="${th.id}">
+          <div class="swatches" id="sw-${th.id}"></div>
+          <div class="name">${th.name}</div>
+          <div class="desc">${th.desc}</div>
         </div>
       `).join('');
       grid.querySelectorAll('.theme-card').forEach(card => {
@@ -359,12 +359,12 @@
     probe.style.position = 'absolute'; probe.style.opacity = '0'; probe.style.pointerEvents = 'none';
     document.body.appendChild(probe);
     const currentMode = document.documentElement.dataset.mode;
-    THEMES.forEach(t => {
-      probe.dataset.theme = t.id;
+    THEMES.forEach(th => {
+      probe.dataset.theme = th.id;
       probe.dataset.mode = currentMode;
       const cs = getComputedStyle(probe);
       const colors = ['--bg', '--ink', '--accent', '--node-bg', '--mute'].map(v => cs.getPropertyValue(v).trim() || '#fff');
-      const el = document.getElementById('sw-' + t.id);
+      const el = document.getElementById('sw-' + th.id);
       if (el) {
         el.innerHTML = colors.map(c => `<div class="swatch" style="background:${c}"></div>`).join('');
       }
@@ -523,12 +523,46 @@
       try {
         const text = await file.text();
         const data = parseSource(text, file.name);
-        setHashSlug(slugify(file.name));
+        CURRENT_SOURCE = 'dnd';
+        CURRENT_SLUG = slugify(file.name);
+        setHashSlug(CURRENT_SLUG);
         loadDataAndRender(data);
       } catch (err) {
         showError(err);
       }
     });
+  }
+
+  // -------- session state (survives refresh, dies with tab) --------
+  // Persists in sessionStorage so a Refresh (e.g. from the version-update
+  // badge) doesn't wipe an in-memory drag-and-drop or paste. URL-based
+  // sources (?src=, #data=, slug, #img=) are reconstructible from the URL
+  // itself — we only stash the raw JSON for memory-only sources.
+  const SS_KEY = 'lifecycle-map.session';
+  const SS_TTL_MS = 24 * 60 * 60 * 1000;  // 24 hours
+  let CURRENT_SOURCE = null;
+  let CURRENT_SLUG = null;
+  function saveSessionState(patch) {
+    try {
+      const prev = readSessionState() || {};
+      const next = Object.assign({}, prev, patch, { ts: Date.now() });
+      sessionStorage.setItem(SS_KEY, JSON.stringify(next));
+    } catch (_) {}
+  }
+  function readSessionState() {
+    try {
+      const raw = sessionStorage.getItem(SS_KEY);
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      if (!obj || !obj.ts || Date.now() - obj.ts > SS_TTL_MS) {
+        sessionStorage.removeItem(SS_KEY);
+        return null;
+      }
+      return obj;
+    } catch (_) { return null; }
+  }
+  function clearSessionState() {
+    try { sessionStorage.removeItem(SS_KEY); } catch (_) {}
   }
 
   // -------- bootstrap --------
@@ -546,18 +580,59 @@
   const slugHash = (hash && !hash.includes('=') && hash !== 'data' && hash !== 'img') ? hash : null;
 
   let DATA = null;
+  let RESTORED_STATE = null;
   try {
-    if (src) DATA = await loadFromUrl(src);
-    else if (dataBlob) DATA = await loadFromHash(dataBlob);
-    else if (imgUrl) DATA = await loadFromEncryptedImage(imgUrl);
-    else if (slugHash && EXAMPLE_SLUGS[slugHash]) DATA = await loadFromUrl(EXAMPLE_SLUGS[slugHash]);
-    else if (showPaste) DATA = await showPasteUI();
-    else DATA = await showSplash();
+    if (src) {
+      CURRENT_SOURCE = 'url';
+      DATA = await loadFromUrl(src);
+    }
+    else if (dataBlob) {
+      CURRENT_SOURCE = 'hash';
+      DATA = await loadFromHash(dataBlob);
+    }
+    else if (imgUrl) {
+      CURRENT_SOURCE = 'img';
+      DATA = await loadFromEncryptedImage(imgUrl);
+    }
+    else if (slugHash && EXAMPLE_SLUGS[slugHash]) {
+      CURRENT_SOURCE = 'slug';
+      CURRENT_SLUG = slugHash;
+      DATA = await loadFromUrl(EXAMPLE_SLUGS[slugHash]);
+    }
+    else {
+      // No URL hint. Try restoring an in-memory source from the previous tab
+      // session — covers refresh after drag-and-drop or paste.
+      const restored = readSessionState();
+      if (restored && restored.rawJson && (restored.source === 'dnd' || restored.source === 'paste')) {
+        try {
+          DATA = parseSource(restored.rawJson, restored.slug || 'restored');
+          CURRENT_SOURCE = restored.source;
+          CURRENT_SLUG = restored.slug || null;
+          if (CURRENT_SLUG) setHashSlug(CURRENT_SLUG, true);
+          RESTORED_STATE = restored;
+        } catch (_) { /* fall through to splash */ }
+      }
+      if (!DATA) {
+        if (showPaste) DATA = await showPasteUI();
+        else DATA = await showSplash();
+      }
+    }
   } catch (err) {
     showError(err);
     return;
   }
   loadDataAndRender(DATA);
+  // Restore drawer/scroll position after first render
+  if (RESTORED_STATE) {
+    requestAnimationFrame(() => {
+      const wrap = document.getElementById('canvas-wrap');
+      if (RESTORED_STATE.scrollLeft != null) wrap.scrollLeft = RESTORED_STATE.scrollLeft;
+      if (RESTORED_STATE.scrollTop  != null) wrap.scrollTop  = RESTORED_STATE.scrollTop;
+      if (RESTORED_STATE.activeNodeId && typeof window.__lifecycleSetActive === 'function') {
+        window.__lifecycleSetActive(RESTORED_STATE.activeNodeId);
+      }
+    });
+  }
 
   // Listen for back/forward navigation between example slugs.
   // Only reloads when the hash points to a known example AND differs from current.
@@ -591,6 +666,18 @@
     render(normalized);
     if (window.LifecycleShare) {
       window.LifecycleShare.attachShareUI(() => CURRENT_RAW_JSON);
+    }
+    // Persist memory-only sources so a refresh survives. URL sources are
+    // reconstructible from the URL, no need to stash them.
+    if (CURRENT_SOURCE === 'dnd' || CURRENT_SOURCE === 'paste') {
+      saveSessionState({
+        source: CURRENT_SOURCE,
+        slug: CURRENT_SLUG,
+        rawJson: CURRENT_RAW_JSON,
+      });
+    } else if (CURRENT_SOURCE) {
+      // URL-derived: just track which slug/source so resaves keep scroll position
+      saveSessionState({ source: CURRENT_SOURCE, slug: CURRENT_SLUG, rawJson: null });
     }
   }
 
@@ -1368,6 +1455,7 @@
       drawer.setAttribute('aria-hidden', 'true');
       setDrawerPad(false);
       if (activeId || activeEdgeKey) { clearActiveStyles(); activeId = null; activeEdgeKey = null; }
+      saveSessionState({ activeNodeId: null });
     }
     scrim.addEventListener('click', closeDrawer);
     document.getElementById('drawer-close').addEventListener('click', closeDrawer);
@@ -1379,6 +1467,7 @@
     function setActive(id) {
       activeId = id; activeEdgeKey = null;
       const node = nodeById[id];
+      if (!node) return;
       clearActiveStyles();
       const up = upstreamOf(id), down = downstreamOf(id);
       up.forEach(uid => nodeEls[uid] && nodeEls[uid].classList.add('upstream'));
@@ -1391,7 +1480,10 @@
       renderDrawer(node, up, down);
       openDrawer();
       centerOnPoint(node.cx, node.cy);
+      saveSessionState({ activeNodeId: id });
     }
+    // expose for the bootstrap restore path
+    window.__lifecycleSetActive = setActive;
 
     function setActiveEdge(fromId, toId) {
       activeId = null;
@@ -1554,6 +1646,17 @@
 
     // pan on drag (single-bind; safe across rerenders)
     const wrap = document.getElementById('canvas-wrap');
+    // persist scroll position so refresh keeps the user where they were
+    if (!wrap._scrollWired) {
+      wrap._scrollWired = true;
+      let scrollSaveHandle = null;
+      wrap.addEventListener('scroll', () => {
+        if (scrollSaveHandle) clearTimeout(scrollSaveHandle);
+        scrollSaveHandle = setTimeout(() => {
+          saveSessionState({ scrollLeft: wrap.scrollLeft, scrollTop: wrap.scrollTop });
+        }, 200);
+      }, { passive: true });
+    }
     if (!wrap._panWired) {
       wrap._panWired = true;
       let panning = false, startX = 0, startY = 0, startScrollLeft = 0, startScrollTop = 0;
