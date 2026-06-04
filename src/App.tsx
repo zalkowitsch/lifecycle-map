@@ -50,17 +50,35 @@ function AppShell() {
       return next;
     }),
     fitToScreen: () => {
-      const wrap = document.querySelector('[data-canvas-wrap]') as HTMLElement | null;
-      if (!wrap) return;
-      const svg = wrap.querySelector('svg') as SVGSVGElement | null;
-      if (!svg) return;
-      const viewBox = svg.viewBox.baseVal;
-      const w = viewBox.width || 1, h = viewBox.height || 1;
-      const next = Math.max(0.1, Math.min(1, Math.min((wrap.clientWidth - 20) / w, (wrap.clientHeight - 20) / h)));
+      const next = computeFitZoom();
+      if (next == null) return;
       setZoomValue(next);
       localStorage.setItem('lifecycle-map.zoom', String(next));
     },
   };
+
+  // Computes the zoom value that would fit the entire SVG into the viewport.
+  // Returns null if Canvas isn't mounted yet. Used both for the
+  // "Fit to screen" button and as the floor for pinch zoom-out.
+  function computeFitZoom(): number | null {
+    const wrap = document.querySelector('[data-canvas-wrap]') as HTMLElement | null;
+    if (!wrap) return null;
+    const svg = wrap.querySelector('svg') as SVGSVGElement | null;
+    if (!svg) return null;
+    const viewBox = svg.viewBox.baseVal;
+    const w = viewBox.width || 1, h = viewBox.height || 1;
+    return Math.max(0.1, Math.min(1, Math.min((wrap.clientWidth - 20) / w, (wrap.clientHeight - 20) / h)));
+  }
+
+  // Re-evaluated when the viewport size changes so pinch zoom-out always
+  // bottoms out at the current fit-to-screen value.
+  const [fitZoom, setFitZoom] = useState<number | null>(null);
+  useEffect(() => {
+    const update = (): void => setFitZoom(computeFitZoom());
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [viewer.state.data]);
 
   // Active node
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
@@ -322,6 +340,7 @@ function AppShell() {
         onEmptyClick={handleCloseNodeDrawer}
         zoom={zoom.zoom}
         onZoom={setZoom}
+        minZoom={fitZoom ?? undefined}
         L={L}
       />
 

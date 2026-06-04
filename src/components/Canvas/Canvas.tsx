@@ -32,6 +32,9 @@ interface CanvasProps {
   onEmptyClick: () => void;
   zoom: number;
   onZoom?: (z: number) => void;  // optional zoom delta callback (pinch on canvas)
+  /** Lower bound for the pinch zoom — typically the "fit-to-screen" value
+   *  so users can't pinch past the point where the map fills the viewport. */
+  minZoom?: number;
   L: (value: unknown) => string;
 }
 
@@ -53,6 +56,7 @@ export function Canvas({
   onEmptyClick,
   zoom,
   onZoom,
+  minZoom,
   L,
 }: CanvasProps) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -163,6 +167,8 @@ export function Canvas({
   useEffect(() => { zoomRef.current = zoom; }, [zoom]);
   const onZoomRef = useRef(onZoom);
   useEffect(() => { onZoomRef.current = onZoom; }, [onZoom]);
+  const minZoomRef = useRef(minZoom);
+  useEffect(() => { minZoomRef.current = minZoom; }, [minZoom]);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -174,7 +180,10 @@ export function Canvas({
       if (pendingDelta === 0) return;
       const factor = Math.exp(-pendingDelta * PINCH_SENSITIVITY);
       pendingDelta = 0;
-      const next = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomRef.current * factor));
+      // Use the parent-provided minZoom (fit-to-screen) as the lower bound;
+      // fall back to the absolute floor when no minZoom was provided.
+      const lowerBound = Math.max(ZOOM_MIN, minZoomRef.current ?? ZOOM_MIN);
+      const next = Math.max(lowerBound, Math.min(ZOOM_MAX, zoomRef.current * factor));
       onZoomRef.current?.(next);
     };
     const onWheel = (ev: WheelEvent): void => {
