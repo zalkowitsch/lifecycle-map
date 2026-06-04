@@ -19,9 +19,9 @@ export interface ZoomControlProps {
 }
 
 const PRESETS: ReadonlyArray<{ label: string; value: number }> = [
-  { label: '25%', value: 0.25 },
-  { label: '50%', value: 0.5 },
   { label: '100%', value: 1 },
+  { label: '50%', value: 0.5 },
+  { label: '25%', value: 0.25 },
 ];
 
 // Float-safe equality for matching the active preset.
@@ -94,6 +94,10 @@ export function ZoomControl({
       </button>
       {open ? (
         <div className={styles.menu} role="menu">
+          <button type="button" role="menuitem" onClick={pickFit}>
+            Fit to screen
+          </button>
+          <div className={styles.separator} aria-hidden="true" />
           {PRESETS.map((p) => {
             const isActive = near(zoom, p.value);
             const cls = isActive ? styles.active : undefined;
@@ -109,10 +113,6 @@ export function ZoomControl({
               </button>
             );
           })}
-          <div className={styles.separator} aria-hidden="true" />
-          <button type="button" role="menuitem" onClick={pickFit}>
-            Fit to screen
-          </button>
         </div>
       ) : null}
     </div>
