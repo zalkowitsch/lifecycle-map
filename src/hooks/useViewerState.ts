@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { LifecycleMap, NormalizedMap, Mode, MapNode, Phase, Lane } from '@/types/lifecycle-map';
+import type { LifecycleMap, NormalizedMap, Mode, Phase, Lane, NodeState } from '@/types/lifecycle-map';
 import { parseSource, decodeHashData } from '@/lib/parseSource';
 import { decodeFromImageUrl } from '@/lib/share/encrypted';
 import { useSessionState } from './useSessionState';
@@ -48,14 +48,45 @@ export function normalize(data: LifecycleMap): NormalizedMap {
   out.meta.subtitle = out.meta.subtitle ?? '';
   out.meta.context = out.meta.context ?? '';
   out.meta.modes = out.meta.modes && out.meta.modes.length ? out.meta.modes : DEFAULT_MODES;
+  out.meta.direction = out.meta.direction ?? 'LR';
   out.lanes = (out.lanes ?? []) as Lane[];
   out.phases = (out.phases ?? []).map((p: Phase, i: number) => ({
     ...p,
     roman: p.roman ?? ROMAN[i] ?? String(i + 1),
     subCols: p.subCols ?? 1,
   })) as Phase[];
-  out.nodes = (out.nodes ?? []) as MapNode[];
-  out.edges = out.edges ?? [];
+
+  // Normalize nodes: collapse legacy today/tomorrow into states map.
+  out.nodes = (out.nodes ?? []).map((n) => {
+    const states: Record<string, NodeState> = { ...(n.states ?? {}) };
+    if (n.today && !states['today']) states['today'] = n.today;
+    if (n.tomorrow && !states['tomorrow']) states['tomorrow'] = n.tomorrow;
+    return { ...n, states };
+  }) as NormalizedMap['nodes'];
+
+  // Normalize edges: collapse legacy from/to into source/target.
+  out.edges = (out.edges ?? []).map((e, i) => {
+    const source = e.source ?? e.from ?? '';
+    const target = e.target ?? e.to ?? '';
+    if (!source || !target) {
+      throw new Error(
+        `Edge #${i} missing source/target (or legacy from/to): ${JSON.stringify(e)}`,
+      );
+    }
+    return { ...e, source, target };
+  }) as NormalizedMap['edges'];
+
+  // Validate every edge references a known node — otherwise the canvas
+  // crashes when the router tries to position a phantom endpoint.
+  const nodeIds = new Set(out.nodes.map((n) => n.id));
+  out.edges.forEach((e, i) => {
+    if (!nodeIds.has(e.source)) {
+      throw new Error(`Edge #${i} (${e.source}→${e.target}) references unknown node "${e.source}"`);
+    }
+    if (!nodeIds.has(e.target)) {
+      throw new Error(`Edge #${i} (${e.source}→${e.target}) references unknown node "${e.target}"`);
+    }
+  });
 
   const modeMap: Record<string, Mode> = {};
   out.meta.modes.forEach((m) => { modeMap[m.id] = m; });
@@ -69,8 +100,7 @@ export function normalize(data: LifecycleMap): NormalizedMap {
     discovered.push(id);
   };
   out.nodes.forEach((n) => {
-    if (n.today) visitMode(n.today.mode);
-    if (n.tomorrow) visitMode(n.tomorrow.mode);
+    Object.values(n.states).forEach((s) => visitMode(s.mode));
     (n.modules ?? []).forEach((m) => {
       if (m && typeof m === 'object') { visitMode(m.today); visitMode(m.tomorrow); }
     });

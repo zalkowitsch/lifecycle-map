@@ -5,6 +5,7 @@ import { useViewerState } from '@/hooks/useViewerState';
 import { useKeyboard } from '@/hooks/useKeyboard';
 import { useSessionState } from '@/hooks/useSessionState';
 import Canvas from '@/components/Canvas';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import Splash from '@/components/Splash';
 import DragDropOverlay from '@/components/DragDrop';
 import { NodeDrawer } from '@/components/NodeDrawer';
@@ -332,17 +333,19 @@ function AppShell() {
         </div>
       </header>
 
-      <Canvas
-        data={data}
-        activeNodeId={activeNodeId}
-        onNodeClick={handleNodeClick}
-        onEdgeClick={handleEdgeClick}
-        onEmptyClick={handleCloseNodeDrawer}
-        zoom={zoom.zoom}
-        onZoom={setZoom}
-        minZoom={fitZoom ?? undefined}
-        L={L}
-      />
+      <ErrorBoundary onReset={() => { window.location.hash = ''; }}>
+        <Canvas
+          data={data}
+          activeNodeId={activeNodeId}
+          onNodeClick={handleNodeClick}
+          onEdgeClick={handleEdgeClick}
+          onEmptyClick={handleCloseNodeDrawer}
+          zoom={zoom.zoom}
+          onZoom={setZoom}
+          minZoom={fitZoom ?? undefined}
+          L={L}
+        />
+      </ErrorBoundary>
 
       <DragDropOverlay onDrop={viewer.handleFileDrop} />
 

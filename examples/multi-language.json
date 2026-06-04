@@ -1,35 +1,154 @@
 {
   "meta": {
-    "title":    { "en": "Customer Support Triage", "pt": "Triagem de Suporte ao Cliente", "es": "Triaje de Soporte al Cliente" },
-    "subtitle": { "en": "from ticket to resolution", "pt": "do ticket à resolução", "es": "del ticket a la resolución" },
-    "context":  { "en": "support · multi-language demo", "pt": "suporte · demo multi-idioma", "es": "soporte · demo multi-idioma" },
+    "title": {
+      "en": "Customer Support Triage",
+      "pt": "Triagem de Suporte ao Cliente",
+      "es": "Triaje de Soporte al Cliente"
+    },
+    "subtitle": {
+      "en": "from ticket to resolution",
+      "pt": "do ticket à resolução",
+      "es": "del ticket a la resolución"
+    },
+    "context": {
+      "en": "support · multi-language demo",
+      "pt": "suporte · demo multi-idioma",
+      "es": "soporte · demo multi-idioma"
+    },
     "default_lang": "en",
     "modes": [
-      { "id": "manual",    "label": { "en": "Manual",        "pt": "Manual",        "es": "Manual" },        "color": "#b91c1c" },
-      { "id": "assisted",  "label": { "en": "Assisted",      "pt": "Assistido",     "es": "Asistido" },      "color": "#a16207" },
-      { "id": "automated", "label": { "en": "Automated",     "pt": "Automatizado",  "es": "Automatizado" },  "color": "#1e40af" },
-      { "id": "ai",        "label": { "en": "AI-Augmented",  "pt": "Com IA",        "es": "Con IA" },        "color": "#047857" }
+      {
+        "id": "manual",
+        "label": {
+          "en": "Manual",
+          "pt": "Manual",
+          "es": "Manual"
+        },
+        "color": "#b91c1c"
+      },
+      {
+        "id": "assisted",
+        "label": {
+          "en": "Assisted",
+          "pt": "Assistido",
+          "es": "Asistido"
+        },
+        "color": "#a16207"
+      },
+      {
+        "id": "automated",
+        "label": {
+          "en": "Automated",
+          "pt": "Automatizado",
+          "es": "Automatizado"
+        },
+        "color": "#1e40af"
+      },
+      {
+        "id": "ai",
+        "label": {
+          "en": "AI-Augmented",
+          "pt": "Com IA",
+          "es": "Con IA"
+        },
+        "color": "#047857"
+      }
     ]
   },
-
   "lanes": [
-    { "id": "customer", "label": { "en": "Customer", "pt": "Cliente", "es": "Cliente" }, "sub": { "en": "files the ticket", "pt": "abre o ticket", "es": "abre el ticket" } },
-    { "id": "tier1",    "label": { "en": "Tier 1",   "pt": "Nível 1", "es": "Nivel 1" }, "sub": { "en": "first responder", "pt": "primeiro contato", "es": "primer contacto" } },
-    { "id": "tier2",    "label": { "en": "Tier 2",   "pt": "Nível 2", "es": "Nivel 2" }, "sub": { "en": "engineering escalation", "pt": "escalação de engenharia", "es": "escalación de ingeniería" } }
+    {
+      "id": "customer",
+      "label": {
+        "en": "Customer",
+        "pt": "Cliente",
+        "es": "Cliente"
+      },
+      "sub": {
+        "en": "files the ticket",
+        "pt": "abre o ticket",
+        "es": "abre el ticket"
+      }
+    },
+    {
+      "id": "tier1",
+      "label": {
+        "en": "Tier 1",
+        "pt": "Nível 1",
+        "es": "Nivel 1"
+      },
+      "sub": {
+        "en": "first responder",
+        "pt": "primeiro contato",
+        "es": "primer contacto"
+      }
+    },
+    {
+      "id": "tier2",
+      "label": {
+        "en": "Tier 2",
+        "pt": "Nível 2",
+        "es": "Nivel 2"
+      },
+      "sub": {
+        "en": "engineering escalation",
+        "pt": "escalação de engenharia",
+        "es": "escalación de ingeniería"
+      }
+    }
   ],
-
   "phases": [
-    { "id": "intake",  "label": { "en": "Intake",     "pt": "Entrada",   "es": "Entrada" },    "roman": "I" },
-    { "id": "triage",  "label": { "en": "Triage",     "pt": "Triagem",   "es": "Triaje" },     "roman": "II" },
-    { "id": "resolve", "label": { "en": "Resolve",    "pt": "Resolver",  "es": "Resolver" },   "roman": "III" },
-    { "id": "close",   "label": { "en": "Close",      "pt": "Fechar",    "es": "Cerrar" },     "roman": "IV" }
+    {
+      "id": "intake",
+      "label": {
+        "en": "Intake",
+        "pt": "Entrada",
+        "es": "Entrada"
+      },
+      "roman": "I"
+    },
+    {
+      "id": "triage",
+      "label": {
+        "en": "Triage",
+        "pt": "Triagem",
+        "es": "Triaje"
+      },
+      "roman": "II"
+    },
+    {
+      "id": "resolve",
+      "label": {
+        "en": "Resolve",
+        "pt": "Resolver",
+        "es": "Resolver"
+      },
+      "roman": "III"
+    },
+    {
+      "id": "close",
+      "label": {
+        "en": "Close",
+        "pt": "Fechar",
+        "es": "Cerrar"
+      },
+      "roman": "IV"
+    }
   ],
-
   "nodes": [
     {
-      "id": "open", "lane": "customer", "phase": "intake",
-      "title": { "en": "Open ticket", "pt": "Abrir ticket", "es": "Abrir ticket" },
-      "sub":   { "en": "via email, chat, or portal", "pt": "via email, chat ou portal", "es": "vía email, chat o portal" },
+      "id": "open",
+      "lane": "customer",
+      "phase": "intake",
+      "title": {
+        "en": "Open ticket",
+        "pt": "Abrir ticket",
+        "es": "Abrir ticket"
+      },
+      "sub": {
+        "en": "via email, chat, or portal",
+        "pt": "via email, chat ou portal",
+        "es": "vía email, chat o portal"
+      },
       "objective": {
         "en": "Customer describes the problem in their own words, attaches screenshots, sets a perceived priority.",
         "pt": "Cliente descreve o problema com suas próprias palavras, anexa screenshots, define a prioridade percebida.",
@@ -40,26 +159,34 @@
         "pt": "Nível 1 pega o ticket.",
         "es": "Nivel 1 toma el ticket."
       },
-      "today": {
-        "mode": "manual",
-        "narrative": {
-          "en": "Customer fills out a generic form. Routing is keyword-based. Priority defaults to 'Normal' unless they pick something else.",
-          "pt": "Cliente preenche um formulário genérico. O roteamento é baseado em keywords. A prioridade fica em 'Normal' a menos que escolham outra coisa.",
-          "es": "El cliente llena un formulario genérico. El enrutamiento es por palabras clave. La prioridad queda en 'Normal' a menos que elijan otra cosa."
-        }
-      },
-      "tomorrow": {
-        "mode": "ai",
-        "narrative": {
-          "en": "Conversational intake — AI agent asks the right follow-up questions, classifies severity from the description, attaches relevant logs automatically.",
-          "pt": "Entrada conversacional — agente de IA faz as perguntas certas, classifica a severidade pela descrição, anexa logs relevantes automaticamente.",
-          "es": "Entrada conversacional — agente de IA hace las preguntas correctas, clasifica la severidad por la descripción, adjunta logs relevantes automáticamente."
+      "states": {
+        "today": {
+          "mode": "manual",
+          "narrative": {
+            "en": "Customer fills out a generic form. Routing is keyword-based. Priority defaults to 'Normal' unless they pick something else.",
+            "pt": "Cliente preenche um formulário genérico. O roteamento é baseado em keywords. A prioridade fica em 'Normal' a menos que escolham outra coisa.",
+            "es": "El cliente llena un formulario genérico. El enrutamiento es por palabras clave. La prioridad queda en 'Normal' a menos que elijan otra cosa."
+          }
+        },
+        "tomorrow": {
+          "mode": "ai",
+          "narrative": {
+            "en": "Conversational intake — AI agent asks the right follow-up questions, classifies severity from the description, attaches relevant logs automatically.",
+            "pt": "Entrada conversacional — agente de IA faz as perguntas certas, classifica a severidade pela descrição, anexa logs relevantes automaticamente.",
+            "es": "Entrada conversacional — agente de IA hace las preguntas correctas, clasifica la severidad por la descripción, adjunta logs relevantes automáticamente."
+          }
         }
       }
     },
     {
-      "id": "route", "lane": "tier1", "phase": "triage",
-      "title": { "en": "Triage & route", "pt": "Triar e rotear", "es": "Triar y enrutar" },
+      "id": "route",
+      "lane": "tier1",
+      "phase": "triage",
+      "title": {
+        "en": "Triage & route",
+        "pt": "Triar e rotear",
+        "es": "Triar y enrutar"
+      },
       "objective": {
         "en": "Classify the ticket by category, severity, and ownership; either resolve it or escalate to Tier 2.",
         "pt": "Classificar o ticket por categoria, severidade e responsável; resolver ou escalar para Nível 2.",
@@ -70,80 +197,131 @@
         "pt": "Agente Nível 1 lê → marca → decide",
         "es": "Agente Nivel 1 lee → etiqueta → decide"
       },
-      "today": {
-        "mode": "assisted",
-        "narrative": {
-          "en": "Agent reads the ticket, applies tags from a dropdown, looks up similar past tickets manually. Decision: resolve in <10 min or escalate.",
-          "pt": "Agente lê o ticket, aplica tags de um dropdown, busca tickets similares manualmente. Decisão: resolver em <10 min ou escalar.",
-          "es": "El agente lee el ticket, aplica etiquetas de un menú, busca tickets similares manualmente. Decisión: resolver en <10 min o escalar."
-        }
-      },
-      "tomorrow": {
-        "mode": "ai",
-        "narrative": {
-          "en": "AI suggests tags + severity + likely owner from the ticket text. Surfaces 3 most similar past tickets with their resolutions. Agent confirms in one click.",
-          "pt": "IA sugere tags + severidade + responsável provável a partir do texto. Mostra os 3 tickets passados mais similares com suas resoluções. Agente confirma em um clique.",
-          "es": "La IA sugiere etiquetas + severidad + responsable probable a partir del texto. Muestra los 3 tickets pasados más similares con sus resoluciones. El agente confirma en un clic."
-        }
-      }
-    },
-    {
-      "id": "resolve1", "lane": "tier1", "phase": "resolve",
-      "title": { "en": "Resolve at Tier 1", "pt": "Resolver no Nível 1", "es": "Resolver en Nivel 1" },
-      "today": {
-        "mode": "manual",
-        "narrative": {
-          "en": "Agent uses a knowledge base + their own experience. Writes a response from scratch or from a saved reply.",
-          "pt": "Agente usa uma base de conhecimento + experiência própria. Escreve a resposta do zero ou usando uma resposta salva.",
-          "es": "El agente usa una base de conocimiento + su propia experiencia. Escribe la respuesta desde cero o desde una respuesta guardada."
-        }
-      },
-      "tomorrow": {
-        "mode": "ai",
-        "narrative": {
-          "en": "AI drafts a response grounded in the knowledge base + product docs. Agent reviews and edits, doesn't write from scratch.",
-          "pt": "IA gera uma resposta baseada na base de conhecimento + docs do produto. Agente revisa e edita, não escreve do zero.",
-          "es": "La IA redacta una respuesta basada en la base de conocimiento + docs del producto. El agente revisa y edita, no escribe desde cero."
+      "states": {
+        "today": {
+          "mode": "assisted",
+          "narrative": {
+            "en": "Agent reads the ticket, applies tags from a dropdown, looks up similar past tickets manually. Decision: resolve in <10 min or escalate.",
+            "pt": "Agente lê o ticket, aplica tags de um dropdown, busca tickets similares manualmente. Decisão: resolver em <10 min ou escalar.",
+            "es": "El agente lee el ticket, aplica etiquetas de un menú, busca tickets similares manualmente. Decisión: resolver en <10 min o escalar."
+          }
+        },
+        "tomorrow": {
+          "mode": "ai",
+          "narrative": {
+            "en": "AI suggests tags + severity + likely owner from the ticket text. Surfaces 3 most similar past tickets with their resolutions. Agent confirms in one click.",
+            "pt": "IA sugere tags + severidade + responsável provável a partir do texto. Mostra os 3 tickets passados mais similares com suas resoluções. Agente confirma em um clique.",
+            "es": "La IA sugiere etiquetas + severidad + responsable probable a partir del texto. Muestra los 3 tickets pasados más similares con sus resoluciones. El agente confirma en un clic."
+          }
         }
       }
     },
     {
-      "id": "escalate", "lane": "tier2", "phase": "resolve",
-      "title": { "en": "Engineering deep-dive", "pt": "Investigação de engenharia", "es": "Investigación de ingeniería" },
-      "today": {
-        "mode": "manual",
-        "narrative": {
-          "en": "Engineer reproduces the bug locally, checks logs, writes a fix. Loops back with the customer for more info.",
-          "pt": "Engenheiro reproduz o bug localmente, checa logs, escreve a correção. Volta ao cliente pedindo mais info.",
-          "es": "El ingeniero reproduce el bug localmente, revisa logs, escribe la corrección. Vuelve al cliente pidiendo más información."
-        }
+      "id": "resolve1",
+      "lane": "tier1",
+      "phase": "resolve",
+      "title": {
+        "en": "Resolve at Tier 1",
+        "pt": "Resolver no Nível 1",
+        "es": "Resolver en Nivel 1"
       },
-      "tomorrow": {
-        "mode": "ai",
-        "narrative": {
-          "en": "AI assistant queries logs + traces for the affected user, surfaces likely root cause, suggests the fix. Engineer validates and ships.",
-          "pt": "Assistente de IA consulta logs + traces do usuário afetado, sugere causa-raiz e correção. Engenheiro valida e envia.",
-          "es": "Asistente de IA consulta logs + trazas del usuario afectado, sugiere la causa raíz y la corrección. El ingeniero valida y despliega."
+      "states": {
+        "today": {
+          "mode": "manual",
+          "narrative": {
+            "en": "Agent uses a knowledge base + their own experience. Writes a response from scratch or from a saved reply.",
+            "pt": "Agente usa uma base de conhecimento + experiência própria. Escreve a resposta do zero ou usando uma resposta salva.",
+            "es": "El agente usa una base de conocimiento + su propia experiencia. Escribe la respuesta desde cero o desde una respuesta guardada."
+          }
+        },
+        "tomorrow": {
+          "mode": "ai",
+          "narrative": {
+            "en": "AI drafts a response grounded in the knowledge base + product docs. Agent reviews and edits, doesn't write from scratch.",
+            "pt": "IA gera uma resposta baseada na base de conhecimento + docs do produto. Agente revisa e edita, não escreve do zero.",
+            "es": "La IA redacta una respuesta basada en la base de conocimiento + docs del producto. El agente revisa y edita, no escribe desde cero."
+          }
         }
       }
     },
     {
-      "id": "respond", "lane": "tier1", "phase": "close",
-      "title": { "en": "Respond to customer", "pt": "Responder ao cliente", "es": "Responder al cliente" }
+      "id": "escalate",
+      "lane": "tier2",
+      "phase": "resolve",
+      "title": {
+        "en": "Engineering deep-dive",
+        "pt": "Investigação de engenharia",
+        "es": "Investigación de ingeniería"
+      },
+      "states": {
+        "today": {
+          "mode": "manual",
+          "narrative": {
+            "en": "Engineer reproduces the bug locally, checks logs, writes a fix. Loops back with the customer for more info.",
+            "pt": "Engenheiro reproduz o bug localmente, checa logs, escreve a correção. Volta ao cliente pedindo mais info.",
+            "es": "El ingeniero reproduce el bug localmente, revisa logs, escribe la corrección. Vuelve al cliente pidiendo más información."
+          }
+        },
+        "tomorrow": {
+          "mode": "ai",
+          "narrative": {
+            "en": "AI assistant queries logs + traces for the affected user, surfaces likely root cause, suggests the fix. Engineer validates and ships.",
+            "pt": "Assistente de IA consulta logs + traces do usuário afetado, sugere causa-raiz e correção. Engenheiro valida e envia.",
+            "es": "Asistente de IA consulta logs + trazas del usuario afectado, sugiere la causa raíz y la corrección. El ingeniero valida y despliega."
+          }
+        }
+      }
     },
     {
-      "id": "csat", "lane": "customer", "phase": "close",
-      "title": { "en": "Receive resolution", "pt": "Receber a resolução", "es": "Recibir la resolución" },
-      "sub": { "en": "rate the experience", "pt": "avaliar a experiência", "es": "calificar la experiencia" }
+      "id": "respond",
+      "lane": "tier1",
+      "phase": "close",
+      "title": {
+        "en": "Respond to customer",
+        "pt": "Responder ao cliente",
+        "es": "Responder al cliente"
+      }
+    },
+    {
+      "id": "csat",
+      "lane": "customer",
+      "phase": "close",
+      "title": {
+        "en": "Receive resolution",
+        "pt": "Receber a resolução",
+        "es": "Recibir la resolución"
+      },
+      "sub": {
+        "en": "rate the experience",
+        "pt": "avaliar a experiência",
+        "es": "calificar la experiencia"
+      }
     }
   ],
-
   "edges": [
-    { "from": "open",     "to": "route" },
-    { "from": "route",    "to": "resolve1" },
-    { "from": "route",    "to": "escalate" },
-    { "from": "resolve1", "to": "respond" },
-    { "from": "escalate", "to": "respond" },
-    { "from": "respond",  "to": "csat" }
+    {
+      "source": "open",
+      "target": "route"
+    },
+    {
+      "source": "route",
+      "target": "resolve1"
+    },
+    {
+      "source": "route",
+      "target": "escalate"
+    },
+    {
+      "source": "resolve1",
+      "target": "respond"
+    },
+    {
+      "source": "escalate",
+      "target": "respond"
+    },
+    {
+      "source": "respond",
+      "target": "csat"
+    }
   ]
 }

@@ -55,15 +55,17 @@ function makeData(): NormalizedMap {
         actors: 'Alice',
         triggers: 'Click',
         next: 'Phase 2',
-        today: {
-          mode: 'manual',
-          narrative: 'Today narrative',
-          tools: ['Excel'],
-          teams: ['Ops'],
-          tickets: ['JIRA-1'],
-          proven_pattern: ['Pattern A'],
+        states: {
+          today: {
+            mode: 'manual',
+            narrative: 'Today narrative',
+            tools: ['Excel'],
+            teams: ['Ops'],
+            tickets: ['JIRA-1'],
+            proven_pattern: ['Pattern A'],
+          },
+          tomorrow: { mode: 'ai', narrative: 'Tomorrow narrative' },
         },
-        tomorrow: { mode: 'ai', narrative: 'Tomorrow narrative' },
         modules: [
           {
             feature: 'Mod1',
@@ -78,8 +80,8 @@ function makeData(): NormalizedMap {
       { id: 'n3', lane: 'l1', phase: 'p1', title: 'Node 3' },
     ],
     edges: [
-      { from: 'n1', to: 'n2' },
-      { from: 'n3', to: 'n1' },
+      { source: 'n1', target: 'n2' },
+      { source: 'n3', target: 'n1' },
     ],
     _modeMap: {
       manual: { id: 'manual', label: 'Manual', color: '#b00' },
@@ -422,7 +424,7 @@ describe('NodeDrawer', () => {
     // Build a node graph where n3 has no incoming edges.
     const data = makeData();
     // Reorder edges so n3 is true entry (no incoming).
-    data.edges = [{ from: 'n3', to: 'n1' }];
+    data.edges = [{ source: 'n3', target: 'n1' }];
     render(
       <NodeDrawer
         open={true}

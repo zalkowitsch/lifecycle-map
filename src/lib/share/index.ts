@@ -29,7 +29,7 @@ export interface ShareResult {
 }
 
 export interface ShareStrategies {
-  download(jsonText: string, filename?: string): void;
+  download(jsonText: string, filename?: string, mimeType?: string): void;
   embedded(jsonText: string, baseUrl: string): Promise<ShareResult>;
   catbox(jsonText: string, baseUrl: string): Promise<ShareResult>;
   zerox(jsonText: string, baseUrl: string): Promise<ShareResult>;
@@ -51,8 +51,8 @@ function defaultDownloadFilename(): string {
 }
 
 export const shareStrategies: ShareStrategies = {
-  download(jsonText, filename) {
-    downloadJson(jsonText, filename ?? defaultDownloadFilename());
+  download(jsonText, filename, mimeType) {
+    downloadJson(jsonText, filename ?? defaultDownloadFilename(), mimeType);
   },
   embedded(jsonText, baseUrl) {
     return shareEmbedded(jsonText, baseUrl);

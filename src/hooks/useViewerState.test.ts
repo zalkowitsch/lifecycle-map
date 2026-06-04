@@ -307,6 +307,123 @@ describe('normalize', () => {
     });
     expect(out.phases[0]?.subCols).toBe(1);
   });
+
+  // ----- v2 schema (source/target + states) ---------------------------------
+
+  it('promotes legacy from/to edges into source/target', () => {
+    const out = normalize({
+      ...baseMap(),
+      nodes: [
+        { id: 'a', lane: 'l', phase: 'p', title: 'A' },
+        { id: 'b', lane: 'l', phase: 'p', title: 'B' },
+      ],
+      edges: [{ from: 'a', to: 'b' }],
+    });
+    expect(out.edges[0]?.source).toBe('a');
+    expect(out.edges[0]?.target).toBe('b');
+  });
+
+  it('promotes legacy today/tomorrow into states map', () => {
+    const out = normalize({
+      ...baseMap(),
+      nodes: [
+        {
+          id: 'n1',
+          lane: 'l1',
+          phase: 'p1',
+          title: 'Node',
+          today: { mode: 'manual', narrative: 'A' },
+          tomorrow: { mode: 'ai', narrative: 'B' },
+        },
+      ],
+    });
+    const n = out.nodes[0]!;
+    expect(n.states['today']?.narrative).toBe('A');
+    expect(n.states['tomorrow']?.narrative).toBe('B');
+  });
+
+  it('preserves states map alongside legacy today/tomorrow', () => {
+    const out = normalize({
+      ...baseMap(),
+      nodes: [
+        {
+          id: 'n1',
+          lane: 'l1',
+          phase: 'p1',
+          title: 'Node',
+          states: {
+            today: { mode: 'manual', narrative: 'from-states' },
+            future: { mode: 'ai', narrative: 'C' },
+          },
+          today: { mode: 'manual', narrative: 'from-legacy' },
+        },
+      ],
+    });
+    const n = out.nodes[0]!;
+    expect(n.states['today']?.narrative).toBe('from-states');
+    expect(n.states['future']?.narrative).toBe('C');
+  });
+
+  it('keeps source/target when both v1 and v2 fields are present', () => {
+    const out = normalize({
+      ...baseMap(),
+      nodes: [
+        { id: 'x', lane: 'l', phase: 'p', title: 'X' },
+        { id: 'y', lane: 'l', phase: 'p', title: 'Y' },
+      ],
+      edges: [{ source: 'x', target: 'y', from: 'should-be-ignored', to: 'also-ignored' }],
+    });
+    expect(out.edges[0]?.source).toBe('x');
+    expect(out.edges[0]?.target).toBe('y');
+  });
+
+  it('throws when an edge points at a node that does not exist', () => {
+    expect(() => normalize({
+      ...baseMap(),
+      nodes: [{ id: 'a', lane: 'l', phase: 'p', title: 'A' }],
+      edges: [{ source: 'a', target: 'ghost' }],
+    })).toThrow(/unknown node "ghost"/);
+  });
+
+  it('throws when an edge has neither source/target nor from/to', () => {
+    expect(() => normalize({
+      ...baseMap(),
+      edges: [{} as never],
+    })).toThrow(/source|target/i);
+  });
+
+  it('defaults meta.direction to LR', () => {
+    const out = normalize(baseMap());
+    expect(out.meta.direction).toBe('LR');
+  });
+
+  it('preserves explicit meta.direction', () => {
+    const out = normalize({
+      ...baseMap(),
+      meta: { direction: 'TB' },
+    });
+    expect(out.meta.direction).toBe('TB');
+  });
+
+  it('auto-discovers modes from arbitrary states (not just today/tomorrow)', () => {
+    const out = normalize({
+      ...baseMap(),
+      nodes: [
+        {
+          id: 'n1',
+          lane: 'l1',
+          phase: 'p1',
+          title: 'Node',
+          states: {
+            future: { mode: 'pilot-mode' },
+            legacy: { mode: 'sunset-mode' },
+          },
+        },
+      ],
+    });
+    expect(out._modeMap['pilot-mode']).toBeDefined();
+    expect(out._modeMap['sunset-mode']).toBeDefined();
+  });
 });
 
 // ---------------------------------------------------------------------------

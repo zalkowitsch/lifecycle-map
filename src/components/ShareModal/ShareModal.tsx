@@ -11,6 +11,8 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { makeViewerBaseUrl, shareStrategies, type ShareResult } from '@/lib/share';
+import { toMermaid } from '@/lib/mermaid';
+import type { LifecycleMap } from '@/types/lifecycle-map';
 
 import styles from './ShareModal.module.css';
 
@@ -20,7 +22,7 @@ export interface ShareModalProps {
   getJsonText: () => string;
 }
 
-type StrategyId = 'download' | 'embedded' | 'catbox' | 'zerox' | 'encrypted';
+type StrategyId = 'download' | 'mermaid' | 'embedded' | 'catbox' | 'zerox' | 'encrypted';
 type BadgeKind = 'ok' | 'public' | 'auth' | 'secure';
 type PwMode = 'auto' | 'custom';
 
@@ -46,6 +48,23 @@ const CARDS: CardConfig[] = [
       </>
     ),
     actionLabel: 'Download .json',
+  },
+  {
+    id: 'mermaid',
+    name: 'Export as Mermaid',
+    meta: 'flowchart .mmd · paste into Mermaid Live / Notion / GitHub',
+    badge: { label: 'private', kind: 'ok' },
+    desc: (
+      <>
+        Convert the map to a{' '}
+        <a href="https://mermaid.js.org/syntax/flowchart.html" target="_blank" rel="noopener noreferrer">
+          Mermaid flowchart
+        </a>{' '}
+        — phases become subgraphs, lanes become classDefs, shapes survive. Roundtrips back via the
+        viewer (rich fields like states and modules are stashed in comments). Nothing is uploaded.
+      </>
+    ),
+    actionLabel: 'Download .mmd',
   },
   {
     id: 'embedded',
@@ -190,6 +209,7 @@ const EMPTY_CARD_RESULT: CardResult = { busy: false, error: null, payload: null 
 export default function ShareModal({ open, onClose, getJsonText }: ShareModalProps): JSX.Element {
   const [results, setResults] = useState<Record<StrategyId, CardResult>>({
     download: EMPTY_CARD_RESULT,
+    mermaid: EMPTY_CARD_RESULT,
     embedded: EMPTY_CARD_RESULT,
     catbox: EMPTY_CARD_RESULT,
     zerox: EMPTY_CARD_RESULT,
@@ -235,6 +255,17 @@ export default function ShareModal({ open, onClose, getJsonText }: ShareModalPro
           updateCard(id, {
             busy: false,
             payload: { strategy: 'download', downloadInfo: { filename, size } },
+          });
+        } else if (id === 'mermaid') {
+          const parsed = JSON.parse(json) as LifecycleMap;
+          const mmd = toMermaid(parsed);
+          const ts = new Date().toISOString().slice(0, 10);
+          const filename = `lifecycle-map-${ts}.mmd`;
+          shareStrategies.download(mmd, filename, 'text/plain');
+          const size = new Blob([mmd], { type: 'text/plain' }).size;
+          updateCard(id, {
+            busy: false,
+            payload: { strategy: 'mermaid', downloadInfo: { filename, size } },
           });
         } else if (id === 'embedded') {
           const r = await shareStrategies.embedded(json, baseUrl);
@@ -298,7 +329,7 @@ export default function ShareModal({ open, onClose, getJsonText }: ShareModalPro
           <div>
             <div className={styles.eyebrow}>share</div>
             <h2 className={styles.title}>
-              Share <em>· five ways</em>
+              Share <em>· six ways</em>
             </h2>
           </div>
           <button
@@ -401,6 +432,18 @@ function renderPayload(payload: NonNullable<CardResult['payload']>): ReactNode {
         Saved <code>{filename}</code> · {formatSize(size)}
         <br />
         Drop this file back onto the viewer anytime to reopen.
+      </div>
+    );
+  }
+  if (payload.strategy === 'mermaid' && payload.downloadInfo) {
+    const { filename, size } = payload.downloadInfo;
+    return (
+      <div className={styles.note}>
+        Saved <code>{filename}</code> · {formatSize(size)}
+        <br />
+        Paste into{' '}
+        <a href="https://mermaid.live" target="_blank" rel="noopener noreferrer">mermaid.live</a>,
+        a Notion / GitHub fenced block, or drop back onto the viewer to reopen.
       </div>
     );
   }

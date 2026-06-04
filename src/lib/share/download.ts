@@ -5,12 +5,8 @@
  * Triggers a synthetic anchor click to save the file.
  */
 
-function makeJsonBlob(text: string): Blob {
-  return new Blob([text], { type: 'application/json' });
-}
-
-export function downloadJson(text: string, filename: string): void {
-  const blob = makeJsonBlob(text);
+export function downloadJson(text: string, filename: string, mimeType: string = 'application/json'): void {
+  const blob = new Blob([text], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

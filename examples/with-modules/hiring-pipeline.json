@@ -1,29 +1,79 @@
 {
   "_comment": "Same hiring pipeline as ../hiring-pipeline.json, but modules are referenced by ID from modules.json. Demonstrates the external reference pattern AND multi-language strings.",
   "meta": {
-    "title":    { "en": "Hiring Pipeline (with module references)", "pt": "Pipeline de Contratação (com refs de módulos)", "es": "Pipeline de Contratación (con refs de módulos)" },
-    "subtitle": { "en": "modules pulled from a shared catalog", "pt": "módulos vindos de um catálogo compartilhado", "es": "módulos desde un catálogo compartido" },
+    "title": {
+      "en": "Hiring Pipeline (with module references)",
+      "pt": "Pipeline de Contratação (com refs de módulos)",
+      "es": "Pipeline de Contratación (con refs de módulos)"
+    },
+    "subtitle": {
+      "en": "modules pulled from a shared catalog",
+      "pt": "módulos vindos de um catálogo compartilhado",
+      "es": "módulos desde un catálogo compartido"
+    },
     "modules_source": "./modules.json"
   },
-
   "lanes": [
-    { "id": "candidate", "label": { "en": "Candidate", "pt": "Candidato",   "es": "Candidato" } },
-    { "id": "sourcer",   "label": { "en": "Sourcer",   "pt": "Sourcer",     "es": "Sourcer" } },
-    { "id": "recruiter", "label": { "en": "Recruiter", "pt": "Recrutador",  "es": "Reclutador" } }
+    {
+      "id": "candidate",
+      "label": {
+        "en": "Candidate",
+        "pt": "Candidato",
+        "es": "Candidato"
+      }
+    },
+    {
+      "id": "sourcer",
+      "label": {
+        "en": "Sourcer",
+        "pt": "Sourcer",
+        "es": "Sourcer"
+      }
+    },
+    {
+      "id": "recruiter",
+      "label": {
+        "en": "Recruiter",
+        "pt": "Recrutador",
+        "es": "Reclutador"
+      }
+    }
   ],
-
   "phases": [
-    { "id": "sourcing", "label": { "en": "Sourcing", "pt": "Sourcing", "es": "Sourcing" }, "subCols": 1 },
-    { "id": "screen",   "label": { "en": "Screen",   "pt": "Triagem",  "es": "Cribado" },  "subCols": 1 }
+    {
+      "id": "sourcing",
+      "label": {
+        "en": "Sourcing",
+        "pt": "Sourcing",
+        "es": "Sourcing"
+      },
+      "subCols": 1
+    },
+    {
+      "id": "screen",
+      "label": {
+        "en": "Screen",
+        "pt": "Triagem",
+        "es": "Cribado"
+      },
+      "subCols": 1
+    }
   ],
-
   "nodes": [
     {
       "id": "source",
       "lane": "sourcer",
       "phase": "sourcing",
-      "title": { "en": "Source candidates", "pt": "Buscar candidatos", "es": "Buscar candidatos" },
-      "objective": { "en": "Build a top-of-funnel pipeline.", "pt": "Construir um funil no topo.", "es": "Construir un embudo en la parte superior." },
+      "title": {
+        "en": "Source candidates",
+        "pt": "Buscar candidatos",
+        "es": "Buscar candidatos"
+      },
+      "objective": {
+        "en": "Build a top-of-funnel pipeline.",
+        "pt": "Construir um funil no topo.",
+        "es": "Construir un embudo en la parte superior."
+      },
       "modules": [
         "outreach:templates",
         "outreach:ab-testing",
@@ -34,16 +84,26 @@
       "id": "screen",
       "lane": "recruiter",
       "phase": "screen",
-      "title": { "en": "Resume screen", "pt": "Triagem de currículo", "es": "Cribado de CV" },
-      "objective": { "en": "Filter the pool to a manageable set.", "pt": "Filtrar o pool para um conjunto gerenciável.", "es": "Filtrar el pool a un conjunto manejable." },
+      "title": {
+        "en": "Resume screen",
+        "pt": "Triagem de currículo",
+        "es": "Cribado de CV"
+      },
+      "objective": {
+        "en": "Filter the pool to a manageable set.",
+        "pt": "Filtrar o pool para um conjunto gerenciável.",
+        "es": "Filtrar el pool a un conjunto manejable."
+      },
       "modules": [
         "ats:resume-parser",
         "ats:duplicate-detection"
       ]
     }
   ],
-
   "edges": [
-    { "from": "source", "to": "screen" }
+    {
+      "source": "source",
+      "target": "screen"
+    }
   ]
 }

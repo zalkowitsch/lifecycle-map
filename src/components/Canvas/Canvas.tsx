@@ -18,7 +18,7 @@ import type { CSSProperties, MouseEvent as ReactMouseEvent, PointerEvent as Reac
 import { computeLayout } from '@/lib/layout';
 import { LAYOUT_CONSTANTS } from '@/lib/layout';
 import { routeEdges } from '@/lib/edge-router';
-import type { MapEdge, MapNode, Mode, NormalizedMap } from '@/types/lifecycle-map';
+import type { MapNode, Mode, NormalizedMap } from '@/types/lifecycle-map';
 import { StickyHeaders } from './StickyHeaders';
 import styles from './Canvas.module.css';
 
@@ -64,7 +64,26 @@ export function Canvas({
   // Layout + edge routing are pure functions of `data`. We don't re-compute
   // them on zoom changes — zoom is purely a CSS transform on the wrapper.
   const layout = useMemo(() => computeLayout(data), [data]);
-  const edgeRoutes = useMemo(() => routeEdges(data.edges, layout), [data.edges, layout]);
+  // edge-router expects {from, to} — adapt from v2 normalized {source, target}.
+  // Filter out malformed edges (missing source/target, or pointing at nodes
+  // that don't exist) so a single bad edge doesn't black out the canvas.
+  const routerEdges = useMemo(() => {
+    const ids = new Set(data.nodes.map((n) => n.id));
+    const valid: { from: string; to: string }[] = [];
+    for (const e of data.edges) {
+      if (!e.source || !e.target) {
+        console.warn('[Canvas] skipping edge without source/target:', e);
+        continue;
+      }
+      if (!ids.has(e.source) || !ids.has(e.target)) {
+        console.warn(`[Canvas] skipping edge ${e.source}→${e.target}: node not found`);
+        continue;
+      }
+      valid.push({ from: e.source, to: e.target });
+    }
+    return valid;
+  }, [data.edges, data.nodes]);
+  const edgeRoutes = useMemo(() => routeEdges(routerEdges, layout), [routerEdges, layout]);
 
   // Pre-build mode → color map. _modeMap is already normalized.
   const modeMap = data._modeMap;
@@ -75,9 +94,9 @@ export function Canvas({
     const up = new Set<string>();
     const down = new Set<string>();
     if (activeNodeId) {
-      data.edges.forEach((e: MapEdge) => {
-        if (e.to === activeNodeId) up.add(e.from);
-        if (e.from === activeNodeId) down.add(e.to);
+      data.edges.forEach((e) => {
+        if (e.target === activeNodeId) up.add(e.source);
+        if (e.source === activeNodeId) down.add(e.target);
       });
     }
     return { upstreamSet: up, downstreamSet: down };
@@ -427,8 +446,8 @@ function EdgesLayer({
 }: EdgesLayerProps) {
   return (
     <g>
-      {data.edges.map((e: MapEdge) => {
-        const key = `${e.from}>${e.to}`;
+      {data.edges.map((e) => {
+        const key = `${e.source}>${e.target}`;
         const route = edgeRoutes.get(key);
         if (!route) return null;
         // Classify for styling/marker.
@@ -436,10 +455,10 @@ function EdgesLayer({
         let marker = 'url(#arrow)';
         if (route.backward) cls += ' backward';
         if (activeNodeId) {
-          if (e.to === activeNodeId) {
+          if (e.target === activeNodeId) {
             cls = 'edge upstream';
             marker = 'url(#arrow-upstream)';
-          } else if (e.from === activeNodeId) {
+          } else if (e.source === activeNodeId) {
             cls = 'edge downstream';
             marker = 'url(#arrow-downstream)';
           } else if (upstreamSet.size === 0 && downstreamSet.size === 0) {
@@ -448,7 +467,7 @@ function EdgesLayer({
         }
         const handleClick = (ev: ReactMouseEvent) => {
           ev.stopPropagation();
-          onEdgeClick(e.from, e.to);
+          onEdgeClick(e.source, e.target);
         };
         return (
           <g key={key}>

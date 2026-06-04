@@ -112,8 +112,8 @@ function renderNode(
   const phase = lookups.phaseById[node.phase];
   if (!lane || !phase) return null;
 
-  const up = data.edges.filter((e) => e.to === nodeId).map((e) => e.from);
-  const down = data.edges.filter((e) => e.from === nodeId).map((e) => e.to);
+  const up = data.edges.filter((e) => e.target === nodeId).map((e) => e.source);
+  const down = data.edges.filter((e) => e.source === nodeId).map((e) => e.target);
 
   const walkIdx = walkOrder.indexOf(nodeId);
   const prevId = walkIdx > 0 ? walkOrder[walkIdx - 1] : null;
@@ -149,8 +149,7 @@ function renderNode(
         </div>
       ) : null}
 
-      {node.today ? renderStateSection('today', node.today, data, L) : null}
-      {node.tomorrow ? renderStateSection('tomorrow', node.tomorrow, data, L) : null}
+      {renderStates(node, data, L)}
 
       {node.modules && node.modules.length > 0 ? (
         <div className={styles.modulesSection}>
@@ -246,33 +245,70 @@ function renderMetaRow(
   );
 }
 
-// ----- state sections (today / tomorrow) ------------------------------------
+// ----- state sections -------------------------------------------------------
+//
+// Renders every entry under node.states as its own section. The known keys
+// "today" / "tomorrow" preserve the original eyebrow/title styling and the
+// tomorrow accent; arbitrary state ids fall back to titleizing the key.
 
-function renderStateSection(
-  kind: 'today' | 'tomorrow',
-  state: NodeState,
+function renderStates(
+  node: MapNode,
   data: NormalizedMap,
   L: (v: unknown) => string,
-): JSX.Element {
+): JSX.Element[] {
+  const states = node.states ?? {};
+  const ids = orderStateIds(Object.keys(states));
+  return ids.map((id) => {
+    const state = states[id];
+    if (!state) return null as unknown as JSX.Element;
+    return (
+      <StateSection
+        key={id}
+        stateId={id}
+        state={state}
+        data={data}
+        L={L}
+      />
+    );
+  }).filter(Boolean);
+}
+
+function orderStateIds(ids: string[]): string[] {
+  // Keep the canonical today → tomorrow order when present, then append
+  // the rest in declaration order (preserves author intent for custom ids).
+  const preferred = ['today', 'tomorrow'];
+  const known = preferred.filter((k) => ids.includes(k));
+  const rest = ids.filter((k) => !preferred.includes(k));
+  return [...known, ...rest];
+}
+
+function StateSection(props: {
+  stateId: string;
+  state: NodeState;
+  data: NormalizedMap;
+  L: (v: unknown) => string;
+}): JSX.Element {
+  const { stateId, state, data, L } = props;
   const narrative = L(state.narrative);
   const tools = state.tools ?? [];
   const teams = state.teams ?? [];
   const tickets = state.tickets ?? [];
   const pattern = state.proven_pattern ?? [];
   const hasTools = tools.length || teams.length || tickets.length || pattern.length;
-  const className = kind === 'tomorrow'
+
+  const isTomorrow = stateId === 'tomorrow';
+  const className = isTomorrow
     ? `${styles.stateSection} ${styles.tomorrow}`
     : styles.stateSection;
+
+  const { eyebrow, title } = stateLabels(stateId, state, L);
+
   return (
     <div className={className}>
       <div className={styles.stateHead}>
         <div className={styles.stateHeadLabel}>
-          <span className={styles.eyebrow}>
-            {kind === 'today' ? 'Today' : 'Tomorrow'}
-          </span>
-          <span className={styles.stateTitle}>
-            {kind === 'today' ? 'Current state' : <em>Future state</em>}
-          </span>
+          <span className={styles.eyebrow}>{eyebrow}</span>
+          <span className={styles.stateTitle}>{title}</span>
         </div>
         <ModePill modeId={state.mode} modes={data._modeMap} L={L} />
       </div>
@@ -289,6 +325,30 @@ function renderStateSection(
       </div>
     </div>
   );
+}
+
+function stateLabels(
+  stateId: string,
+  state: NodeState,
+  L: (v: unknown) => string,
+): { eyebrow: string; title: JSX.Element | string } {
+  if (stateId === 'today') {
+    return { eyebrow: 'Today', title: 'Current state' };
+  }
+  if (stateId === 'tomorrow') {
+    return { eyebrow: 'Tomorrow', title: <em>Future state</em> };
+  }
+  const customLabel = L(state.label);
+  return {
+    eyebrow: titleize(stateId),
+    title: customLabel || titleize(stateId),
+  };
+}
+
+function titleize(id: string): string {
+  return id
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function ToolsetRow(props: {
