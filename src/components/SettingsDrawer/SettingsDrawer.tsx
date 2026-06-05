@@ -142,7 +142,6 @@ export function SettingsDrawer(props: SettingsDrawerProps): JSX.Element {
         ×
       </button>
       <div className={styles.inner}>
-        <div className={styles.eyebrow}>{t('settings.eyebrow')}</div>
         <h2
           className={styles.title}
           // Title contains an <em> tag in the dictionary — render as HTML to

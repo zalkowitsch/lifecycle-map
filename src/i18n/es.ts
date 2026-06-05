@@ -44,7 +44,6 @@ export const es: UIStrings = {
   'splash.footer.docs':      'Documentación',
   'splash.footer.github':    'GitHub',
   'splash.footer.license':   'Licencia MIT',
-  'settings.eyebrow':        'preferencias',
   'settings.title':          'Configuración <em>· a tu manera</em>',
   'settings.theme':          'Tema',
   'settings.appearance':     'Apariencia',

@@ -2,7 +2,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { LifecycleMap, NormalizedMap, Mode, Phase, Lane, NodeState } from '@/types/lifecycle-map';
 import { parseSource, decodeHashData } from '@/lib/parseSource';
 import { decodeFromImageUrl } from '@/lib/share/encrypted';
+import { resolveExternalModules } from '@/lib/resolveModules';
+import { mergeDroppedFiles } from '@/lib/mergeDroppedFiles';
 import { useSessionState } from './useSessionState';
+
+// Fetch a (possibly relative) catalog URL, resolved against the map's location.
+async function fetchRelativeText(url: string, baseUrl: string): Promise<string> {
+  const resolved = new URL(url, new URL(baseUrl, window.location.href)).href;
+  const resp = await fetch(resolved, { redirect: 'follow' });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status} fetching ${resolved}`);
+  return resp.text();
+}
 
 const EXAMPLE_SLUGS: Record<string, string> = {
   'hiring-pipeline': './examples/hiring-pipeline.json',
@@ -172,7 +182,8 @@ export function useViewerState() {
     try {
       setState((s) => ({ ...s, loading: true, error: null }));
       const { data, text, name } = await fetchSource(url);
-      const normalized = normalize(data);
+      const resolved = await resolveExternalModules(data, (u) => fetchRelativeText(u, url), name);
+      const normalized = normalize(resolved);
       setState({
         data: normalized,
         source: 'slug',
@@ -189,10 +200,17 @@ export function useViewerState() {
     }
   }, []);
 
-  const loadFromText = useCallback(async (text: string, name: string, source: ViewerSource, slug?: string) => {
+  const loadFromText = useCallback(async (text: string, name: string, source: ViewerSource, slug?: string, baseUrl?: string) => {
     try {
       const data = parseSource(text);
-      const normalized = normalize(data);
+      // If the map points at an external module/rubric catalog and we have a
+      // URL to resolve it against (example/url loads), fetch and inject it.
+      // Drag-and-drop has no fetchable base, so the catalog must be embedded
+      // or dropped alongside the map (handled before this call).
+      const resolved = baseUrl
+        ? await resolveExternalModules(data, (u) => fetchRelativeText(u, baseUrl), name)
+        : data;
+      const normalized = normalize(resolved);
       const finalSlug = slug ?? (source === 'dnd' ? slugify(name) : null);
       if (finalSlug) {
         const newHash = '#' + finalSlug;
@@ -223,15 +241,24 @@ export function useViewerState() {
     try {
       setState((s) => ({ ...s, loading: true, error: null }));
       const { text, name } = await fetchSource(url);
-      await loadFromText(text, name, 'url');
+      await loadFromText(text, name, 'url', undefined, url);
     } catch (e) {
       setState((s) => ({ ...s, loading: false, error: e instanceof Error ? e.message : String(e) }));
     }
   }, [loadFromText]);
 
-  const handleFileDrop = useCallback(async (file: File) => {
-    const text = await file.text();
-    await loadFromText(text, file.name, 'dnd');
+  const handleFileDrop = useCallback(async (files: File[]) => {
+    // A map may be dropped alongside a separate module/rubric catalog; merge
+    // them into one map so module refs resolve instead of showing "Unknown".
+    const dropped = await Promise.all(
+      files.map(async (f) => ({ name: f.name, text: await f.text() })),
+    );
+    try {
+      const { mapText, mapName } = mergeDroppedFiles(dropped);
+      await loadFromText(mapText, mapName, 'dnd');
+    } catch (e) {
+      setState((s) => ({ ...s, error: e instanceof Error ? e.message : String(e) }));
+    }
   }, [loadFromText]);
 
   const handlePaste = useCallback(async (text: string) => {

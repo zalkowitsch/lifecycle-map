@@ -5,7 +5,8 @@
 // every nested element the cursor crosses; counting up/down avoids flicker.
 //
 // Only files trigger the overlay (we sniff `dataTransfer.types` for 'Files').
-// On drop, we hand the first file to the parent and let it parse + load.
+// On drop, we hand all dropped files to the parent and let it parse + load
+// (a map may be dropped together with a separate module/rubric catalog).
 
 import { useEffect, useRef, useState } from 'react';
 
@@ -14,7 +15,7 @@ import { useI18n } from '@/contexts/I18nContext';
 import styles from './DragDropOverlay.module.css';
 
 export interface DragDropOverlayProps {
-  onDrop: (file: File) => void;
+  onDrop: (files: File[]) => void;
 }
 
 function isFileDrag(e: DragEvent): boolean {
@@ -56,8 +57,8 @@ export default function DragDropOverlay({ onDrop }: DragDropOverlayProps): JSX.E
       e.preventDefault();
       depthRef.current = 0;
       setActive(false);
-      const file = e.dataTransfer?.files?.[0];
-      if (file) onDrop(file);
+      const files = e.dataTransfer?.files ? Array.from(e.dataTransfer.files) : [];
+      if (files.length > 0) onDrop(files);
     };
 
     window.addEventListener('dragenter', handleEnter);

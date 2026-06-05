@@ -564,7 +564,7 @@ describe('useViewerState (hook)', () => {
     });
 
     await act(async () => {
-      await result.current.handleFileDrop(file);
+      await result.current.handleFileDrop([file]);
     });
 
     expect(result.current.state.source).toBe('dnd');
@@ -572,6 +572,38 @@ describe('useViewerState (hook)', () => {
     expect(result.current.state.data?.meta.title).toBe('Hiring');
     // Source persisted to session storage for restore-after-reload.
     expect(sessionStorage.getItem('lifecycle-map.session')).not.toBeNull();
+  });
+
+  it('handleFileDrop() merges a map dropped together with a module catalog', async () => {
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+
+    const mapWithRefs = {
+      meta: { title: 'Interview', modules_source: './rubrics.json' },
+      nodes: [{ id: 'n', lane: 'l', phase: 'p', title: 'N', modules: ['rubric:alpha'] }],
+      edges: [],
+      lanes: [{ id: 'l', label: 'L' }],
+      phases: [{ id: 'p', label: 'P' }],
+    };
+    const catalog = {
+      modules: { 'rubric:alpha': { name: 'Alpha', today: 'L1', tomorrow: 'L4' } },
+    };
+    const mapFile = new File([JSON.stringify(mapWithRefs)], 'interview.json', {
+      type: 'application/json',
+    });
+    const catalogFile = new File([JSON.stringify(catalog)], 'rubrics.json', {
+      type: 'application/json',
+    });
+
+    await act(async () => {
+      await result.current.handleFileDrop([catalogFile, mapFile]);
+    });
+
+    // The map loads (named from the map file, not the catalog) and the module
+    // resolves from the dropped catalog instead of showing "Unknown".
+    expect(result.current.state.source).toBe('dnd');
+    expect(result.current.state.data?.meta.title).toBe('Interview');
+    expect(result.current.state.data?._moduleCatalog?.['rubric:alpha']).toBeDefined();
   });
 
   it('handlePaste() loads pasted text and sets source="paste"', async () => {

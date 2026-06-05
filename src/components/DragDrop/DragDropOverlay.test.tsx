@@ -94,7 +94,7 @@ describe('DragDropOverlay', () => {
     expect(overlay.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('drop with file calls onDrop with the first file', () => {
+  it('drop with one file calls onDrop with all dropped files', () => {
     const onDrop = vi.fn();
     render(
       <Wrap>
@@ -106,7 +106,23 @@ describe('DragDropOverlay', () => {
       window.dispatchEvent(fileDragEvent('drop', [file]));
     });
     expect(onDrop).toHaveBeenCalledTimes(1);
-    expect(onDrop).toHaveBeenCalledWith(file);
+    expect(onDrop).toHaveBeenCalledWith([file]);
+  });
+
+  it('drop with multiple files passes all of them to onDrop', () => {
+    const onDrop = vi.fn();
+    render(
+      <Wrap>
+        <DragDropOverlay onDrop={onDrop} />
+      </Wrap>,
+    );
+    const map = new File(['{}'], 'map.json', { type: 'application/json' });
+    const rubrics = new File(['{}'], 'rubrics.json', { type: 'application/json' });
+    act(() => {
+      window.dispatchEvent(fileDragEvent('drop', [map, rubrics]));
+    });
+    expect(onDrop).toHaveBeenCalledTimes(1);
+    expect(onDrop).toHaveBeenCalledWith([map, rubrics]);
   });
 
   it('drop without files does not call onDrop', () => {
