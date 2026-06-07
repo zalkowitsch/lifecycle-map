@@ -9,3 +9,7 @@
 .kv-value { font-size: 0.9rem; }
 .pills { display: flex; flex-wrap: wrap; gap: 6px; }
 .pill { font-size: 0.74rem; padding: 2px 8px; border: 1px solid currentColor; border-radius: 999px; opacity: 0.85; }
+.tile { display: flex; flex-direction: column; gap: 6px; padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.08); }
+.tile-name { font-size: 1rem; font-weight: 600; }
+.tile-sub { font-size: 0.78rem; font-family: ui-monospace, monospace; opacity: 0.6; }
+.tile-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
