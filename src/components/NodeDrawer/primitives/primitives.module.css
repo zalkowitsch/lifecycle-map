@@ -7,3 +7,5 @@
 .kv { display: grid; grid-template-columns: minmax(80px, 30%) 1fr; gap: 6px 16px; }
 .kv-label { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
 .kv-value { font-size: 0.9rem; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { font-size: 0.74rem; padding: 2px 8px; border: 1px solid currentColor; border-radius: 999px; opacity: 0.85; }
