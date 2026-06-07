@@ -27,6 +27,20 @@ describe('Prose primitive', () => {
     );
     expect(container.firstChild).toBeNull();
   });
+
+  it('strips dangerous tags but keeps <em>', () => {
+    const { container } = render(
+      <Prose
+        node={{ type: 'Prose', bind: '$body' }}
+        context={{ body: 'safe <em>yes</em> <img src=x onerror="alert(1)"> <script>alert(2)</script>' }}
+        L={L}
+      />,
+    );
+    expect(container.querySelector('em')?.textContent).toBe('yes');
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.querySelector('script')).toBeNull();
+    expect(container.innerHTML).not.toContain('onerror');
+  });
 });
 
 describe('KeyValue primitive', () => {
