@@ -32,4 +32,6 @@ export interface PrimitiveProps {
   L: (v: unknown) => string;
   /** Optional action handler (Button uses it: navigate/copy). */
   onAction?: (action: string, target: unknown) => void;
+  /** Recursion depth, incremented as containers nest. Guards against cyclic layouts. */
+  depth?: number;
 }

@@ -3,7 +3,7 @@ import type { PrimitiveProps } from './types';
 import styles from './primitives.module.css';
 import { RenderNode } from './RenderNode';
 
-export function Section({ node, context, L, onAction }: PrimitiveProps): JSX.Element | null {
+export function Section({ node, context, L, onAction, depth }: PrimitiveProps): JSX.Element | null {
   const title = resolveBinding(node.title, context);
   const sub = resolveBinding(node.sub, context);
   const children = node.children ?? [];
@@ -18,7 +18,7 @@ export function Section({ node, context, L, onAction }: PrimitiveProps): JSX.Ele
         ) : null}
       </div>
       {children.map((child, i) => (
-        <RenderNode key={i} node={child} context={context} L={L} onAction={onAction} />
+        <RenderNode key={i} node={child} context={context} L={L} onAction={onAction} depth={(depth ?? 0) + 1} />
       ))}
     </div>
   );
