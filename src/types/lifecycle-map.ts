@@ -1,3 +1,5 @@
+import type { PrimitiveNode } from '@/components/NodeDrawer/primitives/types';
+
 // Lifecycle map schema — the JSON/YAML shape the viewer accepts.
 //
 // v2 schema (current):
@@ -108,6 +110,12 @@ export interface MapNode {
   notes?: I18nString[];
 
   modules?: ModuleRef[];
+
+  /** Node type id — selects a layout from meta.nodeTypes. When set, the
+   *  drawer renders via PrimitiveRenderer using `context` for data. */
+  type?: string;
+  /** Data passed to the node type's primitive layout. */
+  context?: Record<string, unknown>;
 }
 
 /** Edge style — maps to Mermaid arrow flavors. */
@@ -141,6 +149,8 @@ export interface MapMeta {
   modules_source?: string;
   /** Layout direction. Defaults to LR. */
   direction?: Direction;
+  /** Map of node-type id -> layout (primitive tree). Consumed by the drawer. */
+  nodeTypes?: Record<string, { layout: PrimitiveNode[] }>;
 }
 
 export interface LifecycleMap {
