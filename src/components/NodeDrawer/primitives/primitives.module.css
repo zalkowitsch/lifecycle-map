@@ -13,3 +13,5 @@
 .tile-name { font-size: 1rem; font-weight: 600; }
 .tile-sub { font-size: 0.78rem; font-family: ui-monospace, monospace; opacity: 0.6; }
 .tile-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.button { align-self: flex-start; font-size: 0.85rem; padding: 6px 14px; border: 1px solid currentColor; border-radius: 6px; background: none; color: inherit; cursor: pointer; }
+.link { color: var(--accent, #d98a4f); text-decoration: underline; }

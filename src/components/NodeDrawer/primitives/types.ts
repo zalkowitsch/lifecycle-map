@@ -30,4 +30,6 @@ export interface PrimitiveProps {
   context: DrawerContext;
   /** i18n resolver passed down from NodeDrawer. */
   L: (v: unknown) => string;
+  /** Optional action handler (Button uses it: navigate/copy). */
+  onAction?: (action: string, target: unknown) => void;
 }
