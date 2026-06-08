@@ -20,6 +20,8 @@ import type {
   I18nString,
 } from '@/types/lifecycle-map';
 
+import { PrimitiveRenderer } from './primitives/PrimitiveRenderer';
+
 import styles from './NodeDrawer.module.css';
 
 export interface NodeDrawerProps {
@@ -115,6 +117,21 @@ function renderNode(
   const up = data.edges.filter((e) => e.target === nodeId).map((e) => e.source);
   const down = data.edges.filter((e) => e.source === nodeId).map((e) => e.target);
 
+  // Typed nodes render their drawer body via the primitive layout declared in
+  // meta.nodeTypes. Legacy nodes (no `type`) fall through to the sections below.
+  const typeDef = node.type ? data.meta.nodeTypes?.[node.type] : undefined;
+  const typedBody =
+    typeDef && node.context ? (
+      <PrimitiveRenderer
+        layout={typeDef.layout}
+        context={node.context}
+        L={L}
+        onAction={(action, target) => {
+          if (action === 'navigate' && typeof target === 'string') onNavigate(target);
+        }}
+      />
+    ) : null;
+
   const walkIdx = walkOrder.indexOf(nodeId);
   const prevId = walkIdx > 0 ? walkOrder[walkIdx - 1] : null;
   const nextId = walkIdx >= 0 && walkIdx < walkOrder.length - 1
@@ -138,6 +155,8 @@ function renderNode(
 
       <h2 className={styles.title}>{L(node.title)}</h2>
       {subText ? <p className={styles.subTitle}>{subText}</p> : null}
+
+      {typedBody}
 
       {hasMeta ? (
         <div className={styles.metaGrid}>
