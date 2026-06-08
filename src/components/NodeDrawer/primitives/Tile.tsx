@@ -16,7 +16,7 @@ export function Tile({ node, context, L }: PrimitiveProps): JSX.Element | null {
       ) : null}
       <div className={styles['tile-row']}>
         {node.pills ? <Pills node={{ type: 'Pills', bind: node.pills }} context={context} L={L} /> : null}
-        {Array.isArray(tags) ? <Pills node={{ type: 'Pills', bind: '$__tags' }} context={{ __tags: tags }} L={(v) => `#${L(v)}`} /> : null}
+        {Array.isArray(tags) ? <Pills node={{ type: 'Pills', bind: '$__tags' }} context={{ __tags: tags }} L={L} /> : null}
       </div>
     </div>
   );

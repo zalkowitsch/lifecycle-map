@@ -7,7 +7,7 @@ const L = (v: unknown): string => (typeof v === 'string' ? v : String(v ?? ''));
 
 describe('Tile primitive', () => {
   // Inside a List, the Tile receives one array element as its local context.
-  const item = { name: 'Code fluency', id: 'rubric:code-fluency', levels: [{ label: 'L1' }, { label: 'L4' }], tags: ['Code fluency'] };
+  const item = { name: 'Code fluency', id: 'rubric:code-fluency', levels: [{ label: 'L1' }, { label: 'L4' }], tags: ['Signal'] };
 
   it('renders title, sub, pills, and tags from local context', () => {
     const { getByText } = render(
@@ -21,6 +21,7 @@ describe('Tile primitive', () => {
     expect(getByText('rubric:code-fluency')).toBeInTheDocument();
     expect(getByText('L1')).toBeInTheDocument();
     expect(getByText('L4')).toBeInTheDocument();
+    expect(getByText('Signal')).toBeInTheDocument();
   });
 
   it('renders only the title when optional binds are missing', () => {
