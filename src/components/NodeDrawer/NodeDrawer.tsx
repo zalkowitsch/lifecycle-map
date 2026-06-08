@@ -13,11 +13,7 @@ import { useEffect, useMemo } from 'react';
 
 import type {
   MapNode,
-  Module,
-  ModuleRef,
   NormalizedMap,
-  NodeState,
-  I18nString,
 } from '@/types/lifecycle-map';
 
 import { PrimitiveRenderer } from './primitives/PrimitiveRenderer';
@@ -34,10 +30,6 @@ export interface NodeDrawerProps {
   onClose: () => void;
   onNavigate: (nodeId: string) => void;
   L: (v: unknown) => string;
-}
-
-interface ResolvedModule extends Module {
-  id?: string;
 }
 
 export function NodeDrawer(props: NodeDrawerProps): JSX.Element | null {
@@ -127,7 +119,8 @@ function renderNode(
         context={node.context}
         L={L}
         onAction={(action, target) => {
-          if (action === 'navigate' && typeof target === 'string') onNavigate(target);
+          if (action === 'navigate' && typeof target === 'string') { onNavigate(target); return; }
+          console.warn(`[NodeDrawer] unhandled primitive action: "${action}"`);
         }}
       />
     ) : null;
@@ -139,7 +132,6 @@ function renderNode(
     : null;
 
   const subText = L(node.sub);
-  const hasMeta = !!(node.objective || node.entity || node.actors || node.triggers || node.next);
 
   return (
     <>
@@ -157,31 +149,6 @@ function renderNode(
       {subText ? <p className={styles.subTitle}>{subText}</p> : null}
 
       {typedBody}
-
-      {hasMeta ? (
-        <div className={styles.metaGrid}>
-          {renderMetaRow('Objective', node.objective, L)}
-          {renderMetaRow('Entities', node.entity, L)}
-          {renderMetaRow('Actors', node.actors, L)}
-          {renderMetaRow('Triggers', node.triggers, L)}
-          {renderMetaRow('Next', node.next, L)}
-        </div>
-      ) : null}
-
-      {renderStates(node, data, L)}
-
-      {node.modules && node.modules.length > 0 ? (
-        <div className={styles.modulesSection}>
-          <h3 className={styles.modulesHeader}>
-            {'Modules '}
-            <em>{`· ${node.modules.length}`}</em>
-          </h3>
-          <div className={styles.modulesSub}>features that make this step work</div>
-          {node.modules.map((m, i) => (
-            <ModuleRow key={i} mRef={m} catalog={data._moduleCatalog} modes={data._modeMap} L={L} />
-          ))}
-        </div>
-      ) : null}
 
       <div className={styles.depsSection}>
         <div className={styles.depCol}>
@@ -250,213 +217,6 @@ function renderNode(
   );
 }
 
-function renderMetaRow(
-  label: string,
-  value: I18nString | undefined,
-  L: (v: unknown) => string,
-): JSX.Element | null {
-  if (!value) return null;
-  return (
-    <>
-      <div className={styles.metaLbl}>{label}</div>
-      <div className={styles.metaVal}>{L(value)}</div>
-    </>
-  );
-}
-
-// ----- state sections -------------------------------------------------------
-//
-// Renders every entry under node.states as its own section. The known keys
-// "today" / "tomorrow" preserve the original eyebrow/title styling and the
-// tomorrow accent; arbitrary state ids fall back to titleizing the key.
-
-function renderStates(
-  node: MapNode,
-  data: NormalizedMap,
-  L: (v: unknown) => string,
-): JSX.Element[] {
-  const states = node.states ?? {};
-  const ids = orderStateIds(Object.keys(states));
-  return ids.map((id) => {
-    const state = states[id];
-    if (!state) return null as unknown as JSX.Element;
-    return (
-      <StateSection
-        key={id}
-        stateId={id}
-        state={state}
-        data={data}
-        L={L}
-      />
-    );
-  }).filter(Boolean);
-}
-
-function orderStateIds(ids: string[]): string[] {
-  // Keep the canonical today → tomorrow order when present, then append
-  // the rest in declaration order (preserves author intent for custom ids).
-  const preferred = ['today', 'tomorrow'];
-  const known = preferred.filter((k) => ids.includes(k));
-  const rest = ids.filter((k) => !preferred.includes(k));
-  return [...known, ...rest];
-}
-
-function StateSection(props: {
-  stateId: string;
-  state: NodeState;
-  data: NormalizedMap;
-  L: (v: unknown) => string;
-}): JSX.Element {
-  const { stateId, state, data, L } = props;
-  const narrative = L(state.narrative);
-  const tools = state.tools ?? [];
-  const teams = state.teams ?? [];
-  const tickets = state.tickets ?? [];
-  const pattern = state.proven_pattern ?? [];
-  const hasTools = tools.length || teams.length || tickets.length || pattern.length;
-
-  const isTomorrow = stateId === 'tomorrow';
-  const className = isTomorrow
-    ? `${styles.stateSection} ${styles.tomorrow}`
-    : styles.stateSection;
-
-  const { eyebrow, title } = stateLabels(stateId, state, L);
-
-  return (
-    <div className={className}>
-      <div className={styles.stateHead}>
-        <div className={styles.stateHeadLabel}>
-          <span className={styles.eyebrow}>{eyebrow}</span>
-          <span className={styles.stateTitle}>{title}</span>
-        </div>
-        <ModePill modeId={state.mode} modes={data._modeMap} L={L} />
-      </div>
-      <div className={styles.stateBody}>
-        {narrative}
-        {hasTools ? (
-          <div className={styles.toolset}>
-            <ToolsetRow label="Tools" items={tools} L={L} />
-            <ToolsetRow label="Owners" items={teams} L={L} />
-            <ToolsetRow label="Tickets" items={tickets} L={L} />
-            <ToolsetRow label="Proven pattern" items={pattern} L={L} />
-          </div>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function stateLabels(
-  stateId: string,
-  state: NodeState,
-  L: (v: unknown) => string,
-): { eyebrow: string; title: JSX.Element | string } {
-  if (stateId === 'today') {
-    return { eyebrow: 'Today', title: 'Current state' };
-  }
-  if (stateId === 'tomorrow') {
-    return { eyebrow: 'Tomorrow', title: <em>Future state</em> };
-  }
-  const customLabel = L(state.label);
-  return {
-    eyebrow: titleize(stateId),
-    title: customLabel || titleize(stateId),
-  };
-}
-
-function titleize(id: string): string {
-  return id
-    .replace(/[_-]+/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function ToolsetRow(props: {
-  label: string;
-  items: I18nString[];
-  L: (v: unknown) => string;
-}): JSX.Element | null {
-  if (!props.items.length) return null;
-  return (
-    <div>
-      <span className={styles.toolsetTag}>{props.label}</span>
-      {props.items.map((it, i) => (
-        <span key={i} className={styles.toolsetItem}>{props.L(it)}</span>
-      ))}
-    </div>
-  );
-}
-
-// ----- mode pill ------------------------------------------------------------
-
-function ModePill(props: {
-  modeId: string | undefined;
-  modes: Record<string, { id: string; label: I18nString; color: string }>;
-  L: (v: unknown) => string;
-}): JSX.Element | null {
-  const { modeId, modes, L } = props;
-  if (!modeId) return null;
-  const m = modes[modeId];
-  const color = m?.color ?? '#6b6557';
-  const label = m ? L(m.label) : modeId;
-  // Color overrides (tinted background, tinted text, tinted border) come
-  // from the node's `mode` color — keep them inline since they're data-driven.
-  const style = {
-    background: `${color}22`,
-    color,
-    borderColor: color,
-  } as const;
-  return (
-    <span className={styles.modePill} style={style}>{label}</span>
-  );
-}
-
-// ----- module row -----------------------------------------------------------
-
-function resolveModule(
-  ref: ModuleRef,
-  catalog: Record<string, Module>,
-): ResolvedModule {
-  if (typeof ref === 'string') {
-    const entry = catalog[ref];
-    if (entry) {
-      return { id: ref, feature: entry.name ?? ref, ...entry };
-    }
-    return { id: ref, feature: ref, today: 'unknown', tomorrow: 'unknown', tags: [] };
-  }
-  return ref;
-}
-
-function ModuleRow(props: {
-  mRef: ModuleRef;
-  catalog: Record<string, Module>;
-  modes: Record<string, { id: string; label: I18nString; color: string }>;
-  L: (v: unknown) => string;
-}): JSX.Element {
-  const m = resolveModule(props.mRef, props.catalog);
-  const tags = m.tags ?? [];
-  return (
-    <div className={styles.moduleRow}>
-      <div>
-        <div className={styles.moduleName}>{props.L(m.feature ?? m.name ?? '')}</div>
-        {m.id ? <div className={styles.moduleId}>{m.id}</div> : null}
-        <div className={styles.moduleMeta}>
-          {tags.map((t, i) => (
-            <span key={i} className={styles.tagChip}>{props.L(t)}</span>
-          ))}
-          {m.pricing ? (
-            <span className={`${styles.tagChip} ${styles.pricing}`}>{props.L(m.pricing)}</span>
-          ) : null}
-        </div>
-      </div>
-      <div className={styles.moduleModes}>
-        <ModePill modeId={m.today} modes={props.modes} L={props.L} />
-        <span className={styles.moduleArrow}>→</span>
-        <ModePill modeId={m.tomorrow} modes={props.modes} L={props.L} />
-      </div>
-    </div>
-  );
-}
-
 // ----- edge body ------------------------------------------------------------
 
 interface NodeLookups {
@@ -511,8 +271,18 @@ function renderEdge(
         <div className={styles.metaVal}>
           <strong>{L(to.title)}</strong>{' · '}{L(toLane.label)}{' · '}{L(toPhase.label)}
         </div>
-        {renderMetaRow('Trigger', from.next, L)}
-        {renderMetaRow('Becomes', to.objective, L)}
+        {from.next ? (
+          <>
+            <div className={styles.metaLbl}>Trigger</div>
+            <div className={styles.metaVal}>{L(from.next)}</div>
+          </>
+        ) : null}
+        {to.objective ? (
+          <>
+            <div className={styles.metaLbl}>Becomes</div>
+            <div className={styles.metaVal}>{L(to.objective)}</div>
+          </>
+        ) : null}
       </div>
       <div className={styles.nav}>
         <button

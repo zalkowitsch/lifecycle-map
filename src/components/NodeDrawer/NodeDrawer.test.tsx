@@ -1,5 +1,5 @@
 // NodeDrawer tests — covers node-mode + edge-mode renderings, navigation,
-// keyboard close, and the various meta/today/tomorrow/modules/deps branches.
+// keyboard close, and the deps branches.
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -135,7 +135,7 @@ describe('NodeDrawer', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  test('node mode: renders title, sub, and meta-grid fields', () => {
+  test('node mode: renders title, sub, and step header', () => {
     render(
       <NodeDrawer
         open={true}
@@ -151,82 +151,11 @@ describe('NodeDrawer', () => {
     );
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Node 1');
     expect(screen.getByText('first node')).toBeInTheDocument();
-    expect(screen.getByText('Objective')).toBeInTheDocument();
-    expect(screen.getByText('Do thing')).toBeInTheDocument();
-    expect(screen.getByText('Entities')).toBeInTheDocument();
-    expect(screen.getByText('User')).toBeInTheDocument();
-    expect(screen.getByText('Actors')).toBeInTheDocument();
-    expect(screen.getByText('Alice')).toBeInTheDocument();
-    // "Triggers" appears twice (meta-row label + deps-section label) — both legit.
-    expect(screen.getAllByText('Triggers').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Click')).toBeInTheDocument();
-    expect(screen.getByText('Next')).toBeInTheDocument();
     // Step header.
     expect(screen.getByText(/Step 1 \/ 3/)).toBeInTheDocument();
     expect(screen.getByText('I')).toBeInTheDocument();
     expect(screen.getByText('Phase 1')).toBeInTheDocument();
     expect(screen.getByText('Lane 1')).toBeInTheDocument();
-  });
-
-  test('node mode: today and tomorrow state sections render with mode pills', () => {
-    render(
-      <NodeDrawer
-        open={true}
-        mode="node"
-        data={makeData()}
-        activeNodeId="n1"
-        activeEdge={null}
-        walkOrder={['n1', 'n2']}
-        onClose={() => {}}
-        onNavigate={() => {}}
-        L={L}
-      />,
-    );
-    expect(screen.getByText('Today')).toBeInTheDocument();
-    expect(screen.getByText('Current state')).toBeInTheDocument();
-    expect(screen.getByText('Today narrative')).toBeInTheDocument();
-    expect(screen.getByText('Tomorrow')).toBeInTheDocument();
-    expect(screen.getByText('Future state')).toBeInTheDocument();
-    expect(screen.getByText('Tomorrow narrative')).toBeInTheDocument();
-    // Mode pills (Manual appears at the state-section pill AND the module-row
-    // today-pill; AI appears at tomorrow + module-row tomorrow-pill).
-    const manualPills = screen.getAllByText('Manual');
-    expect(manualPills.length).toBeGreaterThan(0);
-    // Inline style uses the mode color — JSDOM normalizes to rgb().
-    const colored = manualPills.find((el) =>
-      /rgb\(187,\s*0,\s*0\)/.test(el.getAttribute('style') ?? ''),
-    );
-    expect(colored).toBeTruthy();
-    // Toolset row labels.
-    expect(screen.getByText('Tools')).toBeInTheDocument();
-    expect(screen.getByText('Owners')).toBeInTheDocument();
-    expect(screen.getByText('Tickets')).toBeInTheDocument();
-    expect(screen.getByText('Proven pattern')).toBeInTheDocument();
-    expect(screen.getByText('Excel')).toBeInTheDocument();
-    expect(screen.getByText('Ops')).toBeInTheDocument();
-    expect(screen.getByText('JIRA-1')).toBeInTheDocument();
-    expect(screen.getByText('Pattern A')).toBeInTheDocument();
-  });
-
-  test('node mode: modules section renders with feature name and tags', () => {
-    render(
-      <NodeDrawer
-        open={true}
-        mode="node"
-        data={makeData()}
-        activeNodeId="n1"
-        activeEdge={null}
-        walkOrder={['n1', 'n2']}
-        onClose={() => {}}
-        onNavigate={() => {}}
-        L={L}
-      />,
-    );
-    expect(screen.getByText(/Modules/)).toBeInTheDocument();
-    expect(screen.getByText(/features that make this step work/)).toBeInTheDocument();
-    expect(screen.getByText('Mod1')).toBeInTheDocument();
-    expect(screen.getByText('tag-a')).toBeInTheDocument();
-    expect(screen.getByText('premium')).toBeInTheDocument();
   });
 
   test('node mode: deps-section shows upstream + downstream nodes', () => {
@@ -244,8 +173,7 @@ describe('NodeDrawer', () => {
       />,
     );
     expect(screen.getByText('Depends on')).toBeInTheDocument();
-    // Two "Triggers" labels coexist (meta-row + deps-section).
-    expect(screen.getAllByText('Triggers').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('Triggers')).toBeInTheDocument();
     // Upstream button: from n3 -> n1
     expect(screen.getByRole('button', { name: /← Node 3/ })).toBeInTheDocument();
     // Downstream button: n1 -> n2
@@ -439,25 +367,6 @@ describe('NodeDrawer', () => {
       />,
     );
     expect(screen.getByText('— entry point')).toBeInTheDocument();
-  });
-
-  test('node mode: meta-grid omitted when node has no meta fields', () => {
-    const data = makeData();
-    // n2 has no objective/entity/actors/triggers/next.
-    render(
-      <NodeDrawer
-        open={true}
-        mode="node"
-        data={data}
-        activeNodeId="n2"
-        activeEdge={null}
-        walkOrder={['n1', 'n2']}
-        onClose={() => {}}
-        onNavigate={() => {}}
-        L={L}
-      />,
-    );
-    expect(screen.queryByText('Objective')).toBeNull();
   });
 
   test('edge mode: renders edge drawer with from/to titles', () => {
