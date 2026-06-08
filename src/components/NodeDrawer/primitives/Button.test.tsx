@@ -29,4 +29,25 @@ describe('Link primitive', () => {
     );
     expect((getByText('Docs') as HTMLAnchorElement).href).toContain('https://x.dev');
   });
+
+  it('renders an https href', () => {
+    const { getByText } = render(
+      <Link node={{ type: 'Link', text: 'Secure', href: '$url' }} context={{ url: 'https://ok.dev' }} L={L} />,
+    );
+    expect((getByText('Secure') as HTMLAnchorElement).href).toContain('https://ok.dev');
+  });
+
+  it('refuses a javascript: URL (renders nothing)', () => {
+    const { container } = render(
+      <Link node={{ type: 'Link', text: 'Evil', href: '$url' }} context={{ url: 'javascript:alert(1)' }} L={L} />,
+    );
+    expect(container.querySelector('a')).toBeNull();
+  });
+
+  it('refuses a non-http(s) scheme like data:', () => {
+    const { container } = render(
+      <Link node={{ type: 'Link', text: 'X', href: '$url' }} context={{ url: 'data:text/html,<script>1</script>' }} L={L} />,
+    );
+    expect(container.querySelector('a')).toBeNull();
+  });
 });
