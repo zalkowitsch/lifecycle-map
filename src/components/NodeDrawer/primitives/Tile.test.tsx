@@ -29,6 +29,6 @@ describe('Tile primitive', () => {
       <Tile node={{ type: 'Tile', title: '$name', sub: '$id', pills: '$levels' }} context={{ name: 'X' }} L={L} />,
     );
     expect(getByText('X')).toBeInTheDocument();
-    expect(container.querySelectorAll('span').length).toBeGreaterThanOrEqual(0);
+    expect(container.querySelectorAll('span').length).toBe(0);
   });
 });
