@@ -11,7 +11,34 @@
       "pt": "módulos vindos de um catálogo compartilhado",
       "es": "módulos desde un catálogo compartido"
     },
-    "modules_source": "./modules.json"
+    "modules_source": "./modules.json",
+    "nodeTypes": {
+      "step": {
+        "layout": [
+          {
+            "type": "Prose",
+            "bind": "$objective"
+          },
+          {
+            "type": "Section",
+            "title": "Modules",
+            "sub": "$modulesSub",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$modules",
+                "item": {
+                  "type": "Tile",
+                  "title": "$feature",
+                  "sub": "$id",
+                  "pills": "$levels"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
   },
   "lanes": [
     {
@@ -69,16 +96,32 @@
         "pt": "Buscar candidatos",
         "es": "Buscar candidatos"
       },
-      "objective": {
-        "en": "Build a top-of-funnel pipeline.",
-        "pt": "Construir um funil no topo.",
-        "es": "Construir un embudo en la parte superior."
-      },
-      "modules": [
-        "outreach:templates",
-        "outreach:ab-testing",
-        "ats:duplicate-detection"
-      ]
+      "type": "step",
+      "context": {
+        "objective": {
+          "en": "Build a top-of-funnel pipeline.",
+          "pt": "Construir um funil no topo.",
+          "es": "Construir un embudo en la parte superior."
+        },
+        "modules": [
+          {
+            "feature": "outreach:templates",
+            "id": "outreach:templates",
+            "levels": []
+          },
+          {
+            "feature": "outreach:ab-testing",
+            "id": "outreach:ab-testing",
+            "levels": []
+          },
+          {
+            "feature": "ats:duplicate-detection",
+            "id": "ats:duplicate-detection",
+            "levels": []
+          }
+        ],
+        "modulesSub": "features that make this step work"
+      }
     },
     {
       "id": "screen",
@@ -89,15 +132,27 @@
         "pt": "Triagem de currículo",
         "es": "Cribado de CV"
       },
-      "objective": {
-        "en": "Filter the pool to a manageable set.",
-        "pt": "Filtrar o pool para um conjunto gerenciável.",
-        "es": "Filtrar el pool a un conjunto manejable."
-      },
-      "modules": [
-        "ats:resume-parser",
-        "ats:duplicate-detection"
-      ]
+      "type": "step",
+      "context": {
+        "objective": {
+          "en": "Filter the pool to a manageable set.",
+          "pt": "Filtrar o pool para um conjunto gerenciável.",
+          "es": "Filtrar el pool a un conjunto manejable."
+        },
+        "modules": [
+          {
+            "feature": "ats:resume-parser",
+            "id": "ats:resume-parser",
+            "levels": []
+          },
+          {
+            "feature": "ats:duplicate-detection",
+            "id": "ats:duplicate-detection",
+            "levels": []
+          }
+        ],
+        "modulesSub": "features that make this step work"
+      }
     }
   ],
   "edges": [

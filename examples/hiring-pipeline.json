@@ -57,7 +57,54 @@
         },
         "color": "#6b6557"
       }
-    ]
+    ],
+    "nodeTypes": {
+      "step": {
+        "layout": [
+          {
+            "type": "Prose",
+            "bind": "$objective"
+          },
+          {
+            "type": "KeyValue",
+            "bind": "$meta"
+          },
+          {
+            "type": "Section",
+            "title": "Modules",
+            "sub": "$modulesSub",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$modules",
+                "item": {
+                  "type": "Tile",
+                  "title": "$feature",
+                  "sub": "$id",
+                  "pills": "$levels"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Section",
+            "title": "States",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$states",
+                "item": {
+                  "type": "Tile",
+                  "title": "$label",
+                  "sub": "$mode",
+                  "pills": "$tools"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
   },
   "lanes": [
     {
@@ -217,50 +264,94 @@
         "pt": "headcount aprovado",
         "es": "plantilla aprobada"
       },
-      "objective": "Hiring manager defines the role, level, target start date, and gets sign-off on headcount.",
-      "entity": "Job requisition · Job description · Comp band",
-      "actors": "HM drafts → Recruiter reviews → Approver signs off on headcount",
-      "triggers": "Team growth need · Backfill · New project",
-      "next": "Sourcer starts outbound; recruiter posts publicly.",
-      "modules": [
-        {
-          "feature": "JD template library",
-          "today": "manual",
-          "tomorrow": "automated"
-        },
-        {
-          "feature": "Comp band lookup",
-          "today": "manual",
-          "tomorrow": "automated"
-        },
-        {
-          "feature": "Approval chain routing",
-          "today": "manual",
-          "tomorrow": "automated"
-        },
-        {
-          "feature": "AI JD draft from brief",
-          "today": "n-a",
-          "tomorrow": "ai"
-        }
-      ],
-      "states": {
-        "today": {
-          "mode": "manual",
-          "narrative": "HM writes the JD from scratch in a doc, often copying from old roles. Recruiter rewrites for clarity. Comp band looked up manually in spreadsheet. Sign-off chain is email/Slack.",
-          "tools": [
-            "Google Docs",
-            "Comp spreadsheet",
-            "Email"
-          ]
-        },
-        "tomorrow": {
-          "mode": "ai",
-          "narrative": "AI drafts the JD from a 3-line brief + role template + recent successful hires. Comp band auto-populated from market data. Sign-off triggers programmatically with approval chain.",
-          "proven_pattern": [
-            "JD generators in production at multiple ATSes"
-          ]
-        }
+      "type": "step",
+      "context": {
+        "objective": "Hiring manager defines the role, level, target start date, and gets sign-off on headcount.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Job requisition · Job description · Comp band"
+          },
+          {
+            "label": "Actors",
+            "value": "HM drafts → Recruiter reviews → Approver signs off on headcount"
+          },
+          {
+            "label": "Triggers",
+            "value": "Team growth need · Backfill · New project"
+          },
+          {
+            "label": "Next",
+            "value": "Sourcer starts outbound; recruiter posts publicly."
+          }
+        ],
+        "modules": [
+          {
+            "feature": "JD template library",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "automated"
+              }
+            ]
+          },
+          {
+            "feature": "Comp band lookup",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "automated"
+              }
+            ]
+          },
+          {
+            "feature": "Approval chain routing",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "automated"
+              }
+            ]
+          },
+          {
+            "feature": "AI JD draft from brief",
+            "levels": [
+              {
+                "label": "n-a"
+              },
+              {
+                "label": "ai"
+              }
+            ]
+          }
+        ],
+        "modulesSub": "features that make this step work",
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "narrative": "HM writes the JD from scratch in a doc, often copying from old roles. Recruiter rewrites for clarity. Comp band looked up manually in spreadsheet. Sign-off chain is email/Slack.",
+            "tools": [
+              "Google Docs",
+              "Comp spreadsheet",
+              "Email"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "narrative": "AI drafts the JD from a 3-line brief + role template + recent successful hires. Comp band auto-populated from market data. Sign-off triggers programmatically with approval chain.",
+            "tools": [
+              "JD generators in production at multiple ATSes"
+            ]
+          }
+        ]
       }
     },
     {
@@ -278,55 +369,105 @@
         "pt": "funil outbound + inbound",
         "es": "embudo outbound + inbound"
       },
-      "objective": "Build a top-of-funnel pipeline of qualified candidates through outbound search, referrals, and inbound applications.",
-      "entity": "Candidate pool · Outreach campaign · ATS",
-      "actors": "Sourcer drives outbound → Recruiter reviews inbound → HM gives 'thumbs up' on shortlist",
-      "triggers": "Open requisition exists. Target persona defined.",
-      "next": "Qualified candidates move to phone screen.",
-      "modules": [
-        {
-          "feature": "LinkedIn search",
-          "today": "assisted",
-          "tomorrow": "ai"
-        },
-        {
-          "feature": "Outreach templates",
-          "today": "manual",
-          "tomorrow": "ai"
-        },
-        {
-          "feature": "Reply tracking",
-          "today": "assisted",
-          "tomorrow": "automated"
-        },
-        {
-          "feature": "AI candidate scoring",
-          "today": "n-a",
-          "tomorrow": "ai"
-        },
-        {
-          "feature": "Personalized outreach",
-          "today": "manual",
-          "tomorrow": "ai"
-        }
-      ],
-      "states": {
-        "today": {
-          "mode": "assisted",
-          "narrative": "Sourcer searches LinkedIn manually with boolean queries. Outreach templates pasted from a doc. Replies tracked in spreadsheet or basic ATS. Referrals come in via Slack.",
-          "tools": [
-            "LinkedIn Recruiter",
-            "ATS (Greenhouse/Lever)",
-            "Outreach templates"
-          ]
-        },
-        "tomorrow": {
-          "mode": "ai",
-          "narrative": "AI scores candidates against the JD + past hires, drafts personalized outreach per candidate, A/B tests subject lines, follows up automatically. Sourcer reviews + approves; doesn't write.",
-          "proven_pattern": [
-            "AI sourcing tools shipping at scale (HireEZ, SeekOut)"
-          ]
-        }
+      "type": "step",
+      "context": {
+        "objective": "Build a top-of-funnel pipeline of qualified candidates through outbound search, referrals, and inbound applications.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Candidate pool · Outreach campaign · ATS"
+          },
+          {
+            "label": "Actors",
+            "value": "Sourcer drives outbound → Recruiter reviews inbound → HM gives 'thumbs up' on shortlist"
+          },
+          {
+            "label": "Triggers",
+            "value": "Open requisition exists. Target persona defined."
+          },
+          {
+            "label": "Next",
+            "value": "Qualified candidates move to phone screen."
+          }
+        ],
+        "modules": [
+          {
+            "feature": "LinkedIn search",
+            "levels": [
+              {
+                "label": "assisted"
+              },
+              {
+                "label": "ai"
+              }
+            ]
+          },
+          {
+            "feature": "Outreach templates",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "ai"
+              }
+            ]
+          },
+          {
+            "feature": "Reply tracking",
+            "levels": [
+              {
+                "label": "assisted"
+              },
+              {
+                "label": "automated"
+              }
+            ]
+          },
+          {
+            "feature": "AI candidate scoring",
+            "levels": [
+              {
+                "label": "n-a"
+              },
+              {
+                "label": "ai"
+              }
+            ]
+          },
+          {
+            "feature": "Personalized outreach",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "ai"
+              }
+            ]
+          }
+        ],
+        "modulesSub": "features that make this step work",
+        "states": [
+          {
+            "label": "Today",
+            "mode": "assisted",
+            "narrative": "Sourcer searches LinkedIn manually with boolean queries. Outreach templates pasted from a doc. Replies tracked in spreadsheet or basic ATS. Referrals come in via Slack.",
+            "tools": [
+              "LinkedIn Recruiter",
+              "ATS (Greenhouse/Lever)",
+              "Outreach templates"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "narrative": "AI scores candidates against the JD + past hires, drafts personalized outreach per candidate, A/B tests subject lines, follows up automatically. Sourcer reviews + approves; doesn't write.",
+            "tools": [
+              "AI sourcing tools shipping at scale (HireEZ, SeekOut)"
+            ]
+          }
+        ]
       }
     },
     {
@@ -339,27 +480,46 @@
         "pt": "Aplicar / responder",
         "es": "Aplicar / responder"
       },
-      "objective": "Candidate either responds to outreach or applies via job board.",
-      "entity": "Application · Resume · Cover letter (rare)",
-      "actors": "Candidate submits → ATS captures → Recruiter notified",
-      "triggers": "Outreach received OR job posting discovered.",
-      "next": "Recruiter screens the application.",
-      "states": {
-        "today": {
-          "mode": "automated",
-          "narrative": "Standard ATS application form. Resume parsed automatically. Confirmation email sent.",
-          "tools": [
-            "ATS application form",
-            "Resume parser"
-          ]
-        },
-        "tomorrow": {
-          "mode": "ai",
-          "narrative": "Candidate has a conversation with an AI agent that asks the right follow-up questions, captures structured info beyond the resume.",
-          "proven_pattern": [
-            "Conversational application flows (Paradox, Mya)"
-          ]
-        }
+      "type": "step",
+      "context": {
+        "objective": "Candidate either responds to outreach or applies via job board.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Application · Resume · Cover letter (rare)"
+          },
+          {
+            "label": "Actors",
+            "value": "Candidate submits → ATS captures → Recruiter notified"
+          },
+          {
+            "label": "Triggers",
+            "value": "Outreach received OR job posting discovered."
+          },
+          {
+            "label": "Next",
+            "value": "Recruiter screens the application."
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "automated",
+            "narrative": "Standard ATS application form. Resume parsed automatically. Confirmation email sent.",
+            "tools": [
+              "ATS application form",
+              "Resume parser"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "narrative": "Candidate has a conversation with an AI agent that asks the right follow-up questions, captures structured info beyond the resume.",
+            "tools": [
+              "Conversational application flows (Paradox, Mya)"
+            ]
+          }
+        ]
       }
     },
     {
@@ -377,49 +537,93 @@
         "pt": "primeira passada de sinal",
         "es": "primer pase de señal"
       },
-      "objective": "Filter the candidate pool down to a manageable set worth phone-screening.",
-      "entity": "Resume · Screening rubric · Reject reasons",
-      "actors": "Recruiter reads → applies rubric → HM spot-checks edge cases",
-      "triggers": "New application received OR sourced candidate replied positively.",
-      "next": "Pass → phone interview scheduled. Reject → rejection email sent.",
-      "modules": [
-        {
-          "feature": "Screening rubric",
-          "today": "manual",
-          "tomorrow": "assisted"
-        },
-        {
-          "feature": "Resume scoring",
-          "today": "manual",
-          "tomorrow": "ai"
-        },
-        {
-          "feature": "Rejection email send",
-          "today": "assisted",
-          "tomorrow": "automated"
-        },
-        {
-          "feature": "Reject reason capture",
-          "today": "manual",
-          "tomorrow": "ai"
-        }
-      ],
-      "states": {
-        "today": {
-          "mode": "manual",
-          "narrative": "Recruiter reads each resume (3-5 min each). Quick decision: pass/reject/maybe. 'Maybe' pile reviewed by HM weekly. Rejection emails sent manually or via template.",
-          "tools": [
-            "ATS",
-            "Email templates"
-          ]
-        },
-        "tomorrow": {
-          "mode": "ai",
-          "narrative": "AI scores resumes against the rubric + past successful hires, surfaces edge cases for human review, generates structured reject reasons. Recruiter reviews only borderline cases.",
-          "proven_pattern": [
-            "Resume screening AI in many enterprise ATSes"
-          ]
-        }
+      "type": "step",
+      "context": {
+        "objective": "Filter the candidate pool down to a manageable set worth phone-screening.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Resume · Screening rubric · Reject reasons"
+          },
+          {
+            "label": "Actors",
+            "value": "Recruiter reads → applies rubric → HM spot-checks edge cases"
+          },
+          {
+            "label": "Triggers",
+            "value": "New application received OR sourced candidate replied positively."
+          },
+          {
+            "label": "Next",
+            "value": "Pass → phone interview scheduled. Reject → rejection email sent."
+          }
+        ],
+        "modules": [
+          {
+            "feature": "Screening rubric",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "assisted"
+              }
+            ]
+          },
+          {
+            "feature": "Resume scoring",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "ai"
+              }
+            ]
+          },
+          {
+            "feature": "Rejection email send",
+            "levels": [
+              {
+                "label": "assisted"
+              },
+              {
+                "label": "automated"
+              }
+            ]
+          },
+          {
+            "feature": "Reject reason capture",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "ai"
+              }
+            ]
+          }
+        ],
+        "modulesSub": "features that make this step work",
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "narrative": "Recruiter reads each resume (3-5 min each). Quick decision: pass/reject/maybe. 'Maybe' pile reviewed by HM weekly. Rejection emails sent manually or via template.",
+            "tools": [
+              "ATS",
+              "Email templates"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "narrative": "AI scores resumes against the rubric + past successful hires, surfaces edge cases for human review, generates structured reject reasons. Recruiter reviews only borderline cases.",
+            "tools": [
+              "Resume screening AI in many enterprise ATSes"
+            ]
+          }
+        ]
       }
     },
     {
@@ -432,28 +636,47 @@
         "pt": "Agendar triagem por telefone",
         "es": "Agendar triaje telefónico"
       },
-      "objective": "Find a time that works for candidate + interviewer.",
-      "entity": "Calendar invite · Availability poll",
-      "actors": "Recruiter coordinates → Candidate confirms → Calendar invite sent",
-      "triggers": "Resume screen passed.",
-      "next": "Phone screen happens.",
-      "states": {
-        "today": {
-          "mode": "assisted",
-          "narrative": "Back-and-forth email/Slack to find time. Sometimes Calendly link. Cancellations cause re-scheduling chains.",
-          "tools": [
-            "Calendly",
-            "Email",
-            "Google Calendar"
-          ]
-        },
-        "tomorrow": {
-          "mode": "automated",
-          "narrative": "Self-serve booking link with interviewer pool availability. Auto-rebook on cancellation. No human in the loop unless something breaks.",
-          "proven_pattern": [
-            "Calendly / GoodTime / Modern Loop"
-          ]
-        }
+      "type": "step",
+      "context": {
+        "objective": "Find a time that works for candidate + interviewer.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Calendar invite · Availability poll"
+          },
+          {
+            "label": "Actors",
+            "value": "Recruiter coordinates → Candidate confirms → Calendar invite sent"
+          },
+          {
+            "label": "Triggers",
+            "value": "Resume screen passed."
+          },
+          {
+            "label": "Next",
+            "value": "Phone screen happens."
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "assisted",
+            "narrative": "Back-and-forth email/Slack to find time. Sometimes Calendly link. Cancellations cause re-scheduling chains.",
+            "tools": [
+              "Calendly",
+              "Email",
+              "Google Calendar"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "automated",
+            "narrative": "Self-serve booking link with interviewer pool availability. Auto-rebook on cancellation. No human in the loop unless something breaks.",
+            "tools": [
+              "Calendly / GoodTime / Modern Loop"
+            ]
+          }
+        ]
       }
     },
     {
@@ -471,44 +694,82 @@
         "pt": "30 min · cultura + motivação",
         "es": "30 min · cultura + motivación"
       },
-      "objective": "Validate motivation, basic fit, salary expectations, and answer candidate's questions about the role.",
-      "entity": "Screen notes · Rubric scorecard · Salary expectations",
-      "actors": "Recruiter leads → Candidate answers + asks → Notes captured",
-      "triggers": "Call scheduled. Candidate joined.",
-      "next": "Pass → onsite loop scheduled. Reject → kind rejection.",
-      "modules": [
-        {
-          "feature": "Note-taking",
-          "today": "manual",
-          "tomorrow": "ai"
-        },
-        {
-          "feature": "Scorecard fill",
-          "today": "manual",
-          "tomorrow": "ai"
-        },
-        {
-          "feature": "Question library",
-          "today": "manual",
-          "tomorrow": "assisted"
-        }
-      ],
-      "states": {
-        "today": {
-          "mode": "manual",
-          "narrative": "Recruiter takes notes by hand or in ATS during the call. Scorecard filled in after. Salary expectations captured verbally.",
-          "tools": [
-            "ATS scorecard",
-            "Notepad / Notion"
-          ]
-        },
-        "tomorrow": {
-          "mode": "ai",
-          "narrative": "AI transcribes the call, extracts answers to standard questions, auto-fills the scorecard, flags inconsistencies or red flags. Recruiter reviews/edits — doesn't type.",
-          "proven_pattern": [
-            "Metaview, Karat ambient interview notes"
-          ]
-        }
+      "type": "step",
+      "context": {
+        "objective": "Validate motivation, basic fit, salary expectations, and answer candidate's questions about the role.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Screen notes · Rubric scorecard · Salary expectations"
+          },
+          {
+            "label": "Actors",
+            "value": "Recruiter leads → Candidate answers + asks → Notes captured"
+          },
+          {
+            "label": "Triggers",
+            "value": "Call scheduled. Candidate joined."
+          },
+          {
+            "label": "Next",
+            "value": "Pass → onsite loop scheduled. Reject → kind rejection."
+          }
+        ],
+        "modules": [
+          {
+            "feature": "Note-taking",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "ai"
+              }
+            ]
+          },
+          {
+            "feature": "Scorecard fill",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "ai"
+              }
+            ]
+          },
+          {
+            "feature": "Question library",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "assisted"
+              }
+            ]
+          }
+        ],
+        "modulesSub": "features that make this step work",
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "narrative": "Recruiter takes notes by hand or in ATS during the call. Scorecard filled in after. Salary expectations captured verbally.",
+            "tools": [
+              "ATS scorecard",
+              "Notepad / Notion"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "narrative": "AI transcribes the call, extracts answers to standard questions, auto-fills the scorecard, flags inconsistencies or red flags. Recruiter reviews/edits — doesn't type.",
+            "tools": [
+              "Metaview, Karat ambient interview notes"
+            ]
+          }
+        ]
       }
     },
     {
@@ -521,11 +782,28 @@
         "pt": "Fazer triagem por telefone",
         "es": "Tomar triaje telefónico"
       },
-      "objective": "Candidate evaluates the company while being evaluated.",
-      "entity": "Call · First impression",
-      "actors": "Candidate joins → answers questions → asks their own",
-      "triggers": "Calendar invite accepted.",
-      "next": "Wait for next-step decision."
+      "type": "step",
+      "context": {
+        "objective": "Candidate evaluates the company while being evaluated.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Call · First impression"
+          },
+          {
+            "label": "Actors",
+            "value": "Candidate joins → answers questions → asks their own"
+          },
+          {
+            "label": "Triggers",
+            "value": "Calendar invite accepted."
+          },
+          {
+            "label": "Next",
+            "value": "Wait for next-step decision."
+          }
+        ]
+      }
     },
     {
       "id": "scheduleOnsite",
@@ -542,28 +820,47 @@
         "pt": "5 entrevistas · 1 dia",
         "es": "5 entrevistas · 1 día"
       },
-      "objective": "Coordinate 5 interviewers + candidate for a single block (in-person or remote).",
-      "entity": "Onsite agenda · Interviewer assignments · Room/Zoom",
-      "actors": "Recruiter coordinates → Interviewers confirm → Candidate confirms",
-      "triggers": "Phone screen passed.",
-      "next": "Onsite loop runs.",
-      "states": {
-        "today": {
-          "mode": "assisted",
-          "narrative": "Recruiter pings 5 interviewers individually to confirm. Builds the agenda in Google Calendar manually. Sends candidate prep doc.",
-          "tools": [
-            "Google Calendar",
-            "Slack",
-            "Prep doc template"
-          ]
-        },
-        "tomorrow": {
-          "mode": "automated",
-          "narrative": "Interviewer pool with availability windows; system auto-builds the loop based on roles needed. Candidate prep doc auto-generated for the specific company + role.",
-          "proven_pattern": [
-            "GoodTime, Modern Loop, Prelude"
-          ]
-        }
+      "type": "step",
+      "context": {
+        "objective": "Coordinate 5 interviewers + candidate for a single block (in-person or remote).",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Onsite agenda · Interviewer assignments · Room/Zoom"
+          },
+          {
+            "label": "Actors",
+            "value": "Recruiter coordinates → Interviewers confirm → Candidate confirms"
+          },
+          {
+            "label": "Triggers",
+            "value": "Phone screen passed."
+          },
+          {
+            "label": "Next",
+            "value": "Onsite loop runs."
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "assisted",
+            "narrative": "Recruiter pings 5 interviewers individually to confirm. Builds the agenda in Google Calendar manually. Sends candidate prep doc.",
+            "tools": [
+              "Google Calendar",
+              "Slack",
+              "Prep doc template"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "automated",
+            "narrative": "Interviewer pool with availability windows; system auto-builds the loop based on roles needed. Candidate prep doc auto-generated for the specific company + role.",
+            "tools": [
+              "GoodTime, Modern Loop, Prelude"
+            ]
+          }
+        ]
       }
     },
     {
@@ -581,50 +878,94 @@
         "pt": "código · system design · comportamental",
         "es": "código · diseño de sistemas · conductual"
       },
-      "objective": "Gather structured signal across 4-5 dimensions: coding, design, behavioral, role-specific, culture.",
-      "entity": "Interview · Scorecard · Hire / no-hire vote",
-      "actors": "Interviewer prepares → conducts → debriefs in scorecard",
-      "triggers": "Onsite scheduled and started.",
-      "next": "Each interviewer submits a scorecard with a hire/no-hire vote and rationale.",
-      "modules": [
-        {
-          "feature": "Question bank",
-          "today": "assisted",
-          "tomorrow": "ai"
-        },
-        {
-          "feature": "Interview transcript",
-          "today": "n-a",
-          "tomorrow": "ai"
-        },
-        {
-          "feature": "Scorecard draft",
-          "today": "manual",
-          "tomorrow": "ai"
-        },
-        {
-          "feature": "Vote capture",
-          "today": "manual",
-          "tomorrow": "automated"
-        }
-      ],
-      "states": {
-        "today": {
-          "mode": "manual",
-          "narrative": "Interviewer prepares from a question bank doc. Asks questions, takes notes by hand. After interview, types up scorecard (often days late). Vote: strong hire / hire / no-hire / strong no-hire.",
-          "tools": [
-            "Question bank doc",
-            "ATS scorecard",
-            "Whiteboard / shared editor"
-          ]
-        },
-        "tomorrow": {
-          "mode": "ai",
-          "narrative": "AI suggests questions based on candidate's resume + the role's signal needs. Transcribes the interview. Generates structured scorecard draft from the transcript. Interviewer reviews + commits within 1 hour, not 1 week.",
-          "proven_pattern": [
-            "Metaview, Karat, BrightHire"
-          ]
-        }
+      "type": "step",
+      "context": {
+        "objective": "Gather structured signal across 4-5 dimensions: coding, design, behavioral, role-specific, culture.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Interview · Scorecard · Hire / no-hire vote"
+          },
+          {
+            "label": "Actors",
+            "value": "Interviewer prepares → conducts → debriefs in scorecard"
+          },
+          {
+            "label": "Triggers",
+            "value": "Onsite scheduled and started."
+          },
+          {
+            "label": "Next",
+            "value": "Each interviewer submits a scorecard with a hire/no-hire vote and rationale."
+          }
+        ],
+        "modules": [
+          {
+            "feature": "Question bank",
+            "levels": [
+              {
+                "label": "assisted"
+              },
+              {
+                "label": "ai"
+              }
+            ]
+          },
+          {
+            "feature": "Interview transcript",
+            "levels": [
+              {
+                "label": "n-a"
+              },
+              {
+                "label": "ai"
+              }
+            ]
+          },
+          {
+            "feature": "Scorecard draft",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "ai"
+              }
+            ]
+          },
+          {
+            "feature": "Vote capture",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "automated"
+              }
+            ]
+          }
+        ],
+        "modulesSub": "features that make this step work",
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "narrative": "Interviewer prepares from a question bank doc. Asks questions, takes notes by hand. After interview, types up scorecard (often days late). Vote: strong hire / hire / no-hire / strong no-hire.",
+            "tools": [
+              "Question bank doc",
+              "ATS scorecard",
+              "Whiteboard / shared editor"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "narrative": "AI suggests questions based on candidate's resume + the role's signal needs. Transcribes the interview. Generates structured scorecard draft from the transcript. Interviewer reviews + commits within 1 hour, not 1 week.",
+            "tools": [
+              "Metaview, Karat, BrightHire"
+            ]
+          }
+        ]
       }
     },
     {
@@ -637,11 +978,28 @@
         "pt": "Fazer o painel",
         "es": "Hacer el panel"
       },
-      "objective": "Candidate performs across 5 interviews over a day.",
-      "entity": "Performance · Energy · Fit",
-      "actors": "Candidate cycles through each interviewer.",
-      "triggers": "Onsite started.",
-      "next": "Wait for debrief decision."
+      "type": "step",
+      "context": {
+        "objective": "Candidate performs across 5 interviews over a day.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Performance · Energy · Fit"
+          },
+          {
+            "label": "Actors",
+            "value": "Candidate cycles through each interviewer."
+          },
+          {
+            "label": "Triggers",
+            "value": "Onsite started."
+          },
+          {
+            "label": "Next",
+            "value": "Wait for debrief decision."
+          }
+        ]
+      }
     },
     {
       "id": "debrief",
@@ -658,44 +1016,82 @@
         "pt": "painel converge",
         "es": "el panel converge"
       },
-      "objective": "Panel reads all scorecards, discusses each interview, converges on a recommendation.",
-      "entity": "Debrief notes · Recommendation · Risk flags",
-      "actors": "HM facilitates → Interviewers present → Recruiter captures notes",
-      "triggers": "All scorecards submitted (target: within 24h of last interview).",
-      "next": "Recommendation goes to approver.",
-      "modules": [
-        {
-          "feature": "Scorecard aggregation",
-          "today": "manual",
-          "tomorrow": "ai"
-        },
-        {
-          "feature": "Divergence detection",
-          "today": "manual",
-          "tomorrow": "ai"
-        },
-        {
-          "feature": "Debrief agenda",
-          "today": "manual",
-          "tomorrow": "automated"
-        }
-      ],
-      "states": {
-        "today": {
-          "mode": "manual",
-          "narrative": "60-min meeting on calendar. HM reads scorecards aloud, each interviewer adds color. Discussion is conversational. Decision often delayed because scorecards are late.",
-          "tools": [
-            "Zoom",
-            "ATS scorecards"
-          ]
-        },
-        "tomorrow": {
-          "mode": "ai",
-          "narrative": "AI synthesizes scorecards into a 1-page debrief brief BEFORE the meeting (key signals, divergences, risk areas). Debrief becomes a 20-min discussion focused on the divergences, not on re-reading.",
-          "proven_pattern": [
-            "Debrief summarization shipping in modern ATSes"
-          ]
-        }
+      "type": "step",
+      "context": {
+        "objective": "Panel reads all scorecards, discusses each interview, converges on a recommendation.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Debrief notes · Recommendation · Risk flags"
+          },
+          {
+            "label": "Actors",
+            "value": "HM facilitates → Interviewers present → Recruiter captures notes"
+          },
+          {
+            "label": "Triggers",
+            "value": "All scorecards submitted (target: within 24h of last interview)."
+          },
+          {
+            "label": "Next",
+            "value": "Recommendation goes to approver."
+          }
+        ],
+        "modules": [
+          {
+            "feature": "Scorecard aggregation",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "ai"
+              }
+            ]
+          },
+          {
+            "feature": "Divergence detection",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "ai"
+              }
+            ]
+          },
+          {
+            "feature": "Debrief agenda",
+            "levels": [
+              {
+                "label": "manual"
+              },
+              {
+                "label": "automated"
+              }
+            ]
+          }
+        ],
+        "modulesSub": "features that make this step work",
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "narrative": "60-min meeting on calendar. HM reads scorecards aloud, each interviewer adds color. Discussion is conversational. Decision often delayed because scorecards are late.",
+            "tools": [
+              "Zoom",
+              "ATS scorecards"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "narrative": "AI synthesizes scorecards into a 1-page debrief brief BEFORE the meeting (key signals, divergences, risk areas). Debrief becomes a 20-min discussion focused on the divergences, not on re-reading.",
+            "tools": [
+              "Debrief summarization shipping in modern ATSes"
+            ]
+          }
+        ]
       }
     },
     {
@@ -713,28 +1109,47 @@
         "pt": "aprovação de VP ou Diretor",
         "es": "aprobación de VP o Director"
       },
-      "objective": "Final hiring authority reviews panel recommendation, checks comp + level calibration, makes the call.",
-      "entity": "Decision · Comp recommendation · Level",
-      "actors": "Approver reviews packet → asks questions → decides",
-      "triggers": "Debrief recommendation submitted.",
-      "next": "Approve → offer prepared. Reject → kind rejection.",
-      "states": {
-        "today": {
-          "mode": "assisted",
-          "narrative": "Approver reads scorecards + debrief notes. Often asks for additional reference checks or pings the HM for clarification. Comp decided in a separate conversation.",
-          "tools": [
-            "ATS",
-            "Slack",
-            "Comp sheet"
-          ]
-        },
-        "tomorrow": {
-          "mode": "ai",
-          "narrative": "AI packet includes: panel recommendation, calibration vs past hires at this level, market comp range, risk flags from interviews, suggested comp offer. Approver decides faster, with more context.",
-          "proven_pattern": [
-            "Calibration tooling at Stripe, Meta, others"
-          ]
-        }
+      "type": "step",
+      "context": {
+        "objective": "Final hiring authority reviews panel recommendation, checks comp + level calibration, makes the call.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Decision · Comp recommendation · Level"
+          },
+          {
+            "label": "Actors",
+            "value": "Approver reviews packet → asks questions → decides"
+          },
+          {
+            "label": "Triggers",
+            "value": "Debrief recommendation submitted."
+          },
+          {
+            "label": "Next",
+            "value": "Approve → offer prepared. Reject → kind rejection."
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "assisted",
+            "narrative": "Approver reads scorecards + debrief notes. Often asks for additional reference checks or pings the HM for clarification. Comp decided in a separate conversation.",
+            "tools": [
+              "ATS",
+              "Slack",
+              "Comp sheet"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "narrative": "AI packet includes: panel recommendation, calibration vs past hires at this level, market comp range, risk flags from interviews, suggested comp offer. Approver decides faster, with more context.",
+            "tools": [
+              "Calibration tooling at Stripe, Meta, others"
+            ]
+          }
+        ]
       }
     },
     {
@@ -747,28 +1162,47 @@
         "pt": "Checagem de referências",
         "es": "Verificación de referencias"
       },
-      "objective": "Validate the panel's read on the candidate through 2-3 backchannel references.",
-      "entity": "Reference contact · Reference notes",
-      "actors": "Recruiter contacts → references respond → notes attached to packet",
-      "triggers": "Approver requests OR strong-hire recommendation needs validation.",
-      "next": "Notes go into the approval packet.",
-      "states": {
-        "today": {
-          "mode": "manual",
-          "narrative": "Recruiter emails references, schedules 20-min calls, takes notes by hand. Slow — often takes 3-5 days.",
-          "tools": [
-            "Email",
-            "Phone",
-            "Notion"
-          ]
-        },
-        "tomorrow": {
-          "mode": "ai",
-          "narrative": "Async reference platform (references answer structured questions in writing). AI synthesizes responses. Same-day turnaround.",
-          "proven_pattern": [
-            "Crosschq, SearchLight"
-          ]
-        }
+      "type": "step",
+      "context": {
+        "objective": "Validate the panel's read on the candidate through 2-3 backchannel references.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Reference contact · Reference notes"
+          },
+          {
+            "label": "Actors",
+            "value": "Recruiter contacts → references respond → notes attached to packet"
+          },
+          {
+            "label": "Triggers",
+            "value": "Approver requests OR strong-hire recommendation needs validation."
+          },
+          {
+            "label": "Next",
+            "value": "Notes go into the approval packet."
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "narrative": "Recruiter emails references, schedules 20-min calls, takes notes by hand. Slow — often takes 3-5 days.",
+            "tools": [
+              "Email",
+              "Phone",
+              "Notion"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "narrative": "Async reference platform (references answer structured questions in writing). AI synthesizes responses. Same-day turnaround.",
+            "tools": [
+              "Crosschq, SearchLight"
+            ]
+          }
+        ]
       }
     },
     {
@@ -786,29 +1220,48 @@
         "pt": "salário · equity · benefícios",
         "es": "salario · equity · beneficios"
       },
-      "objective": "Build the offer package: base, equity, signing bonus, benefits, start date.",
-      "entity": "Offer letter · Comp package · Equity grant",
-      "actors": "Recruiter drafts → Approver signs off → Legal reviews → Offer letter generated",
-      "triggers": "Approval received.",
-      "next": "Offer extended to candidate.",
-      "states": {
-        "today": {
-          "mode": "assisted",
-          "narrative": "Recruiter pulls comp from comp band sheet, equity from grant table, generates letter from template. Manual data entry. Legal reviews each one.",
-          "tools": [
-            "Comp sheet",
-            "Equity table",
-            "DocuSign",
-            "Legal review"
-          ]
-        },
-        "tomorrow": {
-          "mode": "automated",
-          "narrative": "Offer auto-generated from approved package. Legal templates pre-blessed for standard cases. DocuSign auto-sent.",
-          "proven_pattern": [
-            "Offer letter automation in modern ATSes"
-          ]
-        }
+      "type": "step",
+      "context": {
+        "objective": "Build the offer package: base, equity, signing bonus, benefits, start date.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Offer letter · Comp package · Equity grant"
+          },
+          {
+            "label": "Actors",
+            "value": "Recruiter drafts → Approver signs off → Legal reviews → Offer letter generated"
+          },
+          {
+            "label": "Triggers",
+            "value": "Approval received."
+          },
+          {
+            "label": "Next",
+            "value": "Offer extended to candidate."
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "assisted",
+            "narrative": "Recruiter pulls comp from comp band sheet, equity from grant table, generates letter from template. Manual data entry. Legal reviews each one.",
+            "tools": [
+              "Comp sheet",
+              "Equity table",
+              "DocuSign",
+              "Legal review"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "automated",
+            "narrative": "Offer auto-generated from approved package. Legal templates pre-blessed for standard cases. DocuSign auto-sent.",
+            "tools": [
+              "Offer letter automation in modern ATSes"
+            ]
+          }
+        ]
       }
     },
     {
@@ -826,26 +1279,45 @@
         "pt": "a ligação",
         "es": "la llamada"
       },
-      "objective": "Recruiter (or HM) calls candidate, walks through the offer, answers questions, sells the role.",
-      "entity": "Offer call · Verbal acceptance OR negotiation",
-      "actors": "Recruiter calls → Candidate responds → HM joins if needed",
-      "triggers": "Offer package ready.",
-      "next": "Candidate decides. Negotiation may start.",
-      "states": {
-        "today": {
-          "mode": "manual",
-          "narrative": "Recruiter schedules a 30-min call with the candidate. Walks through offer. Answers questions. Sometimes HM joins to sell the role.",
-          "tools": [
-            "Zoom / Phone"
-          ]
-        },
-        "tomorrow": {
-          "mode": "manual",
-          "narrative": "Stays human — the offer call is a relationship moment, not a transaction.",
-          "proven_pattern": [
-            "No automation here is good automation."
-          ]
-        }
+      "type": "step",
+      "context": {
+        "objective": "Recruiter (or HM) calls candidate, walks through the offer, answers questions, sells the role.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Offer call · Verbal acceptance OR negotiation"
+          },
+          {
+            "label": "Actors",
+            "value": "Recruiter calls → Candidate responds → HM joins if needed"
+          },
+          {
+            "label": "Triggers",
+            "value": "Offer package ready."
+          },
+          {
+            "label": "Next",
+            "value": "Candidate decides. Negotiation may start."
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "narrative": "Recruiter schedules a 30-min call with the candidate. Walks through offer. Answers questions. Sometimes HM joins to sell the role.",
+            "tools": [
+              "Zoom / Phone"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "manual",
+            "narrative": "Stays human — the offer call is a relationship moment, not a transaction.",
+            "tools": [
+              "No automation here is good automation."
+            ]
+          }
+        ]
       }
     },
     {
@@ -863,11 +1335,28 @@
         "pt": "aceitar · negociar · recusar",
         "es": "aceptar · negociar · rechazar"
       },
-      "objective": "Candidate evaluates the offer against alternatives, makes a decision.",
-      "entity": "Decision · Counter-offer · Acceptance",
-      "actors": "Candidate weighs → may negotiate → responds",
-      "triggers": "Offer extended.",
-      "next": "Accept → onboarding kicks off. Decline → loss-reason captured. Negotiate → back to recruiter."
+      "type": "step",
+      "context": {
+        "objective": "Candidate evaluates the offer against alternatives, makes a decision.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Decision · Counter-offer · Acceptance"
+          },
+          {
+            "label": "Actors",
+            "value": "Candidate weighs → may negotiate → responds"
+          },
+          {
+            "label": "Triggers",
+            "value": "Offer extended."
+          },
+          {
+            "label": "Next",
+            "value": "Accept → onboarding kicks off. Decline → loss-reason captured. Negotiate → back to recruiter."
+          }
+        ]
+      }
     },
     {
       "id": "onboard",
@@ -884,28 +1373,47 @@
         "pt": "data de início · equipamento · acessos",
         "es": "fecha de inicio · equipo · accesos"
       },
-      "objective": "From accepted offer to productive Day 1: equipment, accounts, paperwork, first-week schedule.",
-      "entity": "Onboarding checklist · Equipment order · Account provisioning · Day 1 schedule",
-      "actors": "Recruiter hands off to People Ops → IT provisions → HM plans Week 1",
-      "triggers": "Offer accepted.",
-      "next": "Day 1 happens.",
-      "states": {
-        "today": {
-          "mode": "assisted",
-          "narrative": "Onboarding checklist in a doc. Equipment ordered manually. Account creation requested in tickets. HM builds Week 1 schedule from a template.",
-          "tools": [
-            "Notion checklist",
-            "IT ticket system",
-            "HR system"
-          ]
-        },
-        "tomorrow": {
-          "mode": "automated",
-          "narrative": "Acceptance triggers automated pipeline: equipment ordered, accounts provisioned, Slack channels added, buddy assigned, Week 1 calendar built. HM just shows up Day 1.",
-          "proven_pattern": [
-            "Rippling, Workday onboarding flows"
-          ]
-        }
+      "type": "step",
+      "context": {
+        "objective": "From accepted offer to productive Day 1: equipment, accounts, paperwork, first-week schedule.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Onboarding checklist · Equipment order · Account provisioning · Day 1 schedule"
+          },
+          {
+            "label": "Actors",
+            "value": "Recruiter hands off to People Ops → IT provisions → HM plans Week 1"
+          },
+          {
+            "label": "Triggers",
+            "value": "Offer accepted."
+          },
+          {
+            "label": "Next",
+            "value": "Day 1 happens."
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "assisted",
+            "narrative": "Onboarding checklist in a doc. Equipment ordered manually. Account creation requested in tickets. HM builds Week 1 schedule from a template.",
+            "tools": [
+              "Notion checklist",
+              "IT ticket system",
+              "HR system"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "automated",
+            "narrative": "Acceptance triggers automated pipeline: equipment ordered, accounts provisioned, Slack channels added, buddy assigned, Week 1 calendar built. HM just shows up Day 1.",
+            "tools": [
+              "Rippling, Workday onboarding flows"
+            ]
+          }
+        ]
       }
     }
   ],

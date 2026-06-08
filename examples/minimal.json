@@ -9,6 +9,11 @@
       "en": "the smallest possible map",
       "pt": "o menor mapa possível",
       "es": "el mapa más pequeño posible"
+    },
+    "nodeTypes": {
+      "step": {
+        "layout": []
+      }
     }
   },
   "lanes": [
@@ -56,7 +61,9 @@
         "en": "Ask question",
         "pt": "Fazer pergunta",
         "es": "Hacer pregunta"
-      }
+      },
+      "type": "step",
+      "context": {}
     },
     {
       "id": "process",
@@ -66,7 +73,9 @@
         "en": "Process",
         "pt": "Processar",
         "es": "Procesar"
-      }
+      },
+      "type": "step",
+      "context": {}
     },
     {
       "id": "reply",
@@ -76,7 +85,9 @@
         "en": "Reply",
         "pt": "Responder",
         "es": "Responder"
-      }
+      },
+      "type": "step",
+      "context": {}
     },
     {
       "id": "read",
@@ -86,7 +97,9 @@
         "en": "Read answer",
         "pt": "Ler resposta",
         "es": "Leer respuesta"
-      }
+      },
+      "type": "step",
+      "context": {}
     }
   ],
   "edges": [
