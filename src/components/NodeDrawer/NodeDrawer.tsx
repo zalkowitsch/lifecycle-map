@@ -110,7 +110,8 @@ function renderNode(
   const down = data.edges.filter((e) => e.source === nodeId).map((e) => e.target);
 
   // Typed nodes render their drawer body via the primitive layout declared in
-  // meta.nodeTypes. Legacy nodes (no `type`) fall through to the sections below.
+  // meta.nodeTypes. Untyped nodes (no `type`) produce no typed body; typedBody
+  // is null and the deps/nav sections below render for all nodes regardless.
   const typeDef = node.type ? data.meta.nodeTypes?.[node.type] : undefined;
   const typedBody =
     typeDef && node.context ? (
