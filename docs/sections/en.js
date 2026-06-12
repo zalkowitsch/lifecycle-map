@@ -156,6 +156,7 @@ echo '{"lanes":[...]}' | gzip -9 | base64 | tr -d '\\n' | tr '+/' '-_' | tr -d '
       <p>Required fields: <code>id</code>, <code>lane</code>, <code>phase</code>, <code>title</code>.</p>
       <p>Optional positioning: <code>col</code> (sub-column index inside the phase, defaults 0).</p>
       <p>Optional content: <code>sub</code>, <code>objective</code>, <code>entity</code>, <code>actors</code>, <code>triggers</code>, <code>next</code>, <code>today</code>, <code>tomorrow</code>, <code>modules</code>.</p>
+      <p>Note: the node <strong>drawer</strong> content is now driven by a node's <code>type</code> + <code>context</code> resolved against <code>meta.nodeTypes</code> (see <a href="?lang=en#primitives">Drawer primitives</a>). The data-level model — lanes, phases, edges, and <code>today</code>/<code>tomorrow</code> — is unchanged.</p>
       <p><code>today</code> and <code>tomorrow</code> have the same shape:</p>
       <pre><code>{
   "mode":      "manual",
@@ -176,6 +177,96 @@ echo '{"lanes":[...]}' | gzip -9 | base64 | tr -d '\\n' | tr '+/' '-_' | tr -d '
 
       <h3>modules</h3>
       <p>Per-node feature list. Either inline objects or string IDs referencing a top-level catalog (see <a href="?lang=en#external">External refs</a>).</p>
+    ` },
+
+    { id: 'primitives', label: 'Drawer primitives', render: () => `
+      <h2>Drawer primitives</h2>
+      <p>The node drawer content is no longer hardcoded. A node declares a <code>type</code>; the type's layout is a tree of generic UI primitives with data bindings. The node carries its data in <code>context</code>. The app renders the layout, resolving each binding against the node's context.</p>
+
+      <h3>Node shape &amp; meta.nodeTypes</h3>
+      <p>A node references <code>meta.nodeTypes[type].layout</code> — a tree of primitives — and carries its data in <code>context</code>. Grid position (<code>id</code>, <code>lane</code>, <code>phase</code>, <code>col</code>) stays outside <code>context</code>.</p>
+      <pre><code>{
+  "meta": {
+    "nodeTypes": {
+      "interview-round": {
+        "layout": [
+          { "type": "Prose", "bind": "$objective" },
+          { "type": "KeyValue", "bind": "$meta" },
+          { "type": "Section", "title": "Rubrics", "sub": "$rubricsSub",
+            "children": [
+              { "type": "List", "bind": "$rubrics",
+                "item": { "type": "Tile", "title": "$name", "sub": "$id",
+                          "pills": "$levels", "tags": "$tags" } }
+            ] }
+        ]
+      }
+    }
+  },
+  "nodes": [
+    { "id": "coding", "lane": "interviewers", "phase": "onsite",
+      "type": "interview-round",
+      "context": {
+        "objective": "A problem that starts simple...",
+        "meta": [ { "label": "Duration", "value": "75 min" } ],
+        "rubricsSub": "signals measured this round",
+        "rubrics": [
+          { "name": "Code fluency", "id": "rubric:code-fluency",
+            "levels": [ { "label": "L1" }, { "label": "L4" } ],
+            "tags": ["Code fluency"] }
+        ]
+      } }
+  ]
+}</code></pre>
+
+      <h3>The binding rule</h3>
+      <p>A string value starting with <code>$</code> is a binding: it reads <code>context.&lt;key&gt;</code> — <code>"$rubrics"</code> resolves to <code>context.rubrics</code>. A string without a leading <code>$</code> is a literal, rendered as-is.</p>
+      <p>Inside a <code>List</code>, the <code>item</code> primitive receives each array element as its <strong>local</strong> context. So <code>Tile.title: "$name"</code> reads <code>item.name</code>, not the node-level context.</p>
+      <p>Every binding is optional at render time. A binding that resolves to <code>undefined</code> / missing makes that primitive (or that one prop) omit itself — no crash, no placeholder.</p>
+
+      <h3>The 10 primitives</h3>
+      <p>Each <code>type</code> selects a fixed, app-provided component. Fields below are the exact prop names.</p>
+
+      <h4>Section</h4>
+      <p>A titled group. <code>title</code> and <code>sub</code> are str-or-binding; <code>children</code> is an array of primitives. Heading rows omit when empty.</p>
+      <pre><code>{ "type": "Section", "title": "Rubrics", "sub": "$rubricsSub", "children": [ ... ] }</code></pre>
+
+      <h4>KeyValue</h4>
+      <p><code>bind</code> resolves to an array of <code>{ label, value }</code> rows. Omits if not an array or empty.</p>
+      <pre><code>{ "type": "KeyValue", "bind": "$meta" }</code></pre>
+
+      <h4>List</h4>
+      <p><code>bind</code> resolves to an array; <code>item</code> is rendered once per element, each element passed as the item's local context. Omits if empty or no <code>item</code>.</p>
+      <pre><code>{ "type": "List", "bind": "$rubrics", "item": { "type": "Tile", "title": "$name" } }</code></pre>
+
+      <h4>Tile</h4>
+      <p>A card with <code>title</code>, optional <code>sub</code>, and two pill rows: <code>pills</code> and <code>tags</code> (each a binding to an array). Omits entirely if <code>title</code> resolves empty.</p>
+      <pre><code>{ "type": "Tile", "title": "$name", "sub": "$id", "pills": "$levels", "tags": "$tags" }</code></pre>
+
+      <h4>Pills</h4>
+      <p><code>bind</code> resolves to an array of strings or <code>{ label, color? }</code>; <code>variant</code> is <code>mode</code> or <code>plain</code>. Per-pill <code>color</code> tints the label.</p>
+      <pre><code>{ "type": "Pills", "bind": "$levels", "variant": "mode" }</code></pre>
+
+      <h4>Prose</h4>
+      <p>A paragraph. <code>bind</code> resolves to text. The HTML is sanitized to an allowlist of <code>&lt;em&gt;</code>, <code>&lt;strong&gt;</code>, <code>&lt;br&gt;</code> only — scripts, attributes, and any other tags are stripped. Omits if empty.</p>
+      <pre><code>{ "type": "Prose", "bind": "$objective" }</code></pre>
+
+      <h4>Title</h4>
+      <p>A heading. <code>text</code> is str-or-binding; <code>variant</code> is <code>h1</code>, <code>h2</code> (default), or <code>eyebrow</code>. Omits if empty.</p>
+      <pre><code>{ "type": "Title", "text": "How We Interview", "variant": "h1" }</code></pre>
+
+      <h4>Text</h4>
+      <p>An inline run of text. <code>text</code> is str-or-binding; <code>variant</code> is <code>body</code> (default), <code>caption</code>, or <code>mono</code>. Omits if empty.</p>
+      <pre><code>{ "type": "Text", "text": "$duration", "variant": "caption" }</code></pre>
+
+      <h4>Button</h4>
+      <p>A button. <code>text</code> is the label; <code>action</code> is <code>navigate</code> (default) or <code>copy</code>; <code>target</code> is a binding passed to the action handler. Omits if label empty.</p>
+      <pre><code>{ "type": "Button", "text": "Open spec", "action": "navigate", "target": "$specUrl" }</code></pre>
+
+      <h4>Link</h4>
+      <p>An external link. <code>text</code> is the label; <code>href</code> is a binding. Only <code>http</code> / <code>https</code> hrefs are allowed — <code>javascript:</code>, <code>data:</code>, and other schemes are rejected and the link omits itself.</p>
+      <pre><code>{ "type": "Link", "text": "Docs", "href": "$docsUrl" }</code></pre>
+
+      <p>Localized objects (<code>{ en, pt, es, ... }</code>) work anywhere a primitive renders text — same rules as the rest of the document (see <a href="?lang=en#multilang">Multi-language</a>).</p>
     ` },
 
     { id: 'modes', label: 'Modes', render: () => `
