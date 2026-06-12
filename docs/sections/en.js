@@ -243,8 +243,8 @@ echo '{"lanes":[...]}' | gzip -9 | base64 | tr -d '\\n' | tr '+/' '-_' | tr -d '
       <pre><code>{ "type": "Tile", "title": "$name", "sub": "$id", "pills": "$levels", "tags": "$tags" }</code></pre>
 
       <h4>Pills</h4>
-      <p><code>bind</code> resolves to an array of strings or <code>{ label, color? }</code>; <code>variant</code> is <code>mode</code> or <code>plain</code>. Per-pill <code>color</code> tints the label.</p>
-      <pre><code>{ "type": "Pills", "bind": "$levels", "variant": "mode" }</code></pre>
+      <p><code>bind</code> resolves to an array of strings or <code>{ label, color? }</code> objects. Per-pill <code>color</code> tints the label. Omits if the array is empty or missing.</p>
+      <pre><code>{ "type": "Pills", "bind": "$levels" }</code></pre>
 
       <h4>Prose</h4>
       <p>A paragraph. <code>bind</code> resolves to text. The HTML is sanitized to an allowlist of <code>&lt;em&gt;</code>, <code>&lt;strong&gt;</code>, <code>&lt;br&gt;</code> only — scripts, attributes, and any other tags are stripped. Omits if empty.</p>
