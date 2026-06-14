@@ -1,0 +1,673 @@
+{
+  "meta": {
+    "title": "Hiring Funnel",
+    "subtitle": "ATS funnel from sourcing to onboarding · today vs. AI-augmented",
+    "default_lang": "en",
+    "modes": [
+      {
+        "id": "manual",
+        "label": "Manual",
+        "color": "#b91c1c"
+      },
+      {
+        "id": "assisted",
+        "label": "Assisted",
+        "color": "#a16207"
+      },
+      {
+        "id": "automated",
+        "label": "Automated",
+        "color": "#1e40af"
+      },
+      {
+        "id": "ai",
+        "label": "AI-augmented",
+        "color": "#047857"
+      }
+    ],
+    "nodeTypes": {
+      "step": {
+        "layout": [
+          {
+            "type": "Prose",
+            "bind": "$objective"
+          },
+          {
+            "type": "KeyValue",
+            "bind": "$meta"
+          },
+          {
+            "type": "Section",
+            "title": "Modules",
+            "sub": "$modulesSub",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$modules",
+                "item": {
+                  "type": "Tile",
+                  "title": "$name",
+                  "sub": "$id",
+                  "pills": "$levels"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Section",
+            "title": "States",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$states",
+                "item": {
+                  "type": "Tile",
+                  "title": "$label",
+                  "sub": "$mode",
+                  "pills": "$tools"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "candidate",
+      "label": "Candidate",
+      "sub": "the person being hired"
+    },
+    {
+      "id": "sourcer",
+      "label": "Sourcer",
+      "sub": "top of funnel"
+    },
+    {
+      "id": "recruiter",
+      "label": "Recruiter",
+      "sub": "owns the process"
+    },
+    {
+      "id": "hiring-manager",
+      "label": "Hiring Manager",
+      "sub": "owns the hire"
+    },
+    {
+      "id": "interviewer",
+      "label": "Interviewer",
+      "sub": "gathers signal"
+    },
+    {
+      "id": "approver",
+      "label": "Approver",
+      "sub": "final sign-off"
+    }
+  ],
+  "phases": [
+    {
+      "id": "sourcing",
+      "label": "Sourcing",
+      "roman": "I"
+    },
+    {
+      "id": "screen",
+      "label": "Screen",
+      "roman": "II"
+    },
+    {
+      "id": "phone",
+      "label": "Phone",
+      "roman": "III"
+    },
+    {
+      "id": "onsite",
+      "label": "Onsite",
+      "roman": "IV"
+    },
+    {
+      "id": "decision",
+      "label": "Decision",
+      "roman": "V"
+    },
+    {
+      "id": "offer",
+      "label": "Offer & Onboard",
+      "roman": "VI"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "sourceCandidates",
+      "lane": "sourcer",
+      "phase": "sourcing",
+      "col": 0,
+      "title": "Source candidates",
+      "sub": "build top of funnel",
+      "type": "step",
+      "context": {
+        "objective": "Build a pipeline of qualified candidates through outbound search, referrals, and inbound applications.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Candidate pool · Outreach campaign"
+          },
+          {
+            "label": "Actors",
+            "value": "Sourcer drives outbound · Recruiter reviews inbound"
+          },
+          {
+            "label": "Next",
+            "value": "Qualified candidates move to resume screen."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "LinkedIn search",
+            "id": "mod-search",
+            "levels": [
+              "assisted",
+              "ai"
+            ]
+          },
+          {
+            "name": "Outreach templates",
+            "id": "mod-outreach",
+            "levels": [
+              "manual",
+              "ai"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "LinkedIn Recruiter",
+              "ATS",
+              "Email templates"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "AI sourcing scoring",
+              "Personalized outreach"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "apply",
+      "lane": "candidate",
+      "phase": "sourcing",
+      "col": 1,
+      "title": "Apply / respond",
+      "sub": "enters the funnel",
+      "type": "step",
+      "context": {
+        "objective": "Candidate responds to outbound outreach or applies through a job board.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Application · Resume"
+          },
+          {
+            "label": "Actors",
+            "value": "Candidate submits · ATS captures"
+          },
+          {
+            "label": "Next",
+            "value": "Recruiter screens the application."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "Application form",
+            "id": "mod-apply",
+            "levels": [
+              "automated"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "ATS form",
+              "Resume parser"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "Conversational intake agent"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "resumeScreen",
+      "lane": "recruiter",
+      "phase": "screen",
+      "col": 0,
+      "title": "Resume screen",
+      "sub": "first signal pass",
+      "type": "step",
+      "context": {
+        "objective": "Filter the candidate pool down to a set worth phone-screening using a rubric.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Resume · Screening rubric"
+          },
+          {
+            "label": "Actors",
+            "value": "Recruiter reads · HM spot-checks edge cases"
+          },
+          {
+            "label": "Next",
+            "value": "Pass to phone screen, or send rejection."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "Resume scoring",
+            "id": "mod-score",
+            "levels": [
+              "manual",
+              "ai"
+            ]
+          },
+          {
+            "name": "Rejection email",
+            "id": "mod-reject",
+            "levels": [
+              "assisted",
+              "automated"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "ATS",
+              "Email templates"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "Rubric-based AI screening",
+              "Reject reason capture"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "phoneScreen",
+      "lane": "recruiter",
+      "phase": "phone",
+      "col": 0,
+      "title": "Phone screen",
+      "sub": "30 min · fit + motivation",
+      "type": "step",
+      "context": {
+        "objective": "Validate motivation, basic fit, and salary expectations on a short call.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Screen notes · Scorecard"
+          },
+          {
+            "label": "Actors",
+            "value": "Recruiter leads · Candidate answers and asks"
+          },
+          {
+            "label": "Next",
+            "value": "Pass to onsite loop, or send rejection."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "Note-taking",
+            "id": "mod-notes",
+            "levels": [
+              "manual",
+              "ai"
+            ]
+          },
+          {
+            "name": "Question library",
+            "id": "mod-questions",
+            "levels": [
+              "manual",
+              "assisted"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "ATS scorecard",
+              "Notepad"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "Ambient transcription",
+              "Auto-filled scorecard"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "onsiteLoop",
+      "lane": "interviewer",
+      "phase": "onsite",
+      "col": 0,
+      "title": "Run interviews",
+      "sub": "coding · design · behavioral",
+      "type": "step",
+      "context": {
+        "objective": "Gather structured signal across coding, system design, and behavioral dimensions.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Interview · Scorecard · Hire vote"
+          },
+          {
+            "label": "Actors",
+            "value": "Interviewer conducts · debriefs in scorecard"
+          },
+          {
+            "label": "Next",
+            "value": "Each interviewer submits a hire/no-hire vote."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "Question bank",
+            "id": "mod-bank",
+            "levels": [
+              "assisted",
+              "ai"
+            ]
+          },
+          {
+            "name": "Scorecard draft",
+            "id": "mod-card",
+            "levels": [
+              "manual",
+              "ai"
+            ]
+          },
+          {
+            "name": "Vote capture",
+            "id": "mod-vote",
+            "levels": [
+              "manual",
+              "automated"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "Question bank doc",
+              "ATS scorecard",
+              "Shared editor"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "Interview transcription",
+              "Generated scorecard draft"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "debrief",
+      "lane": "hiring-manager",
+      "phase": "decision",
+      "col": 0,
+      "title": "Debrief",
+      "sub": "panel converges",
+      "type": "step",
+      "context": {
+        "objective": "Panel reads all scorecards, discusses each interview, and converges on a recommendation.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Debrief notes · Recommendation"
+          },
+          {
+            "label": "Actors",
+            "value": "HM facilitates · Interviewers present"
+          },
+          {
+            "label": "Next",
+            "value": "Recommendation goes to approver."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "Scorecard aggregation",
+            "id": "mod-agg",
+            "levels": [
+              "manual",
+              "ai"
+            ]
+          },
+          {
+            "name": "Divergence detection",
+            "id": "mod-diverge",
+            "levels": [
+              "manual",
+              "ai"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "Zoom",
+              "ATS scorecards"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "Pre-read synthesis brief",
+              "Risk flags"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "approve",
+      "lane": "approver",
+      "phase": "decision",
+      "col": 1,
+      "title": "Approve / reject",
+      "sub": "VP or Director sign-off",
+      "type": "step",
+      "context": {
+        "objective": "Final hiring authority reviews the recommendation, checks comp and level calibration, makes the call.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Decision · Comp recommendation"
+          },
+          {
+            "label": "Actors",
+            "value": "Approver reviews packet · decides"
+          },
+          {
+            "label": "Next",
+            "value": "Approve to prepare offer, or send rejection."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "Calibration packet",
+            "id": "mod-cal",
+            "levels": [
+              "assisted",
+              "ai"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "ATS",
+              "Comp sheet"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "Calibration vs past hires",
+              "Suggested comp range"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "offerOnboard",
+      "lane": "recruiter",
+      "phase": "offer",
+      "col": 0,
+      "title": "Offer & onboard",
+      "sub": "extend · accept · day 1",
+      "type": "step",
+      "context": {
+        "objective": "Build and extend the offer, then take the accepted candidate to a productive Day 1.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Offer letter · Onboarding checklist"
+          },
+          {
+            "label": "Actors",
+            "value": "Recruiter extends · Candidate decides · People Ops onboards"
+          },
+          {
+            "label": "Next",
+            "value": "Accepted candidate starts on Day 1."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "Offer generation",
+            "id": "mod-offer",
+            "levels": [
+              "assisted",
+              "automated"
+            ]
+          },
+          {
+            "name": "Onboarding pipeline",
+            "id": "mod-onboard",
+            "levels": [
+              "manual",
+              "automated"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "DocuSign",
+              "Notion checklist",
+              "IT tickets"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "Auto-generated offer",
+              "Provisioning pipeline"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "sourceCandidates",
+      "target": "apply"
+    },
+    {
+      "source": "apply",
+      "target": "resumeScreen"
+    },
+    {
+      "source": "resumeScreen",
+      "target": "phoneScreen"
+    },
+    {
+      "source": "phoneScreen",
+      "target": "onsiteLoop"
+    },
+    {
+      "source": "onsiteLoop",
+      "target": "debrief"
+    },
+    {
+      "source": "debrief",
+      "target": "approve"
+    },
+    {
+      "source": "approve",
+      "target": "offerOnboard"
+    },
+    {
+      "source": "resumeScreen",
+      "target": "sourceCandidates"
+    }
+  ]
+}

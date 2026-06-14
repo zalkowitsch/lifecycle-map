@@ -20,6 +20,11 @@ const EXAMPLE_SLUGS: Record<string, string> = {
   'hiring-pipeline-modules': './examples/with-modules/hiring-pipeline.json',
   'multi-language': './examples/multi-language.json',
   'minimal': './examples/minimal.json',
+  'interview-loop': './examples/use-cases/interview-loop.json',
+  'hiring-funnel': './examples/use-cases/hiring-funnel.json',
+  'support-triage': './examples/use-cases/support-triage.json',
+  'onboarding-activation': './examples/use-cases/onboarding-activation.json',
+  'capability-roadmap': './examples/use-cases/capability-roadmap.json',
 };
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV'];

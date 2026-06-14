@@ -53,6 +53,531 @@
         "item": { "type": "Tile", "title": "$name", "sub": "$id",
                   "pills": "$levels", "tags": "$tags" } } ] } ] }</code></pre>
 
+      <p><a href="../#interview-loop">Open rendered ↗</a></p>
+      <details class="example-src"><summary>View source</summary>
+      <pre><code>{
+  "meta": {
+    "title": "Interview Loop",
+    "subtitle": "rounds, rubric signals, and how a candidate moves from screen to decision",
+    "default_lang": "en",
+    "nodeTypes": {
+      "round": {
+        "layout": [
+          {
+            "type": "Prose",
+            "bind": "$objective"
+          },
+          {
+            "type": "KeyValue",
+            "bind": "$meta"
+          },
+          {
+            "type": "Section",
+            "title": "Signals",
+            "sub": "$signalsSub",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$signals",
+                "item": {
+                  "type": "Tile",
+                  "title": "$name",
+                  "sub": "$id",
+                  "pills": "$levels",
+                  "tags": "$tags"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "candidate",
+      "label": "Candidate",
+      "sub": "the person being evaluated"
+    },
+    {
+      "id": "interviewers",
+      "label": "Interviewers",
+      "sub": "panel · gather signal"
+    },
+    {
+      "id": "hiring-manager",
+      "label": "Hiring Manager",
+      "sub": "owns the hire"
+    },
+    {
+      "id": "committee",
+      "label": "Committee",
+      "sub": "calibration · final call"
+    }
+  ],
+  "phases": [
+    {
+      "id": "screen",
+      "label": "Screen",
+      "roman": "I"
+    },
+    {
+      "id": "onsite",
+      "label": "Onsite",
+      "roman": "II"
+    },
+    {
+      "id": "debrief",
+      "label": "Debrief",
+      "roman": "III"
+    },
+    {
+      "id": "decision",
+      "label": "Decision",
+      "roman": "IV"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "recruiterScreen",
+      "lane": "interviewers",
+      "phase": "screen",
+      "col": 0,
+      "title": "Recruiter screen",
+      "sub": "30 min · fit + motivation",
+      "type": "round",
+      "context": {
+        "objective": "Confirm baseline fit, motivation, and logistics before investing the panel's time. Lightweight signal, high throughput.",
+        "meta": [
+          {
+            "label": "Format",
+            "value": "30 min call · structured script"
+          },
+          {
+            "label": "Interviewer",
+            "value": "Recruiter or sourcer"
+          },
+          {
+            "label": "Outcome",
+            "value": "Advance to onsite · or kind reject"
+          }
+        ],
+        "signalsSub": "what this round is calibrated to detect",
+        "signals": [
+          {
+            "name": "Motivation &amp; fit",
+            "id": "sig:motivation",
+            "levels": [
+              {
+                "label": "L1"
+              },
+              {
+                "label": "L3"
+              }
+            ],
+            "tags": [
+              "Behavioral"
+            ]
+          },
+          {
+            "name": "Communication clarity",
+            "id": "sig:comms",
+            "levels": [
+              {
+                "label": "L1"
+              },
+              {
+                "label": "L4"
+              }
+            ],
+            "tags": [
+              "Communication"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "codingRound",
+      "lane": "interviewers",
+      "phase": "onsite",
+      "col": 0,
+      "title": "Coding round",
+      "sub": "60 min · live problem",
+      "type": "round",
+      "context": {
+        "objective": "Probe hands-on problem solving: can the candidate decompose a problem, write working code, and reason about correctness and complexity under time pressure?",
+        "meta": [
+          {
+            "label": "Format",
+            "value": "60 min · shared editor"
+          },
+          {
+            "label": "Interviewer",
+            "value": "Senior+ engineer"
+          },
+          {
+            "label": "Outcome",
+            "value": "Scorecard with hire/no-hire vote"
+          }
+        ],
+        "signalsSub": "rubric dimensions scored in this round",
+        "signals": [
+          {
+            "name": "Problem decomposition",
+            "id": "sig:decomp",
+            "levels": [
+              {
+                "label": "L1"
+              },
+              {
+                "label": "L4"
+              }
+            ],
+            "tags": [
+              "Analytical"
+            ]
+          },
+          {
+            "name": "Code fluency",
+            "id": "sig:fluency",
+            "levels": [
+              {
+                "label": "L1"
+              },
+              {
+                "label": "L4"
+              }
+            ],
+            "tags": [
+              "Coding"
+            ]
+          },
+          {
+            "name": "Complexity reasoning",
+            "id": "sig:complexity",
+            "levels": [
+              {
+                "label": "L2"
+              },
+              {
+                "label": "L4"
+              }
+            ],
+            "tags": [
+              "Analytical",
+              "CS"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "systemDesignRound",
+      "lane": "interviewers",
+      "phase": "onsite",
+      "col": 1,
+      "title": "System design round",
+      "sub": "60 min · open-ended",
+      "type": "round",
+      "context": {
+        "objective": "Evaluate how the candidate scopes an ambiguous problem, makes trade-offs across components, and defends a design under constraints like scale and failure modes.",
+        "meta": [
+          {
+            "label": "Format",
+            "value": "60 min · whiteboard / virtual"
+          },
+          {
+            "label": "Interviewer",
+            "value": "Staff+ engineer"
+          },
+          {
+            "label": "Outcome",
+            "value": "Scorecard with hire/no-hire vote"
+          }
+        ],
+        "signalsSub": "rubric dimensions scored in this round",
+        "signals": [
+          {
+            "name": "Scoping &amp; requirements",
+            "id": "sig:scoping",
+            "levels": [
+              {
+                "label": "L2"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Design"
+            ]
+          },
+          {
+            "name": "Trade-off reasoning",
+            "id": "sig:tradeoffs",
+            "levels": [
+              {
+                "label": "L2"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Design",
+              "Analytical"
+            ]
+          },
+          {
+            "name": "Failure &amp; scale awareness",
+            "id": "sig:scale",
+            "levels": [
+              {
+                "label": "L3"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Reliability"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "behavioralRound",
+      "lane": "interviewers",
+      "phase": "onsite",
+      "col": 1,
+      "title": "Behavioral round",
+      "sub": "45 min · past experience",
+      "type": "round",
+      "context": {
+        "objective": "Surface evidence of collaboration, ownership, and how the candidate handles conflict and ambiguity, grounded in concrete past situations rather than hypotheticals.",
+        "meta": [
+          {
+            "label": "Format",
+            "value": "45 min · STAR-style prompts"
+          },
+          {
+            "label": "Interviewer",
+            "value": "Cross-functional partner"
+          },
+          {
+            "label": "Outcome",
+            "value": "Scorecard with hire/no-hire vote"
+          }
+        ],
+        "signalsSub": "rubric dimensions scored in this round",
+        "signals": [
+          {
+            "name": "Ownership &amp; impact",
+            "id": "sig:ownership",
+            "levels": [
+              {
+                "label": "L2"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Behavioral",
+              "Leadership"
+            ]
+          },
+          {
+            "name": "Collaboration &amp; conflict",
+            "id": "sig:collab",
+            "levels": [
+              {
+                "label": "L1"
+              },
+              {
+                "label": "L4"
+              }
+            ],
+            "tags": [
+              "Behavioral"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "hmRound",
+      "lane": "hiring-manager",
+      "phase": "onsite",
+      "col": 1,
+      "title": "Hiring manager round",
+      "sub": "45 min · role &amp; team fit",
+      "type": "round",
+      "context": {
+        "objective": "Hiring manager assesses fit for the specific team and level, depth in the candidate's claimed domain, and whether the role's day-to-day will motivate them.",
+        "meta": [
+          {
+            "label": "Format",
+            "value": "45 min · conversational + deep dive"
+          },
+          {
+            "label": "Interviewer",
+            "value": "Hiring manager"
+          },
+          {
+            "label": "Outcome",
+            "value": "Scorecard + level read"
+          }
+        ],
+        "signalsSub": "rubric dimensions scored in this round",
+        "signals": [
+          {
+            "name": "Domain depth",
+            "id": "sig:domain",
+            "levels": [
+              {
+                "label": "L2"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Technical"
+            ]
+          },
+          {
+            "name": "Team &amp; role fit",
+            "id": "sig:rolefit",
+            "levels": [
+              {
+                "label": "L1"
+              },
+              {
+                "label": "L4"
+              }
+            ],
+            "tags": [
+              "Fit"
+            ]
+          },
+          {
+            "name": "Level calibration",
+            "id": "sig:level",
+            "levels": [
+              {
+                "label": "L2"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Calibration"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "debriefRound",
+      "lane": "committee",
+      "phase": "debrief",
+      "col": 0,
+      "title": "Debrief",
+      "sub": "panel converges on a recommendation",
+      "type": "round",
+      "context": {
+        "objective": "Aggregate every scorecard, surface divergences between interviewers, and converge on a single hire / no-hire recommendation with explicit rationale before it reaches the committee.",
+        "meta": [
+          {
+            "label": "Format",
+            "value": "45 min · all scorecards submitted first"
+          },
+          {
+            "label": "Facilitator",
+            "value": "Hiring manager · recruiter scribes"
+          },
+          {
+            "label": "Outcome",
+            "value": "Recommendation packet to committee"
+          }
+        ],
+        "signalsSub": "what the debrief reconciles across rounds",
+        "signals": [
+          {
+            "name": "Signal coverage",
+            "id": "sig:coverage",
+            "levels": [
+              {
+                "label": "L1"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Process"
+            ]
+          },
+          {
+            "name": "Divergence resolution",
+            "id": "sig:divergence",
+            "levels": [
+              {
+                "label": "L2"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Calibration"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "recruiterScreen",
+      "target": "codingRound"
+    },
+    {
+      "source": "codingRound",
+      "target": "systemDesignRound"
+    },
+    {
+      "source": "systemDesignRound",
+      "target": "behavioralRound"
+    },
+    {
+      "source": "behavioralRound",
+      "target": "hmRound"
+    },
+    {
+      "source": "hmRound",
+      "target": "debriefRound"
+    },
+    {
+      "source": "codingRound",
+      "target": "debriefRound"
+    },
+    {
+      "source": "systemDesignRound",
+      "target": "debriefRound"
+    },
+    {
+      "source": "behavioralRound",
+      "target": "debriefRound"
+    }
+  ]
+}</code></pre>
+      </details>
+
       <h3>2 · Hiring pipeline / ATS flow</h3>
       <p>Zoom out from one loop to the whole funnel: sourcing → screen → phone → onsite → decision → offer → onboard. Each step gets a <strong>today</strong> and <strong>tomorrow</strong> state (manual vs. AI-augmented) plus a <code>List</code> of supporting modules. Why it fits: it maps the handoffs between sourcer, recruiter, hiring manager, and approver that a flat Kanban board hides, and the today/tomorrow split doubles it as an automation roadmap. This is the bundled <a href="../#hiring-pipeline">hiring-pipeline</a> example.</p>
       <ul>
@@ -60,6 +585,683 @@
         <li><strong>Phases</strong> → the six funnel stages.</li>
         <li><strong>Nodes</strong> → steps with <code>states</code> (Today/Tomorrow Tiles) and <code>modules</code>.</li>
       </ul>
+
+      <p><a href="../#hiring-funnel">Open rendered ↗</a></p>
+      <details class="example-src"><summary>View source</summary>
+      <pre><code>{
+  "meta": {
+    "title": "Hiring Funnel",
+    "subtitle": "ATS funnel from sourcing to onboarding · today vs. AI-augmented",
+    "default_lang": "en",
+    "modes": [
+      {
+        "id": "manual",
+        "label": "Manual",
+        "color": "#b91c1c"
+      },
+      {
+        "id": "assisted",
+        "label": "Assisted",
+        "color": "#a16207"
+      },
+      {
+        "id": "automated",
+        "label": "Automated",
+        "color": "#1e40af"
+      },
+      {
+        "id": "ai",
+        "label": "AI-augmented",
+        "color": "#047857"
+      }
+    ],
+    "nodeTypes": {
+      "step": {
+        "layout": [
+          {
+            "type": "Prose",
+            "bind": "$objective"
+          },
+          {
+            "type": "KeyValue",
+            "bind": "$meta"
+          },
+          {
+            "type": "Section",
+            "title": "Modules",
+            "sub": "$modulesSub",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$modules",
+                "item": {
+                  "type": "Tile",
+                  "title": "$name",
+                  "sub": "$id",
+                  "pills": "$levels"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Section",
+            "title": "States",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$states",
+                "item": {
+                  "type": "Tile",
+                  "title": "$label",
+                  "sub": "$mode",
+                  "pills": "$tools"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "candidate",
+      "label": "Candidate",
+      "sub": "the person being hired"
+    },
+    {
+      "id": "sourcer",
+      "label": "Sourcer",
+      "sub": "top of funnel"
+    },
+    {
+      "id": "recruiter",
+      "label": "Recruiter",
+      "sub": "owns the process"
+    },
+    {
+      "id": "hiring-manager",
+      "label": "Hiring Manager",
+      "sub": "owns the hire"
+    },
+    {
+      "id": "interviewer",
+      "label": "Interviewer",
+      "sub": "gathers signal"
+    },
+    {
+      "id": "approver",
+      "label": "Approver",
+      "sub": "final sign-off"
+    }
+  ],
+  "phases": [
+    {
+      "id": "sourcing",
+      "label": "Sourcing",
+      "roman": "I"
+    },
+    {
+      "id": "screen",
+      "label": "Screen",
+      "roman": "II"
+    },
+    {
+      "id": "phone",
+      "label": "Phone",
+      "roman": "III"
+    },
+    {
+      "id": "onsite",
+      "label": "Onsite",
+      "roman": "IV"
+    },
+    {
+      "id": "decision",
+      "label": "Decision",
+      "roman": "V"
+    },
+    {
+      "id": "offer",
+      "label": "Offer &amp; Onboard",
+      "roman": "VI"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "sourceCandidates",
+      "lane": "sourcer",
+      "phase": "sourcing",
+      "col": 0,
+      "title": "Source candidates",
+      "sub": "build top of funnel",
+      "type": "step",
+      "context": {
+        "objective": "Build a pipeline of qualified candidates through outbound search, referrals, and inbound applications.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Candidate pool · Outreach campaign"
+          },
+          {
+            "label": "Actors",
+            "value": "Sourcer drives outbound · Recruiter reviews inbound"
+          },
+          {
+            "label": "Next",
+            "value": "Qualified candidates move to resume screen."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "LinkedIn search",
+            "id": "mod-search",
+            "levels": [
+              "assisted",
+              "ai"
+            ]
+          },
+          {
+            "name": "Outreach templates",
+            "id": "mod-outreach",
+            "levels": [
+              "manual",
+              "ai"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "LinkedIn Recruiter",
+              "ATS",
+              "Email templates"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "AI sourcing scoring",
+              "Personalized outreach"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "apply",
+      "lane": "candidate",
+      "phase": "sourcing",
+      "col": 1,
+      "title": "Apply / respond",
+      "sub": "enters the funnel",
+      "type": "step",
+      "context": {
+        "objective": "Candidate responds to outbound outreach or applies through a job board.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Application · Resume"
+          },
+          {
+            "label": "Actors",
+            "value": "Candidate submits · ATS captures"
+          },
+          {
+            "label": "Next",
+            "value": "Recruiter screens the application."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "Application form",
+            "id": "mod-apply",
+            "levels": [
+              "automated"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "ATS form",
+              "Resume parser"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "Conversational intake agent"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "resumeScreen",
+      "lane": "recruiter",
+      "phase": "screen",
+      "col": 0,
+      "title": "Resume screen",
+      "sub": "first signal pass",
+      "type": "step",
+      "context": {
+        "objective": "Filter the candidate pool down to a set worth phone-screening using a rubric.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Resume · Screening rubric"
+          },
+          {
+            "label": "Actors",
+            "value": "Recruiter reads · HM spot-checks edge cases"
+          },
+          {
+            "label": "Next",
+            "value": "Pass to phone screen, or send rejection."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "Resume scoring",
+            "id": "mod-score",
+            "levels": [
+              "manual",
+              "ai"
+            ]
+          },
+          {
+            "name": "Rejection email",
+            "id": "mod-reject",
+            "levels": [
+              "assisted",
+              "automated"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "ATS",
+              "Email templates"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "Rubric-based AI screening",
+              "Reject reason capture"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "phoneScreen",
+      "lane": "recruiter",
+      "phase": "phone",
+      "col": 0,
+      "title": "Phone screen",
+      "sub": "30 min · fit + motivation",
+      "type": "step",
+      "context": {
+        "objective": "Validate motivation, basic fit, and salary expectations on a short call.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Screen notes · Scorecard"
+          },
+          {
+            "label": "Actors",
+            "value": "Recruiter leads · Candidate answers and asks"
+          },
+          {
+            "label": "Next",
+            "value": "Pass to onsite loop, or send rejection."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "Note-taking",
+            "id": "mod-notes",
+            "levels": [
+              "manual",
+              "ai"
+            ]
+          },
+          {
+            "name": "Question library",
+            "id": "mod-questions",
+            "levels": [
+              "manual",
+              "assisted"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "ATS scorecard",
+              "Notepad"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "Ambient transcription",
+              "Auto-filled scorecard"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "onsiteLoop",
+      "lane": "interviewer",
+      "phase": "onsite",
+      "col": 0,
+      "title": "Run interviews",
+      "sub": "coding · design · behavioral",
+      "type": "step",
+      "context": {
+        "objective": "Gather structured signal across coding, system design, and behavioral dimensions.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Interview · Scorecard · Hire vote"
+          },
+          {
+            "label": "Actors",
+            "value": "Interviewer conducts · debriefs in scorecard"
+          },
+          {
+            "label": "Next",
+            "value": "Each interviewer submits a hire/no-hire vote."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "Question bank",
+            "id": "mod-bank",
+            "levels": [
+              "assisted",
+              "ai"
+            ]
+          },
+          {
+            "name": "Scorecard draft",
+            "id": "mod-card",
+            "levels": [
+              "manual",
+              "ai"
+            ]
+          },
+          {
+            "name": "Vote capture",
+            "id": "mod-vote",
+            "levels": [
+              "manual",
+              "automated"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "Question bank doc",
+              "ATS scorecard",
+              "Shared editor"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "Interview transcription",
+              "Generated scorecard draft"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "debrief",
+      "lane": "hiring-manager",
+      "phase": "decision",
+      "col": 0,
+      "title": "Debrief",
+      "sub": "panel converges",
+      "type": "step",
+      "context": {
+        "objective": "Panel reads all scorecards, discusses each interview, and converges on a recommendation.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Debrief notes · Recommendation"
+          },
+          {
+            "label": "Actors",
+            "value": "HM facilitates · Interviewers present"
+          },
+          {
+            "label": "Next",
+            "value": "Recommendation goes to approver."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "Scorecard aggregation",
+            "id": "mod-agg",
+            "levels": [
+              "manual",
+              "ai"
+            ]
+          },
+          {
+            "name": "Divergence detection",
+            "id": "mod-diverge",
+            "levels": [
+              "manual",
+              "ai"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "Zoom",
+              "ATS scorecards"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "Pre-read synthesis brief",
+              "Risk flags"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "approve",
+      "lane": "approver",
+      "phase": "decision",
+      "col": 1,
+      "title": "Approve / reject",
+      "sub": "VP or Director sign-off",
+      "type": "step",
+      "context": {
+        "objective": "Final hiring authority reviews the recommendation, checks comp and level calibration, makes the call.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Decision · Comp recommendation"
+          },
+          {
+            "label": "Actors",
+            "value": "Approver reviews packet · decides"
+          },
+          {
+            "label": "Next",
+            "value": "Approve to prepare offer, or send rejection."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "Calibration packet",
+            "id": "mod-cal",
+            "levels": [
+              "assisted",
+              "ai"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "ATS",
+              "Comp sheet"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "Calibration vs past hires",
+              "Suggested comp range"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "offerOnboard",
+      "lane": "recruiter",
+      "phase": "offer",
+      "col": 0,
+      "title": "Offer &amp; onboard",
+      "sub": "extend · accept · day 1",
+      "type": "step",
+      "context": {
+        "objective": "Build and extend the offer, then take the accepted candidate to a productive Day 1.",
+        "meta": [
+          {
+            "label": "Entity",
+            "value": "Offer letter · Onboarding checklist"
+          },
+          {
+            "label": "Actors",
+            "value": "Recruiter extends · Candidate decides · People Ops onboards"
+          },
+          {
+            "label": "Next",
+            "value": "Accepted candidate starts on Day 1."
+          }
+        ],
+        "modulesSub": "supporting tools",
+        "modules": [
+          {
+            "name": "Offer generation",
+            "id": "mod-offer",
+            "levels": [
+              "assisted",
+              "automated"
+            ]
+          },
+          {
+            "name": "Onboarding pipeline",
+            "id": "mod-onboard",
+            "levels": [
+              "manual",
+              "automated"
+            ]
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "Manual",
+            "tools": [
+              "DocuSign",
+              "Notion checklist",
+              "IT tickets"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "AI-augmented",
+            "tools": [
+              "Auto-generated offer",
+              "Provisioning pipeline"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "sourceCandidates",
+      "target": "apply"
+    },
+    {
+      "source": "apply",
+      "target": "resumeScreen"
+    },
+    {
+      "source": "resumeScreen",
+      "target": "phoneScreen"
+    },
+    {
+      "source": "phoneScreen",
+      "target": "onsiteLoop"
+    },
+    {
+      "source": "onsiteLoop",
+      "target": "debrief"
+    },
+    {
+      "source": "debrief",
+      "target": "approve"
+    },
+    {
+      "source": "approve",
+      "target": "offerOnboard"
+    },
+    {
+      "source": "resumeScreen",
+      "target": "sourceCandidates"
+    }
+  ]
+}</code></pre>
+      </details>
 
       <h3>3 · Customer support / triage</h3>
       <p>Inbound ticket to resolution: intake → classify → route → resolve → follow-up. Lanes split the work across the customer, the bot/auto-triage layer, tier-1, and the escalation team. Why it fits: triage is a routing problem with explicit ownership at each hop — lanes make the escalation boundary visible, and edges (including backward loops for reopened tickets) show where work bounces. The drawer per node can carry SLA targets in a <code>KeyValue</code> and channel <code>Pills</code>.</p>
@@ -69,6 +1271,266 @@
         <li><strong>Nodes</strong> → handling steps; backward edges for reopen / re-route.</li>
       </ul>
 
+      <p><a href="../#support-triage">Open rendered ↗</a></p>
+      <details class="example-src"><summary>View source</summary>
+      <pre><code>{
+  "meta": {
+    "title": "Support Triage",
+    "subtitle": "from inbound contact to resolution and follow-up",
+    "default_lang": "en",
+    "nodeTypes": {
+      "step": {
+        "layout": [
+          {
+            "type": "Prose",
+            "bind": "$objective"
+          },
+          {
+            "type": "KeyValue",
+            "bind": "$meta"
+          },
+          {
+            "type": "Section",
+            "title": "Channels",
+            "children": [
+              {
+                "type": "Pills",
+                "bind": "$channels"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "customer",
+      "label": "Customer"
+    },
+    {
+      "id": "auto-triage",
+      "label": "Auto-triage"
+    },
+    {
+      "id": "tier-1",
+      "label": "Tier 1"
+    },
+    {
+      "id": "tier-2",
+      "label": "Tier 2"
+    }
+  ],
+  "phases": [
+    {
+      "id": "intake",
+      "label": "Intake"
+    },
+    {
+      "id": "classify",
+      "label": "Classify"
+    },
+    {
+      "id": "route",
+      "label": "Route"
+    },
+    {
+      "id": "resolve",
+      "label": "Resolve"
+    },
+    {
+      "id": "follow-up",
+      "label": "Follow-up"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "submitTicket",
+      "lane": "customer",
+      "phase": "intake",
+      "title": "Submit ticket",
+      "sub": "customer reaches out",
+      "type": "step",
+      "context": {
+        "objective": "Customer reports an issue or asks a question through any supported channel.",
+        "meta": [
+          {
+            "label": "First response",
+            "value": "1h"
+          },
+          {
+            "label": "Resolution",
+            "value": "24h"
+          }
+        ],
+        "channels": [
+          "Email",
+          "Chat",
+          "Phone"
+        ]
+      }
+    },
+    {
+      "id": "classifyTicket",
+      "lane": "auto-triage",
+      "phase": "classify",
+      "title": "Classify &amp; prioritize",
+      "sub": "intent + severity",
+      "type": "step",
+      "context": {
+        "objective": "Bot detects intent, tags category, and assigns a priority before a human sees the ticket.",
+        "meta": [
+          {
+            "label": "First response",
+            "value": "1h"
+          },
+          {
+            "label": "Auto-classified",
+            "value": "instant"
+          }
+        ],
+        "channels": [
+          "Email",
+          "Chat",
+          "Phone"
+        ]
+      }
+    },
+    {
+      "id": "routeTicket",
+      "lane": "auto-triage",
+      "phase": "route",
+      "title": "Route to queue",
+      "sub": "skills-based routing",
+      "type": "step",
+      "context": {
+        "objective": "Route the ticket to the right team based on category, priority, and agent skills.",
+        "meta": [
+          {
+            "label": "Assignment",
+            "value": "instant"
+          },
+          {
+            "label": "Resolution",
+            "value": "24h"
+          }
+        ],
+        "channels": [
+          "Email",
+          "Chat"
+        ]
+      }
+    },
+    {
+      "id": "tier1Resolve",
+      "lane": "tier-1",
+      "phase": "resolve",
+      "title": "Tier 1 handling",
+      "sub": "common issues",
+      "type": "step",
+      "context": {
+        "objective": "Front-line agent resolves common issues or escalates anything that needs deeper expertise.",
+        "meta": [
+          {
+            "label": "First response",
+            "value": "1h"
+          },
+          {
+            "label": "Resolution",
+            "value": "24h"
+          }
+        ],
+        "channels": [
+          "Email",
+          "Chat",
+          "Phone"
+        ]
+      }
+    },
+    {
+      "id": "tier2Resolve",
+      "lane": "tier-2",
+      "phase": "resolve",
+      "title": "Tier 2 escalation",
+      "sub": "complex cases",
+      "type": "step",
+      "context": {
+        "objective": "Specialist investigates complex or technical cases that Tier 1 could not close.",
+        "meta": [
+          {
+            "label": "First response",
+            "value": "4h"
+          },
+          {
+            "label": "Resolution",
+            "value": "72h"
+          }
+        ],
+        "channels": [
+          "Email",
+          "Chat"
+        ]
+      }
+    },
+    {
+      "id": "followUp",
+      "lane": "customer",
+      "phase": "follow-up",
+      "title": "Confirm &amp; follow up",
+      "sub": "CSAT + reopen path",
+      "type": "step",
+      "context": {
+        "objective": "Customer confirms the fix and rates the interaction. If unresolved, the ticket reopens.",
+        "meta": [
+          {
+            "label": "Survey window",
+            "value": "48h"
+          },
+          {
+            "label": "Reopen window",
+            "value": "7d"
+          }
+        ],
+        "channels": [
+          "Email",
+          "Chat"
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "submitTicket",
+      "target": "classifyTicket"
+    },
+    {
+      "source": "classifyTicket",
+      "target": "routeTicket"
+    },
+    {
+      "source": "routeTicket",
+      "target": "tier1Resolve"
+    },
+    {
+      "source": "tier1Resolve",
+      "target": "tier2Resolve"
+    },
+    {
+      "source": "tier1Resolve",
+      "target": "followUp"
+    },
+    {
+      "source": "tier2Resolve",
+      "target": "followUp"
+    },
+    {
+      "source": "followUp",
+      "target": "routeTicket"
+    }
+  ]
+}</code></pre>
+      </details>
+
       <h3>4 · Onboarding / activation</h3>
       <p>From signup to first value: account creation → setup → first key action → habit. Lanes separate the new user from the product's automated nudges and the CS / onboarding team. Why it fits: activation is a staged funnel where each step has a drop-off and an owner — modeling it as nodes lets you attach the activation metric and the intervention (email, in-app, human touch) to each stage as <code>Pills</code> or a module <code>List</code>. Today/tomorrow captures "manual CS hand-holding now → self-serve later".</p>
       <ul>
@@ -77,6 +1539,312 @@
         <li><strong>Nodes</strong> → milestones with owner lane + intervention.</li>
       </ul>
 
+      <p><a href="../#onboarding-activation">Open rendered ↗</a></p>
+      <details class="example-src"><summary>View source</summary>
+      <pre><code>{
+  "meta": {
+    "title": "Onboarding &amp; Activation",
+    "subtitle": "from signup to habit · manual CS now vs. self-serve later",
+    "default_lang": "en",
+    "modes": [
+      {
+        "id": "manual",
+        "label": "Manual CS",
+        "color": "#b91c1c"
+      },
+      {
+        "id": "self-serve",
+        "label": "Self-serve",
+        "color": "#047857"
+      }
+    ],
+    "nodeTypes": {
+      "milestone": {
+        "layout": [
+          {
+            "type": "Prose",
+            "bind": "$objective"
+          },
+          {
+            "type": "KeyValue",
+            "bind": "$meta"
+          },
+          {
+            "type": "Section",
+            "title": "Interventions",
+            "children": [
+              {
+                "type": "Pills",
+                "bind": "$interventions"
+              }
+            ]
+          },
+          {
+            "type": "Section",
+            "title": "States",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$states",
+                "item": {
+                  "type": "Tile",
+                  "title": "$label",
+                  "sub": "$mode"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "user",
+      "label": "User",
+      "sub": "the person activating"
+    },
+    {
+      "id": "product",
+      "label": "Product",
+      "sub": "automated · in-app"
+    },
+    {
+      "id": "cs-onboarding",
+      "label": "CS Onboarding",
+      "sub": "human touch · high-touch accounts"
+    }
+  ],
+  "phases": [
+    {
+      "id": "signup",
+      "label": "Signup",
+      "roman": "I"
+    },
+    {
+      "id": "setup",
+      "label": "Setup",
+      "roman": "II"
+    },
+    {
+      "id": "first-action",
+      "label": "First Action",
+      "roman": "III"
+    },
+    {
+      "id": "activation",
+      "label": "Activation",
+      "roman": "IV"
+    },
+    {
+      "id": "habit",
+      "label": "Habit",
+      "roman": "V"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "createAccount",
+      "lane": "user",
+      "phase": "signup",
+      "title": "Create account",
+      "sub": "email or SSO",
+      "type": "milestone",
+      "context": {
+        "objective": "User signs up and lands in the product for the first time, ready to be guided to value.",
+        "meta": [
+          {
+            "label": "Activation metric",
+            "value": "Signup completion rate"
+          },
+          {
+            "label": "Owner",
+            "value": "Growth PM"
+          }
+        ],
+        "interventions": [
+          "Welcome email",
+          "In-app product tour",
+          "Human touch (high-touch accounts only)"
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual"
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "self-serve"
+          }
+        ]
+      }
+    },
+    {
+      "id": "configureWorkspace",
+      "lane": "product",
+      "phase": "setup",
+      "title": "Configure workspace",
+      "sub": "guided checklist",
+      "type": "milestone",
+      "context": {
+        "objective": "User completes core setup steps so the product is usable for their team and use case.",
+        "meta": [
+          {
+            "label": "Activation metric",
+            "value": "Setup checklist completion"
+          },
+          {
+            "label": "Owner",
+            "value": "Onboarding PM"
+          }
+        ],
+        "interventions": [
+          "Setup checklist email",
+          "In-app empty states",
+          "CS kickoff call"
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual"
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "self-serve"
+          }
+        ]
+      }
+    },
+    {
+      "id": "firstAction",
+      "lane": "user",
+      "phase": "first-action",
+      "title": "First key action",
+      "sub": "the 'aha' moment",
+      "type": "milestone",
+      "context": {
+        "objective": "User performs the core action that demonstrates the product's value for the first time.",
+        "meta": [
+          {
+            "label": "Activation metric",
+            "value": "Time to first key action"
+          },
+          {
+            "label": "Owner",
+            "value": "Growth PM"
+          }
+        ],
+        "interventions": [
+          "Nudge email",
+          "In-app tooltip",
+          "CS check-in"
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual"
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "self-serve"
+          }
+        ]
+      }
+    },
+    {
+      "id": "activated",
+      "lane": "product",
+      "phase": "activation",
+      "title": "Reach activation",
+      "sub": "value delivered",
+      "type": "milestone",
+      "context": {
+        "objective": "User crosses the activation threshold that predicts retention and is recognized as activated.",
+        "meta": [
+          {
+            "label": "Activation metric",
+            "value": "Activated users / signups"
+          },
+          {
+            "label": "Owner",
+            "value": "Onboarding PM"
+          }
+        ],
+        "interventions": [
+          "Milestone celebration email",
+          "In-app success banner",
+          "CS expansion outreach"
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual"
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "self-serve"
+          }
+        ]
+      }
+    },
+    {
+      "id": "buildHabit",
+      "lane": "cs-onboarding",
+      "phase": "habit",
+      "title": "Build the habit",
+      "sub": "recurring usage",
+      "type": "milestone",
+      "context": {
+        "objective": "User returns repeatedly and the product becomes part of their weekly workflow.",
+        "meta": [
+          {
+            "label": "Activation metric",
+            "value": "Week-4 retention"
+          },
+          {
+            "label": "Owner",
+            "value": "CS Lead"
+          }
+        ],
+        "interventions": [
+          "Digest email",
+          "In-app streaks",
+          "CS quarterly review"
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual"
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "self-serve"
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "createAccount",
+      "target": "configureWorkspace"
+    },
+    {
+      "source": "configureWorkspace",
+      "target": "firstAction"
+    },
+    {
+      "source": "firstAction",
+      "target": "activated"
+    },
+    {
+      "source": "activated",
+      "target": "buildHabit"
+    }
+  ]
+}</code></pre>
+      </details>
+
       <h3>5 · Capability / transformation roadmaps</h3>
       <p>Less a who-does-what flow, more a where-are-we map. Phases are capability domains; nodes are capabilities; each node's <strong>today</strong> vs. <strong>tomorrow</strong> mode (manual → assisted → automated → AI) is the whole point. Why it fits: the two mode dots per node give an at-a-glance heat-read of how far each capability is from its target state, and <code>meta.modes</code> gives a consistent color legend across the map. Use lanes for teams or value streams that own each capability.</p>
       <ul>
@@ -84,6 +1852,578 @@
         <li><strong>Phases</strong> → capability domains.</li>
         <li><strong>Nodes</strong> → capabilities; <code>today.mode</code> / <code>tomorrow.mode</code> carry the gap.</li>
       </ul>
+
+      <p><a href="../#capability-roadmap">Open rendered ↗</a></p>
+      <details class="example-src"><summary>View source</summary>
+      <pre><code>{
+  "meta": {
+    "title": "Capability Roadmap",
+    "subtitle": "value streams × capability domains · today vs. tomorrow",
+    "default_lang": "en",
+    "modes": [
+      {
+        "id": "manual",
+        "label": "Manual",
+        "color": "#b91c1c"
+      },
+      {
+        "id": "assisted",
+        "label": "Tool-Assisted",
+        "color": "#a16207"
+      },
+      {
+        "id": "automated",
+        "label": "Automated",
+        "color": "#1e40af"
+      },
+      {
+        "id": "ai",
+        "label": "AI-Augmented",
+        "color": "#047857"
+      }
+    ],
+    "nodeTypes": {
+      "capability": {
+        "layout": [
+          {
+            "type": "Prose",
+            "bind": "$objective"
+          },
+          {
+            "type": "KeyValue",
+            "bind": "$meta"
+          },
+          {
+            "type": "Section",
+            "title": "Today vs Tomorrow",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$states",
+                "item": {
+                  "type": "Tile",
+                  "title": "$label",
+                  "sub": "$mode",
+                  "pills": "$notes"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "growth",
+      "label": "Growth",
+      "sub": "acquisition · demand"
+    },
+    {
+      "id": "fulfillment",
+      "label": "Fulfillment",
+      "sub": "order to delivery"
+    },
+    {
+      "id": "platform",
+      "label": "Platform",
+      "sub": "shared infra · data"
+    },
+    {
+      "id": "support",
+      "label": "Customer Support",
+      "sub": "post-sale care"
+    }
+  ],
+  "phases": [
+    {
+      "id": "data",
+      "label": "Data &amp; Insight",
+      "roman": "I"
+    },
+    {
+      "id": "decisioning",
+      "label": "Decisioning",
+      "roman": "II"
+    },
+    {
+      "id": "execution",
+      "label": "Execution",
+      "roman": "III"
+    },
+    {
+      "id": "experience",
+      "label": "Customer Experience",
+      "roman": "IV"
+    },
+    {
+      "id": "governance",
+      "label": "Governance",
+      "roman": "V"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "demandSensing",
+      "lane": "growth",
+      "phase": "data",
+      "title": "Demand Sensing",
+      "sub": "read the market signal",
+      "type": "capability",
+      "today": {
+        "mode": "assisted"
+      },
+      "tomorrow": {
+        "mode": "ai"
+      },
+      "context": {
+        "objective": "Detect shifts in demand early enough to reallocate spend and inventory before competitors react.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Growth · Demand Planning"
+          },
+          {
+            "label": "Inputs",
+            "value": "Web traffic · search trends · historical sales"
+          },
+          {
+            "label": "Gap",
+            "value": "Weekly dashboards today → continuous AI forecasts tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Campaign targeting and inventory pre-positioning"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "assisted",
+            "notes": [
+              "Weekly BI dashboards",
+              "Analyst pulls cohorts by hand"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "notes": [
+              "Streaming demand model",
+              "Auto-alerts on anomalies"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "campaignTargeting",
+      "lane": "growth",
+      "phase": "decisioning",
+      "title": "Campaign Targeting",
+      "sub": "who to reach, when",
+      "type": "capability",
+      "today": {
+        "mode": "manual"
+      },
+      "tomorrow": {
+        "mode": "ai"
+      },
+      "context": {
+        "objective": "Allocate marketing budget to the segments and channels with the highest marginal return.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Growth · Performance Marketing"
+          },
+          {
+            "label": "Inputs",
+            "value": "Demand signal · segment value · channel cost"
+          },
+          {
+            "label": "Gap",
+            "value": "Quarterly rules-of-thumb today → per-impression bidding tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Higher ROAS without raising spend"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "notes": [
+              "Quarterly planning deck",
+              "Fixed channel split"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "notes": [
+              "Model-driven bidding",
+              "Budget rebalanced daily"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "orderOrchestration",
+      "lane": "fulfillment",
+      "phase": "execution",
+      "title": "Order Orchestration",
+      "sub": "route every order",
+      "type": "capability",
+      "today": {
+        "mode": "automated"
+      },
+      "tomorrow": {
+        "mode": "ai"
+      },
+      "context": {
+        "objective": "Route each order to the optimal fulfillment node to minimize cost and delivery time.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Fulfillment · Operations"
+          },
+          {
+            "label": "Inputs",
+            "value": "Inventory positions · carrier SLAs · order priority"
+          },
+          {
+            "label": "Gap",
+            "value": "Static routing rules today → cost-optimizing solver tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Faster delivery at lower shipping cost"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "automated",
+            "notes": [
+              "Rules engine",
+              "Nearest-warehouse heuristic"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "notes": [
+              "Optimization solver",
+              "Predictive node selection"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "deliveryPromise",
+      "lane": "fulfillment",
+      "phase": "experience",
+      "title": "Delivery Promise",
+      "sub": "the ETA at checkout",
+      "type": "capability",
+      "today": {
+        "mode": "assisted"
+      },
+      "tomorrow": {
+        "mode": "automated"
+      },
+      "context": {
+        "objective": "Show an accurate, trustworthy delivery date at checkout and keep it accurate through delivery.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Fulfillment · Customer Experience"
+          },
+          {
+            "label": "Inputs",
+            "value": "Routing decision · carrier performance · region"
+          },
+          {
+            "label": "Gap",
+            "value": "Padded buffers today → real-time computed promise tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Conversion lift and fewer WISMO contacts"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "assisted",
+            "notes": [
+              "Static buffer by region",
+              "Conservative padding"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "automated",
+            "notes": [
+              "Live ETA service",
+              "Updated on every event"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "dataFoundation",
+      "lane": "platform",
+      "phase": "data",
+      "title": "Data Foundation",
+      "sub": "one source of truth",
+      "type": "capability",
+      "today": {
+        "mode": "manual"
+      },
+      "tomorrow": {
+        "mode": "automated"
+      },
+      "context": {
+        "objective": "Provide a governed, reliable data layer that every other capability can build on.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Platform · Data Engineering"
+          },
+          {
+            "label": "Inputs",
+            "value": "Source systems · event streams · schemas"
+          },
+          {
+            "label": "Gap",
+            "value": "Hand-built pipelines today → self-serve contracts tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Every downstream model and dashboard"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "notes": [
+              "Bespoke ETL scripts",
+              "Schemas drift silently"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "automated",
+            "notes": [
+              "Declarative pipelines",
+              "Enforced data contracts"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "accessGovernance",
+      "lane": "platform",
+      "phase": "governance",
+      "title": "Access Governance",
+      "sub": "who can touch what",
+      "type": "capability",
+      "today": {
+        "mode": "manual"
+      },
+      "tomorrow": {
+        "mode": "automated"
+      },
+      "context": {
+        "objective": "Grant least-privilege access quickly while keeping a clean, auditable trail.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Platform · Security"
+          },
+          {
+            "label": "Inputs",
+            "value": "Roles · data sensitivity · audit policy"
+          },
+          {
+            "label": "Gap",
+            "value": "Ticket-and-approve today → policy-as-code tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Safe scaling of the data foundation"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "notes": [
+              "Access by ticket",
+              "Quarterly manual review"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "automated",
+            "notes": [
+              "Policy-as-code",
+              "Continuous attestation"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "caseDeflection",
+      "lane": "support",
+      "phase": "experience",
+      "title": "Case Deflection",
+      "sub": "answer before the ticket",
+      "type": "capability",
+      "today": {
+        "mode": "assisted"
+      },
+      "tomorrow": {
+        "mode": "ai"
+      },
+      "context": {
+        "objective": "Resolve common customer questions in self-serve flows before they become agent tickets.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Customer Support · Self-Service"
+          },
+          {
+            "label": "Inputs",
+            "value": "Help content · order context · intent signal"
+          },
+          {
+            "label": "Gap",
+            "value": "Static FAQ today → grounded AI assistant tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Lower cost-to-serve, faster answers"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "assisted",
+            "notes": [
+              "Keyword FAQ search",
+              "Canned macros"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "notes": [
+              "Context-aware assistant",
+              "Resolves with order data"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "agentAssist",
+      "lane": "support",
+      "phase": "decisioning",
+      "title": "Agent Assist",
+      "sub": "augment the human",
+      "type": "capability",
+      "today": {
+        "mode": "manual"
+      },
+      "tomorrow": {
+        "mode": "ai"
+      },
+      "context": {
+        "objective": "Give agents the next-best-action and a drafted reply so resolution is fast and consistent.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Customer Support · Agent Tooling"
+          },
+          {
+            "label": "Inputs",
+            "value": "Case history · knowledge base · policy"
+          },
+          {
+            "label": "Gap",
+            "value": "Manual lookup today → suggested actions tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Shorter handle time, higher CSAT"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "notes": [
+              "Agent searches the KB",
+              "Writes each reply by hand"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "notes": [
+              "Suggested next action",
+              "Drafted reply to edit"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "demandSensing",
+      "target": "campaignTargeting"
+    },
+    {
+      "source": "dataFoundation",
+      "target": "demandSensing"
+    },
+    {
+      "source": "dataFoundation",
+      "target": "orderOrchestration"
+    },
+    {
+      "source": "campaignTargeting",
+      "target": "orderOrchestration"
+    },
+    {
+      "source": "orderOrchestration",
+      "target": "deliveryPromise"
+    },
+    {
+      "source": "accessGovernance",
+      "target": "dataFoundation"
+    },
+    {
+      "source": "deliveryPromise",
+      "target": "caseDeflection"
+    },
+    {
+      "source": "caseDeflection",
+      "target": "agentAssist"
+    }
+  ]
+}</code></pre>
+      </details>
 
       <h3>When NOT to use it</h3>
       <p>It's the wrong tool when the structure isn't lanes × phases:</p>

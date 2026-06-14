@@ -1,0 +1,302 @@
+{
+  "meta": {
+    "title": "Onboarding & Activation",
+    "subtitle": "from signup to habit · manual CS now vs. self-serve later",
+    "default_lang": "en",
+    "modes": [
+      {
+        "id": "manual",
+        "label": "Manual CS",
+        "color": "#b91c1c"
+      },
+      {
+        "id": "self-serve",
+        "label": "Self-serve",
+        "color": "#047857"
+      }
+    ],
+    "nodeTypes": {
+      "milestone": {
+        "layout": [
+          {
+            "type": "Prose",
+            "bind": "$objective"
+          },
+          {
+            "type": "KeyValue",
+            "bind": "$meta"
+          },
+          {
+            "type": "Section",
+            "title": "Interventions",
+            "children": [
+              {
+                "type": "Pills",
+                "bind": "$interventions"
+              }
+            ]
+          },
+          {
+            "type": "Section",
+            "title": "States",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$states",
+                "item": {
+                  "type": "Tile",
+                  "title": "$label",
+                  "sub": "$mode"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "user",
+      "label": "User",
+      "sub": "the person activating"
+    },
+    {
+      "id": "product",
+      "label": "Product",
+      "sub": "automated · in-app"
+    },
+    {
+      "id": "cs-onboarding",
+      "label": "CS Onboarding",
+      "sub": "human touch · high-touch accounts"
+    }
+  ],
+  "phases": [
+    {
+      "id": "signup",
+      "label": "Signup",
+      "roman": "I"
+    },
+    {
+      "id": "setup",
+      "label": "Setup",
+      "roman": "II"
+    },
+    {
+      "id": "first-action",
+      "label": "First Action",
+      "roman": "III"
+    },
+    {
+      "id": "activation",
+      "label": "Activation",
+      "roman": "IV"
+    },
+    {
+      "id": "habit",
+      "label": "Habit",
+      "roman": "V"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "createAccount",
+      "lane": "user",
+      "phase": "signup",
+      "title": "Create account",
+      "sub": "email or SSO",
+      "type": "milestone",
+      "context": {
+        "objective": "User signs up and lands in the product for the first time, ready to be guided to value.",
+        "meta": [
+          {
+            "label": "Activation metric",
+            "value": "Signup completion rate"
+          },
+          {
+            "label": "Owner",
+            "value": "Growth PM"
+          }
+        ],
+        "interventions": [
+          "Welcome email",
+          "In-app product tour",
+          "Human touch (high-touch accounts only)"
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual"
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "self-serve"
+          }
+        ]
+      }
+    },
+    {
+      "id": "configureWorkspace",
+      "lane": "product",
+      "phase": "setup",
+      "title": "Configure workspace",
+      "sub": "guided checklist",
+      "type": "milestone",
+      "context": {
+        "objective": "User completes core setup steps so the product is usable for their team and use case.",
+        "meta": [
+          {
+            "label": "Activation metric",
+            "value": "Setup checklist completion"
+          },
+          {
+            "label": "Owner",
+            "value": "Onboarding PM"
+          }
+        ],
+        "interventions": [
+          "Setup checklist email",
+          "In-app empty states",
+          "CS kickoff call"
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual"
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "self-serve"
+          }
+        ]
+      }
+    },
+    {
+      "id": "firstAction",
+      "lane": "user",
+      "phase": "first-action",
+      "title": "First key action",
+      "sub": "the 'aha' moment",
+      "type": "milestone",
+      "context": {
+        "objective": "User performs the core action that demonstrates the product's value for the first time.",
+        "meta": [
+          {
+            "label": "Activation metric",
+            "value": "Time to first key action"
+          },
+          {
+            "label": "Owner",
+            "value": "Growth PM"
+          }
+        ],
+        "interventions": [
+          "Nudge email",
+          "In-app tooltip",
+          "CS check-in"
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual"
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "self-serve"
+          }
+        ]
+      }
+    },
+    {
+      "id": "activated",
+      "lane": "product",
+      "phase": "activation",
+      "title": "Reach activation",
+      "sub": "value delivered",
+      "type": "milestone",
+      "context": {
+        "objective": "User crosses the activation threshold that predicts retention and is recognized as activated.",
+        "meta": [
+          {
+            "label": "Activation metric",
+            "value": "Activated users / signups"
+          },
+          {
+            "label": "Owner",
+            "value": "Onboarding PM"
+          }
+        ],
+        "interventions": [
+          "Milestone celebration email",
+          "In-app success banner",
+          "CS expansion outreach"
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual"
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "self-serve"
+          }
+        ]
+      }
+    },
+    {
+      "id": "buildHabit",
+      "lane": "cs-onboarding",
+      "phase": "habit",
+      "title": "Build the habit",
+      "sub": "recurring usage",
+      "type": "milestone",
+      "context": {
+        "objective": "User returns repeatedly and the product becomes part of their weekly workflow.",
+        "meta": [
+          {
+            "label": "Activation metric",
+            "value": "Week-4 retention"
+          },
+          {
+            "label": "Owner",
+            "value": "CS Lead"
+          }
+        ],
+        "interventions": [
+          "Digest email",
+          "In-app streaks",
+          "CS quarterly review"
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual"
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "self-serve"
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "createAccount",
+      "target": "configureWorkspace"
+    },
+    {
+      "source": "configureWorkspace",
+      "target": "firstAction"
+    },
+    {
+      "source": "firstAction",
+      "target": "activated"
+    },
+    {
+      "source": "activated",
+      "target": "buildHabit"
+    }
+  ]
+}

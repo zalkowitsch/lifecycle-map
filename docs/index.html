@@ -155,6 +155,19 @@
     border-bottom-color: var(--ink);
   }
 
+  details.example-src {
+    margin: 14px 0 22px;
+    border-top: 1px solid var(--rule-2);
+  }
+  details.example-src summary {
+    cursor: pointer; user-select: none;
+    font-family: 'JetBrains Mono', monospace; font-size: small;
+    color: var(--mute); padding: 4px 0;
+  }
+  details.example-src summary:hover { color: var(--accent); }
+  details.example-src[open] summary { color: var(--accent); font-weight: 500; }
+  details.example-src pre { max-height: 360px; overflow: auto; }
+
   .section { display: none; }
   .section.active { display: block; }
 

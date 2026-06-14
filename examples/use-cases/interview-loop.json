@@ -1,0 +1,521 @@
+{
+  "meta": {
+    "title": "Interview Loop",
+    "subtitle": "rounds, rubric signals, and how a candidate moves from screen to decision",
+    "default_lang": "en",
+    "nodeTypes": {
+      "round": {
+        "layout": [
+          {
+            "type": "Prose",
+            "bind": "$objective"
+          },
+          {
+            "type": "KeyValue",
+            "bind": "$meta"
+          },
+          {
+            "type": "Section",
+            "title": "Signals",
+            "sub": "$signalsSub",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$signals",
+                "item": {
+                  "type": "Tile",
+                  "title": "$name",
+                  "sub": "$id",
+                  "pills": "$levels",
+                  "tags": "$tags"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "candidate",
+      "label": "Candidate",
+      "sub": "the person being evaluated"
+    },
+    {
+      "id": "interviewers",
+      "label": "Interviewers",
+      "sub": "panel · gather signal"
+    },
+    {
+      "id": "hiring-manager",
+      "label": "Hiring Manager",
+      "sub": "owns the hire"
+    },
+    {
+      "id": "committee",
+      "label": "Committee",
+      "sub": "calibration · final call"
+    }
+  ],
+  "phases": [
+    {
+      "id": "screen",
+      "label": "Screen",
+      "roman": "I"
+    },
+    {
+      "id": "onsite",
+      "label": "Onsite",
+      "roman": "II"
+    },
+    {
+      "id": "debrief",
+      "label": "Debrief",
+      "roman": "III"
+    },
+    {
+      "id": "decision",
+      "label": "Decision",
+      "roman": "IV"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "recruiterScreen",
+      "lane": "interviewers",
+      "phase": "screen",
+      "col": 0,
+      "title": "Recruiter screen",
+      "sub": "30 min · fit + motivation",
+      "type": "round",
+      "context": {
+        "objective": "Confirm baseline fit, motivation, and logistics before investing the panel's time. Lightweight signal, high throughput.",
+        "meta": [
+          {
+            "label": "Format",
+            "value": "30 min call · structured script"
+          },
+          {
+            "label": "Interviewer",
+            "value": "Recruiter or sourcer"
+          },
+          {
+            "label": "Outcome",
+            "value": "Advance to onsite · or kind reject"
+          }
+        ],
+        "signalsSub": "what this round is calibrated to detect",
+        "signals": [
+          {
+            "name": "Motivation & fit",
+            "id": "sig:motivation",
+            "levels": [
+              {
+                "label": "L1"
+              },
+              {
+                "label": "L3"
+              }
+            ],
+            "tags": [
+              "Behavioral"
+            ]
+          },
+          {
+            "name": "Communication clarity",
+            "id": "sig:comms",
+            "levels": [
+              {
+                "label": "L1"
+              },
+              {
+                "label": "L4"
+              }
+            ],
+            "tags": [
+              "Communication"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "codingRound",
+      "lane": "interviewers",
+      "phase": "onsite",
+      "col": 0,
+      "title": "Coding round",
+      "sub": "60 min · live problem",
+      "type": "round",
+      "context": {
+        "objective": "Probe hands-on problem solving: can the candidate decompose a problem, write working code, and reason about correctness and complexity under time pressure?",
+        "meta": [
+          {
+            "label": "Format",
+            "value": "60 min · shared editor"
+          },
+          {
+            "label": "Interviewer",
+            "value": "Senior+ engineer"
+          },
+          {
+            "label": "Outcome",
+            "value": "Scorecard with hire/no-hire vote"
+          }
+        ],
+        "signalsSub": "rubric dimensions scored in this round",
+        "signals": [
+          {
+            "name": "Problem decomposition",
+            "id": "sig:decomp",
+            "levels": [
+              {
+                "label": "L1"
+              },
+              {
+                "label": "L4"
+              }
+            ],
+            "tags": [
+              "Analytical"
+            ]
+          },
+          {
+            "name": "Code fluency",
+            "id": "sig:fluency",
+            "levels": [
+              {
+                "label": "L1"
+              },
+              {
+                "label": "L4"
+              }
+            ],
+            "tags": [
+              "Coding"
+            ]
+          },
+          {
+            "name": "Complexity reasoning",
+            "id": "sig:complexity",
+            "levels": [
+              {
+                "label": "L2"
+              },
+              {
+                "label": "L4"
+              }
+            ],
+            "tags": [
+              "Analytical",
+              "CS"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "systemDesignRound",
+      "lane": "interviewers",
+      "phase": "onsite",
+      "col": 1,
+      "title": "System design round",
+      "sub": "60 min · open-ended",
+      "type": "round",
+      "context": {
+        "objective": "Evaluate how the candidate scopes an ambiguous problem, makes trade-offs across components, and defends a design under constraints like scale and failure modes.",
+        "meta": [
+          {
+            "label": "Format",
+            "value": "60 min · whiteboard / virtual"
+          },
+          {
+            "label": "Interviewer",
+            "value": "Staff+ engineer"
+          },
+          {
+            "label": "Outcome",
+            "value": "Scorecard with hire/no-hire vote"
+          }
+        ],
+        "signalsSub": "rubric dimensions scored in this round",
+        "signals": [
+          {
+            "name": "Scoping & requirements",
+            "id": "sig:scoping",
+            "levels": [
+              {
+                "label": "L2"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Design"
+            ]
+          },
+          {
+            "name": "Trade-off reasoning",
+            "id": "sig:tradeoffs",
+            "levels": [
+              {
+                "label": "L2"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Design",
+              "Analytical"
+            ]
+          },
+          {
+            "name": "Failure & scale awareness",
+            "id": "sig:scale",
+            "levels": [
+              {
+                "label": "L3"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Reliability"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "behavioralRound",
+      "lane": "interviewers",
+      "phase": "onsite",
+      "col": 1,
+      "title": "Behavioral round",
+      "sub": "45 min · past experience",
+      "type": "round",
+      "context": {
+        "objective": "Surface evidence of collaboration, ownership, and how the candidate handles conflict and ambiguity, grounded in concrete past situations rather than hypotheticals.",
+        "meta": [
+          {
+            "label": "Format",
+            "value": "45 min · STAR-style prompts"
+          },
+          {
+            "label": "Interviewer",
+            "value": "Cross-functional partner"
+          },
+          {
+            "label": "Outcome",
+            "value": "Scorecard with hire/no-hire vote"
+          }
+        ],
+        "signalsSub": "rubric dimensions scored in this round",
+        "signals": [
+          {
+            "name": "Ownership & impact",
+            "id": "sig:ownership",
+            "levels": [
+              {
+                "label": "L2"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Behavioral",
+              "Leadership"
+            ]
+          },
+          {
+            "name": "Collaboration & conflict",
+            "id": "sig:collab",
+            "levels": [
+              {
+                "label": "L1"
+              },
+              {
+                "label": "L4"
+              }
+            ],
+            "tags": [
+              "Behavioral"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "hmRound",
+      "lane": "hiring-manager",
+      "phase": "onsite",
+      "col": 1,
+      "title": "Hiring manager round",
+      "sub": "45 min · role & team fit",
+      "type": "round",
+      "context": {
+        "objective": "Hiring manager assesses fit for the specific team and level, depth in the candidate's claimed domain, and whether the role's day-to-day will motivate them.",
+        "meta": [
+          {
+            "label": "Format",
+            "value": "45 min · conversational + deep dive"
+          },
+          {
+            "label": "Interviewer",
+            "value": "Hiring manager"
+          },
+          {
+            "label": "Outcome",
+            "value": "Scorecard + level read"
+          }
+        ],
+        "signalsSub": "rubric dimensions scored in this round",
+        "signals": [
+          {
+            "name": "Domain depth",
+            "id": "sig:domain",
+            "levels": [
+              {
+                "label": "L2"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Technical"
+            ]
+          },
+          {
+            "name": "Team & role fit",
+            "id": "sig:rolefit",
+            "levels": [
+              {
+                "label": "L1"
+              },
+              {
+                "label": "L4"
+              }
+            ],
+            "tags": [
+              "Fit"
+            ]
+          },
+          {
+            "name": "Level calibration",
+            "id": "sig:level",
+            "levels": [
+              {
+                "label": "L2"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Calibration"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "debriefRound",
+      "lane": "committee",
+      "phase": "debrief",
+      "col": 0,
+      "title": "Debrief",
+      "sub": "panel converges on a recommendation",
+      "type": "round",
+      "context": {
+        "objective": "Aggregate every scorecard, surface divergences between interviewers, and converge on a single hire / no-hire recommendation with explicit rationale before it reaches the committee.",
+        "meta": [
+          {
+            "label": "Format",
+            "value": "45 min · all scorecards submitted first"
+          },
+          {
+            "label": "Facilitator",
+            "value": "Hiring manager · recruiter scribes"
+          },
+          {
+            "label": "Outcome",
+            "value": "Recommendation packet to committee"
+          }
+        ],
+        "signalsSub": "what the debrief reconciles across rounds",
+        "signals": [
+          {
+            "name": "Signal coverage",
+            "id": "sig:coverage",
+            "levels": [
+              {
+                "label": "L1"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Process"
+            ]
+          },
+          {
+            "name": "Divergence resolution",
+            "id": "sig:divergence",
+            "levels": [
+              {
+                "label": "L2"
+              },
+              {
+                "label": "L5"
+              }
+            ],
+            "tags": [
+              "Calibration"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "recruiterScreen",
+      "target": "codingRound"
+    },
+    {
+      "source": "codingRound",
+      "target": "systemDesignRound"
+    },
+    {
+      "source": "systemDesignRound",
+      "target": "behavioralRound"
+    },
+    {
+      "source": "behavioralRound",
+      "target": "hmRound"
+    },
+    {
+      "source": "hmRound",
+      "target": "debriefRound"
+    },
+    {
+      "source": "codingRound",
+      "target": "debriefRound"
+    },
+    {
+      "source": "systemDesignRound",
+      "target": "debriefRound"
+    },
+    {
+      "source": "behavioralRound",
+      "target": "debriefRound"
+    }
+  ]
+}

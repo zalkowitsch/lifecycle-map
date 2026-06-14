@@ -1,0 +1,568 @@
+{
+  "meta": {
+    "title": "Capability Roadmap",
+    "subtitle": "value streams × capability domains · today vs. tomorrow",
+    "default_lang": "en",
+    "modes": [
+      {
+        "id": "manual",
+        "label": "Manual",
+        "color": "#b91c1c"
+      },
+      {
+        "id": "assisted",
+        "label": "Tool-Assisted",
+        "color": "#a16207"
+      },
+      {
+        "id": "automated",
+        "label": "Automated",
+        "color": "#1e40af"
+      },
+      {
+        "id": "ai",
+        "label": "AI-Augmented",
+        "color": "#047857"
+      }
+    ],
+    "nodeTypes": {
+      "capability": {
+        "layout": [
+          {
+            "type": "Prose",
+            "bind": "$objective"
+          },
+          {
+            "type": "KeyValue",
+            "bind": "$meta"
+          },
+          {
+            "type": "Section",
+            "title": "Today vs Tomorrow",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$states",
+                "item": {
+                  "type": "Tile",
+                  "title": "$label",
+                  "sub": "$mode",
+                  "pills": "$notes"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "growth",
+      "label": "Growth",
+      "sub": "acquisition · demand"
+    },
+    {
+      "id": "fulfillment",
+      "label": "Fulfillment",
+      "sub": "order to delivery"
+    },
+    {
+      "id": "platform",
+      "label": "Platform",
+      "sub": "shared infra · data"
+    },
+    {
+      "id": "support",
+      "label": "Customer Support",
+      "sub": "post-sale care"
+    }
+  ],
+  "phases": [
+    {
+      "id": "data",
+      "label": "Data & Insight",
+      "roman": "I"
+    },
+    {
+      "id": "decisioning",
+      "label": "Decisioning",
+      "roman": "II"
+    },
+    {
+      "id": "execution",
+      "label": "Execution",
+      "roman": "III"
+    },
+    {
+      "id": "experience",
+      "label": "Customer Experience",
+      "roman": "IV"
+    },
+    {
+      "id": "governance",
+      "label": "Governance",
+      "roman": "V"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "demandSensing",
+      "lane": "growth",
+      "phase": "data",
+      "title": "Demand Sensing",
+      "sub": "read the market signal",
+      "type": "capability",
+      "today": {
+        "mode": "assisted"
+      },
+      "tomorrow": {
+        "mode": "ai"
+      },
+      "context": {
+        "objective": "Detect shifts in demand early enough to reallocate spend and inventory before competitors react.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Growth · Demand Planning"
+          },
+          {
+            "label": "Inputs",
+            "value": "Web traffic · search trends · historical sales"
+          },
+          {
+            "label": "Gap",
+            "value": "Weekly dashboards today → continuous AI forecasts tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Campaign targeting and inventory pre-positioning"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "assisted",
+            "notes": [
+              "Weekly BI dashboards",
+              "Analyst pulls cohorts by hand"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "notes": [
+              "Streaming demand model",
+              "Auto-alerts on anomalies"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "campaignTargeting",
+      "lane": "growth",
+      "phase": "decisioning",
+      "title": "Campaign Targeting",
+      "sub": "who to reach, when",
+      "type": "capability",
+      "today": {
+        "mode": "manual"
+      },
+      "tomorrow": {
+        "mode": "ai"
+      },
+      "context": {
+        "objective": "Allocate marketing budget to the segments and channels with the highest marginal return.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Growth · Performance Marketing"
+          },
+          {
+            "label": "Inputs",
+            "value": "Demand signal · segment value · channel cost"
+          },
+          {
+            "label": "Gap",
+            "value": "Quarterly rules-of-thumb today → per-impression bidding tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Higher ROAS without raising spend"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "notes": [
+              "Quarterly planning deck",
+              "Fixed channel split"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "notes": [
+              "Model-driven bidding",
+              "Budget rebalanced daily"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "orderOrchestration",
+      "lane": "fulfillment",
+      "phase": "execution",
+      "title": "Order Orchestration",
+      "sub": "route every order",
+      "type": "capability",
+      "today": {
+        "mode": "automated"
+      },
+      "tomorrow": {
+        "mode": "ai"
+      },
+      "context": {
+        "objective": "Route each order to the optimal fulfillment node to minimize cost and delivery time.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Fulfillment · Operations"
+          },
+          {
+            "label": "Inputs",
+            "value": "Inventory positions · carrier SLAs · order priority"
+          },
+          {
+            "label": "Gap",
+            "value": "Static routing rules today → cost-optimizing solver tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Faster delivery at lower shipping cost"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "automated",
+            "notes": [
+              "Rules engine",
+              "Nearest-warehouse heuristic"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "notes": [
+              "Optimization solver",
+              "Predictive node selection"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "deliveryPromise",
+      "lane": "fulfillment",
+      "phase": "experience",
+      "title": "Delivery Promise",
+      "sub": "the ETA at checkout",
+      "type": "capability",
+      "today": {
+        "mode": "assisted"
+      },
+      "tomorrow": {
+        "mode": "automated"
+      },
+      "context": {
+        "objective": "Show an accurate, trustworthy delivery date at checkout and keep it accurate through delivery.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Fulfillment · Customer Experience"
+          },
+          {
+            "label": "Inputs",
+            "value": "Routing decision · carrier performance · region"
+          },
+          {
+            "label": "Gap",
+            "value": "Padded buffers today → real-time computed promise tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Conversion lift and fewer WISMO contacts"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "assisted",
+            "notes": [
+              "Static buffer by region",
+              "Conservative padding"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "automated",
+            "notes": [
+              "Live ETA service",
+              "Updated on every event"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "dataFoundation",
+      "lane": "platform",
+      "phase": "data",
+      "title": "Data Foundation",
+      "sub": "one source of truth",
+      "type": "capability",
+      "today": {
+        "mode": "manual"
+      },
+      "tomorrow": {
+        "mode": "automated"
+      },
+      "context": {
+        "objective": "Provide a governed, reliable data layer that every other capability can build on.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Platform · Data Engineering"
+          },
+          {
+            "label": "Inputs",
+            "value": "Source systems · event streams · schemas"
+          },
+          {
+            "label": "Gap",
+            "value": "Hand-built pipelines today → self-serve contracts tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Every downstream model and dashboard"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "notes": [
+              "Bespoke ETL scripts",
+              "Schemas drift silently"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "automated",
+            "notes": [
+              "Declarative pipelines",
+              "Enforced data contracts"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "accessGovernance",
+      "lane": "platform",
+      "phase": "governance",
+      "title": "Access Governance",
+      "sub": "who can touch what",
+      "type": "capability",
+      "today": {
+        "mode": "manual"
+      },
+      "tomorrow": {
+        "mode": "automated"
+      },
+      "context": {
+        "objective": "Grant least-privilege access quickly while keeping a clean, auditable trail.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Platform · Security"
+          },
+          {
+            "label": "Inputs",
+            "value": "Roles · data sensitivity · audit policy"
+          },
+          {
+            "label": "Gap",
+            "value": "Ticket-and-approve today → policy-as-code tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Safe scaling of the data foundation"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "notes": [
+              "Access by ticket",
+              "Quarterly manual review"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "automated",
+            "notes": [
+              "Policy-as-code",
+              "Continuous attestation"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "caseDeflection",
+      "lane": "support",
+      "phase": "experience",
+      "title": "Case Deflection",
+      "sub": "answer before the ticket",
+      "type": "capability",
+      "today": {
+        "mode": "assisted"
+      },
+      "tomorrow": {
+        "mode": "ai"
+      },
+      "context": {
+        "objective": "Resolve common customer questions in self-serve flows before they become agent tickets.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Customer Support · Self-Service"
+          },
+          {
+            "label": "Inputs",
+            "value": "Help content · order context · intent signal"
+          },
+          {
+            "label": "Gap",
+            "value": "Static FAQ today → grounded AI assistant tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Lower cost-to-serve, faster answers"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "assisted",
+            "notes": [
+              "Keyword FAQ search",
+              "Canned macros"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "notes": [
+              "Context-aware assistant",
+              "Resolves with order data"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "agentAssist",
+      "lane": "support",
+      "phase": "decisioning",
+      "title": "Agent Assist",
+      "sub": "augment the human",
+      "type": "capability",
+      "today": {
+        "mode": "manual"
+      },
+      "tomorrow": {
+        "mode": "ai"
+      },
+      "context": {
+        "objective": "Give agents the next-best-action and a drafted reply so resolution is fast and consistent.",
+        "meta": [
+          {
+            "label": "Owner",
+            "value": "Customer Support · Agent Tooling"
+          },
+          {
+            "label": "Inputs",
+            "value": "Case history · knowledge base · policy"
+          },
+          {
+            "label": "Gap",
+            "value": "Manual lookup today → suggested actions tomorrow"
+          },
+          {
+            "label": "Enables",
+            "value": "Shorter handle time, higher CSAT"
+          }
+        ],
+        "states": [
+          {
+            "label": "Today",
+            "mode": "manual",
+            "notes": [
+              "Agent searches the KB",
+              "Writes each reply by hand"
+            ]
+          },
+          {
+            "label": "Tomorrow",
+            "mode": "ai",
+            "notes": [
+              "Suggested next action",
+              "Drafted reply to edit"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "demandSensing",
+      "target": "campaignTargeting"
+    },
+    {
+      "source": "dataFoundation",
+      "target": "demandSensing"
+    },
+    {
+      "source": "dataFoundation",
+      "target": "orderOrchestration"
+    },
+    {
+      "source": "campaignTargeting",
+      "target": "orderOrchestration"
+    },
+    {
+      "source": "orderOrchestration",
+      "target": "deliveryPromise"
+    },
+    {
+      "source": "accessGovernance",
+      "target": "dataFoundation"
+    },
+    {
+      "source": "deliveryPromise",
+      "target": "caseDeflection"
+    },
+    {
+      "source": "caseDeflection",
+      "target": "agentAssist"
+    }
+  ]
+}

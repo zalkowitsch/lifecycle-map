@@ -1,0 +1,256 @@
+{
+  "meta": {
+    "title": "Support Triage",
+    "subtitle": "from inbound contact to resolution and follow-up",
+    "default_lang": "en",
+    "nodeTypes": {
+      "step": {
+        "layout": [
+          {
+            "type": "Prose",
+            "bind": "$objective"
+          },
+          {
+            "type": "KeyValue",
+            "bind": "$meta"
+          },
+          {
+            "type": "Section",
+            "title": "Channels",
+            "children": [
+              {
+                "type": "Pills",
+                "bind": "$channels"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "customer",
+      "label": "Customer"
+    },
+    {
+      "id": "auto-triage",
+      "label": "Auto-triage"
+    },
+    {
+      "id": "tier-1",
+      "label": "Tier 1"
+    },
+    {
+      "id": "tier-2",
+      "label": "Tier 2"
+    }
+  ],
+  "phases": [
+    {
+      "id": "intake",
+      "label": "Intake"
+    },
+    {
+      "id": "classify",
+      "label": "Classify"
+    },
+    {
+      "id": "route",
+      "label": "Route"
+    },
+    {
+      "id": "resolve",
+      "label": "Resolve"
+    },
+    {
+      "id": "follow-up",
+      "label": "Follow-up"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "submitTicket",
+      "lane": "customer",
+      "phase": "intake",
+      "title": "Submit ticket",
+      "sub": "customer reaches out",
+      "type": "step",
+      "context": {
+        "objective": "Customer reports an issue or asks a question through any supported channel.",
+        "meta": [
+          {
+            "label": "First response",
+            "value": "1h"
+          },
+          {
+            "label": "Resolution",
+            "value": "24h"
+          }
+        ],
+        "channels": [
+          "Email",
+          "Chat",
+          "Phone"
+        ]
+      }
+    },
+    {
+      "id": "classifyTicket",
+      "lane": "auto-triage",
+      "phase": "classify",
+      "title": "Classify & prioritize",
+      "sub": "intent + severity",
+      "type": "step",
+      "context": {
+        "objective": "Bot detects intent, tags category, and assigns a priority before a human sees the ticket.",
+        "meta": [
+          {
+            "label": "First response",
+            "value": "1h"
+          },
+          {
+            "label": "Auto-classified",
+            "value": "instant"
+          }
+        ],
+        "channels": [
+          "Email",
+          "Chat",
+          "Phone"
+        ]
+      }
+    },
+    {
+      "id": "routeTicket",
+      "lane": "auto-triage",
+      "phase": "route",
+      "title": "Route to queue",
+      "sub": "skills-based routing",
+      "type": "step",
+      "context": {
+        "objective": "Route the ticket to the right team based on category, priority, and agent skills.",
+        "meta": [
+          {
+            "label": "Assignment",
+            "value": "instant"
+          },
+          {
+            "label": "Resolution",
+            "value": "24h"
+          }
+        ],
+        "channels": [
+          "Email",
+          "Chat"
+        ]
+      }
+    },
+    {
+      "id": "tier1Resolve",
+      "lane": "tier-1",
+      "phase": "resolve",
+      "title": "Tier 1 handling",
+      "sub": "common issues",
+      "type": "step",
+      "context": {
+        "objective": "Front-line agent resolves common issues or escalates anything that needs deeper expertise.",
+        "meta": [
+          {
+            "label": "First response",
+            "value": "1h"
+          },
+          {
+            "label": "Resolution",
+            "value": "24h"
+          }
+        ],
+        "channels": [
+          "Email",
+          "Chat",
+          "Phone"
+        ]
+      }
+    },
+    {
+      "id": "tier2Resolve",
+      "lane": "tier-2",
+      "phase": "resolve",
+      "title": "Tier 2 escalation",
+      "sub": "complex cases",
+      "type": "step",
+      "context": {
+        "objective": "Specialist investigates complex or technical cases that Tier 1 could not close.",
+        "meta": [
+          {
+            "label": "First response",
+            "value": "4h"
+          },
+          {
+            "label": "Resolution",
+            "value": "72h"
+          }
+        ],
+        "channels": [
+          "Email",
+          "Chat"
+        ]
+      }
+    },
+    {
+      "id": "followUp",
+      "lane": "customer",
+      "phase": "follow-up",
+      "title": "Confirm & follow up",
+      "sub": "CSAT + reopen path",
+      "type": "step",
+      "context": {
+        "objective": "Customer confirms the fix and rates the interaction. If unresolved, the ticket reopens.",
+        "meta": [
+          {
+            "label": "Survey window",
+            "value": "48h"
+          },
+          {
+            "label": "Reopen window",
+            "value": "7d"
+          }
+        ],
+        "channels": [
+          "Email",
+          "Chat"
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "submitTicket",
+      "target": "classifyTicket"
+    },
+    {
+      "source": "classifyTicket",
+      "target": "routeTicket"
+    },
+    {
+      "source": "routeTicket",
+      "target": "tier1Resolve"
+    },
+    {
+      "source": "tier1Resolve",
+      "target": "tier2Resolve"
+    },
+    {
+      "source": "tier1Resolve",
+      "target": "followUp"
+    },
+    {
+      "source": "tier2Resolve",
+      "target": "followUp"
+    },
+    {
+      "source": "followUp",
+      "target": "routeTicket"
+    }
+  ]
+}
