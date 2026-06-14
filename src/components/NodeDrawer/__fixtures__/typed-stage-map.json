@@ -1,0 +1,155 @@
+{
+  "_comment": "Generic fixture exercising the typed 'stage' node model used by lifecycle maps. The nodeType 'stage' layout renders an objective (Prose), a meta table (KeyValue), a 'Features' Section listing module objects as Tiles, a 'States' Section listing state objects as Tiles, and 'Today'/'Tomorrow' Sections each wrapping a Prose narrative. Used by typed-stage-map.test.tsx to prove the stage layout resolves features/states/narratives as real text (never 'Unknown' or an unresolved '$binding') through the real app pipeline. Content is invented and illustrative only.",
+  "meta": {
+    "title": "Generic Lifecycle",
+    "subtitle": "stage-based flow",
+    "context": "Each stage owns an objective, its features, and its states.",
+    "nodeTypes": {
+      "stage": {
+        "layout": [
+          { "type": "Prose", "bind": "$objective" },
+          { "type": "KeyValue", "bind": "$meta" },
+          {
+            "type": "Section",
+            "title": "Features",
+            "sub": "$modulesSub",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$modules",
+                "item": {
+                  "type": "Tile",
+                  "title": "$name",
+                  "sub": "$tomorrow",
+                  "pills": "$levels",
+                  "tags": "$tags"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Section",
+            "title": "States",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$states",
+                "item": {
+                  "type": "Tile",
+                  "title": "$label",
+                  "sub": "$mode",
+                  "pills": "$tools",
+                  "tags": "$narrativeTag"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Section",
+            "title": "Today",
+            "children": [{ "type": "Prose", "bind": "$todayNarrative" }]
+          },
+          {
+            "type": "Section",
+            "title": "Tomorrow",
+            "children": [{ "type": "Prose", "bind": "$tomorrowNarrative" }]
+          }
+        ]
+      }
+    }
+  },
+  "lanes": [
+    { "id": "ops", "label": "Operations" },
+    { "id": "system", "label": "System" }
+  ],
+  "phases": [
+    { "id": "intake", "label": "Intake" },
+    { "id": "earn", "label": "Earn" }
+  ],
+  "nodes": [
+    {
+      "id": "revenue",
+      "lane": "system",
+      "phase": "earn",
+      "col": 0,
+      "title": "Revenue Stage",
+      "sub": "where value is captured",
+      "type": "stage",
+      "context": {
+        "objective": "The stage where the platform turns completed work into recognized revenue and gets paid for it.",
+        "modulesSub": "what this stage can do",
+        "meta": [
+          { "label": "Owner", "value": "Revenue team" },
+          { "label": "Inputs", "value": "Confirmed orders." },
+          { "label": "Next", "value": "Reconciliation." }
+        ],
+        "modules": [
+          {
+            "name": "Invoicing engine",
+            "tomorrow": "L4 issues correct invoices automatically the moment work is confirmed",
+            "levels": [{ "label": "L1" }, { "label": "L4" }],
+            "tags": ["Billing"]
+          },
+          {
+            "name": "Payment capture",
+            "tomorrow": "L4 collects funds with zero manual follow-up across methods",
+            "levels": [{ "label": "L1" }, { "label": "L4" }],
+            "tags": ["Payments"]
+          }
+        ],
+        "states": [
+          {
+            "label": "Draft",
+            "mode": "manual",
+            "tools": ["Spreadsheet", "Email"],
+            "narrativeTag": ["fragile"]
+          },
+          {
+            "label": "Settled",
+            "mode": "automated",
+            "tools": ["Ledger API"],
+            "narrativeTag": ["reliable"]
+          }
+        ],
+        "todayNarrative": "Today this stage runs on spreadsheets and manual chase-ups, so revenue lands late and reconciliation eats the week.",
+        "tomorrowNarrative": "Tomorrow invoicing and capture run themselves, and the team only touches the exceptions."
+      }
+    },
+    {
+      "id": "intake",
+      "lane": "ops",
+      "phase": "intake",
+      "col": 0,
+      "title": "Intake Stage",
+      "sub": "where work enters",
+      "type": "stage",
+      "context": {
+        "objective": "The stage where new work is received, validated, and queued for the revenue stage.",
+        "modulesSub": "what this stage can do",
+        "meta": [
+          { "label": "Owner", "value": "Operations team" },
+          { "label": "Next", "value": "Revenue." }
+        ],
+        "modules": [
+          {
+            "name": "Order validation",
+            "tomorrow": "L4 rejects malformed orders before they ever reach revenue",
+            "levels": [{ "label": "L1" }, { "label": "L4" }],
+            "tags": ["Quality"]
+          }
+        ],
+        "states": [
+          {
+            "label": "Received",
+            "mode": "manual",
+            "tools": ["Form"],
+            "narrativeTag": ["noisy"]
+          }
+        ],
+        "todayNarrative": "Today intake is a shared inbox someone watches.",
+        "tomorrowNarrative": "Tomorrow intake validates and routes itself."
+      }
+    }
+  ],
+  "edges": [{ "from": "intake", "to": "revenue" }]
+}
