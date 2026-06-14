@@ -1,0 +1,114 @@
+{
+  "_comment": "Generic fixture exercising the typed node model: a nodeType 'round' whose layout renders an objective (Prose), a meta table (KeyValue), and a 'Rubrics measured' Section listing rubric objects as Tiles. Used by interview-map.test.tsx to prove rubrics resolve as Tiles (not 'Unknown') through the real app pipeline. Content is illustrative only.",
+  "meta": {
+    "title": "Generic Review Loop",
+    "subtitle": "signal-based rounds",
+    "context": "Each round measures specific signals against a 1-4 rubric.",
+    "nodeTypes": {
+      "round": {
+        "layout": [
+          { "type": "Prose", "bind": "$objective" },
+          { "type": "KeyValue", "bind": "$meta" },
+          {
+            "type": "Section",
+            "title": "Rubrics measured",
+            "sub": "$rubricsSub",
+            "children": [
+              {
+                "type": "List",
+                "bind": "$rubrics",
+                "item": {
+                  "type": "Tile",
+                  "title": "$name",
+                  "sub": "$tomorrow",
+                  "pills": "$levels",
+                  "tags": "$tags"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "lanes": [
+    { "id": "panel", "label": "Panel" },
+    { "id": "candidate", "label": "Candidate" }
+  ],
+  "phases": [
+    { "id": "screen", "label": "Screen" },
+    { "id": "deep", "label": "Deep dive" }
+  ],
+  "nodes": [
+    {
+      "id": "intro",
+      "lane": "panel",
+      "phase": "screen",
+      "col": 0,
+      "title": "Intro Round",
+      "sub": "30 min",
+      "type": "round",
+      "context": {
+        "objective": "A warm-up round that establishes context and scope before the deeper rounds begin.",
+        "rubricsSub": "signals measured this round",
+        "meta": [
+          { "label": "Actors", "value": "Panel and candidate" },
+          { "label": "Next", "value": "Deep-dive round." }
+        ],
+        "rubrics": [
+          {
+            "name": "Clarity of thought",
+            "tomorrow": "L4 structures an ambiguous prompt into a clear plan",
+            "levels": [{ "label": "L1" }, { "label": "L4" }],
+            "tags": ["Communication"]
+          },
+          {
+            "name": "Curiosity",
+            "tomorrow": "L4 asks sharp clarifying questions early",
+            "levels": [{ "label": "L1" }, { "label": "L4" }],
+            "tags": ["Collaboration"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "deepdive",
+      "lane": "panel",
+      "phase": "deep",
+      "col": 0,
+      "title": "Deep Dive Round",
+      "sub": "60 min",
+      "type": "round",
+      "context": {
+        "objective": "A problem that starts simple and gains constraints as you go, watching how reasoning holds up under load.",
+        "rubricsSub": "signals measured this round",
+        "meta": [
+          { "label": "Actors", "value": "Panel and candidate" },
+          { "label": "Scope", "value": "Layered: each layer adds a constraint." },
+          { "label": "Next", "value": "Decision." }
+        ],
+        "rubrics": [
+          {
+            "name": "Systems thinking",
+            "tomorrow": "L4 reasons API to backend to DB and what breaks under load",
+            "levels": [{ "label": "L1" }, { "label": "L4" }],
+            "tags": ["Tradeoff reasoning"]
+          },
+          {
+            "name": "Problem decomposition",
+            "tomorrow": "L4 breaks the problem into parts before coding",
+            "levels": [{ "label": "L1" }, { "label": "L4" }],
+            "tags": ["Problem decomposition"]
+          },
+          {
+            "name": "Debugging",
+            "tomorrow": "L4 isolates and reasons about failures methodically",
+            "levels": [{ "label": "L1" }, { "label": "L4" }],
+            "tags": ["Debugging"]
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [{ "from": "intro", "to": "deepdive" }]
+}
