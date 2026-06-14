@@ -33,6 +33,69 @@
       </ul>
     ` },
 
+    { id: 'use-cases', label: 'Use cases', render: () => `
+      <h2>Use cases</h2>
+      <p>lifecycle-map fits any process with <strong>actors</strong>, <strong>ordered stages</strong>, and <strong>steps that carry structured detail</strong>. Lanes are who acts, phases are when, nodes are what happens, edges are what triggers what. The node drawer is driven by <code>type</code> + <code>context</code> against <code>meta.nodeTypes</code> — so each step can render its own rubric, signal list, or today/tomorrow split. Below: five concrete fits, then where it's the wrong tool.</p>
+
+      <h3>1 · Interview / hiring loops</h3>
+      <p>One map per loop. Each round (recruiter screen, coding, system design, behavioral, hiring-manager) is a node. The round's <code>context</code> holds the rubric: a <code>List</code> of <strong>signals</strong>, each rendered as a <code>Tile</code> with the signal name, an id, and level <code>pills</code> (L1→L4). Why it fits: a loop is exactly a sequence of signal-gathering steps, and the drawer makes the rubric walkable instead of buried in a doc per interviewer.</p>
+      <ul>
+        <li><strong>Lanes</strong> → candidate, interviewers, hiring manager, committee.</li>
+        <li><strong>Phases</strong> → screen → onsite → debrief → decision.</li>
+        <li><strong>Nodes</strong> → individual rounds; <code>nodeType</code> "round".</li>
+      </ul>
+      <pre><code>"round": { "layout": [
+  { "type": "Prose", "bind": "$objective" },
+  { "type": "KeyValue", "bind": "$meta" },
+  { "type": "Section", "title": "Signals", "sub": "$signalsSub",
+    "children": [
+      { "type": "List", "bind": "$signals",
+        "item": { "type": "Tile", "title": "$name", "sub": "$id",
+                  "pills": "$levels", "tags": "$tags" } } ] } ] }</code></pre>
+
+      <h3>2 · Hiring pipeline / ATS flow</h3>
+      <p>Zoom out from one loop to the whole funnel: sourcing → screen → phone → onsite → decision → offer → onboard. Each step gets a <strong>today</strong> and <strong>tomorrow</strong> state (manual vs. AI-augmented) plus a <code>List</code> of supporting modules. Why it fits: it maps the handoffs between sourcer, recruiter, hiring manager, and approver that a flat Kanban board hides, and the today/tomorrow split doubles it as an automation roadmap. This is the bundled <a href="../#hiring-pipeline">hiring-pipeline</a> example.</p>
+      <ul>
+        <li><strong>Lanes</strong> → candidate, sourcer, recruiter, hiring manager, interviewer, approver.</li>
+        <li><strong>Phases</strong> → the six funnel stages.</li>
+        <li><strong>Nodes</strong> → steps with <code>states</code> (Today/Tomorrow Tiles) and <code>modules</code>.</li>
+      </ul>
+
+      <h3>3 · Customer support / triage</h3>
+      <p>Inbound ticket to resolution: intake → classify → route → resolve → follow-up. Lanes split the work across the customer, the bot/auto-triage layer, tier-1, and the escalation team. Why it fits: triage is a routing problem with explicit ownership at each hop — lanes make the escalation boundary visible, and edges (including backward loops for reopened tickets) show where work bounces. The drawer per node can carry SLA targets in a <code>KeyValue</code> and channel <code>Pills</code>.</p>
+      <ul>
+        <li><strong>Lanes</strong> → customer, auto-triage, tier-1, tier-2 / escalation.</li>
+        <li><strong>Phases</strong> → intake → classify → route → resolve → follow-up.</li>
+        <li><strong>Nodes</strong> → handling steps; backward edges for reopen / re-route.</li>
+      </ul>
+
+      <h3>4 · Onboarding / activation</h3>
+      <p>From signup to first value: account creation → setup → first key action → habit. Lanes separate the new user from the product's automated nudges and the CS / onboarding team. Why it fits: activation is a staged funnel where each step has a drop-off and an owner — modeling it as nodes lets you attach the activation metric and the intervention (email, in-app, human touch) to each stage as <code>Pills</code> or a module <code>List</code>. Today/tomorrow captures "manual CS hand-holding now → self-serve later".</p>
+      <ul>
+        <li><strong>Lanes</strong> → user, product (automated), CS / onboarding.</li>
+        <li><strong>Phases</strong> → signup → setup → first action → activation → habit.</li>
+        <li><strong>Nodes</strong> → milestones with owner lane + intervention.</li>
+      </ul>
+
+      <h3>5 · Capability / transformation roadmaps</h3>
+      <p>Less a who-does-what flow, more a where-are-we map. Phases are capability domains; nodes are capabilities; each node's <strong>today</strong> vs. <strong>tomorrow</strong> mode (manual → assisted → automated → AI) is the whole point. Why it fits: the two mode dots per node give an at-a-glance heat-read of how far each capability is from its target state, and <code>meta.modes</code> gives a consistent color legend across the map. Use lanes for teams or value streams that own each capability.</p>
+      <ul>
+        <li><strong>Lanes</strong> → value streams / owning teams.</li>
+        <li><strong>Phases</strong> → capability domains.</li>
+        <li><strong>Nodes</strong> → capabilities; <code>today.mode</code> / <code>tomorrow.mode</code> carry the gap.</li>
+      </ul>
+
+      <h3>When NOT to use it</h3>
+      <p>It's the wrong tool when the structure isn't lanes × phases:</p>
+      <ul>
+        <li><strong>Tiny ad-hoc diagrams</strong> — a 5-box flowchart with no actors or stages. Use <a href="https://mermaid.js.org">Mermaid</a>; it's one fenced code block and renders inline anywhere.</li>
+        <li><strong>Freeform collaboration</strong> — sticky-note clustering, live brainstorming, spatial layouts with no fixed grid. Use <a href="https://miro.com">Miro</a> or FigJam.</li>
+        <li><strong>Org charts, mind maps, dependency graphs</strong> — hierarchies and arbitrary networks, not directed lane-to-lane flow. Use a graph tool.</li>
+        <li><strong>Live operational dashboards</strong> — this renders a static source-controlled model, not a feed of real-time state. Wire metrics elsewhere.</li>
+      </ul>
+      <p>Rule of thumb: if you can name the <strong>lanes</strong> and the <strong>phases</strong> before you start, it fits. If you can't, reach for Mermaid or Miro.</p>
+    ` },
+
     { id: 'quickstart', label: 'Quickstart', render: () => `
       <h2>Quickstart</h2>
       <p>Open the viewer with any of these URLs:</p>
@@ -267,6 +330,356 @@ echo '{"lanes":[...]}' | gzip -9 | base64 | tr -d '\\n' | tr '+/' '-_' | tr -d '
       <pre><code>{ "type": "Link", "text": "Docs", "href": "$docsUrl" }</code></pre>
 
       <p>Localized objects (<code>{ en, pt, es, ... }</code>) work anywhere a primitive renders text — same rules as the rest of the document (see <a href="?lang=en#multilang">Multi-language</a>).</p>
+    ` },
+
+    { id: 'customization', label: 'Customization', render: () => `
+      <h2>Customization</h2>
+      <p>This is the heart of the data-driven model: <strong>you</strong> decide what a node drawer shows. The drawer is no longer hardcoded — there is no fixed Objective / Modules / States layout. Instead you author your own <code>nodeType</code> out of the 10 <a href="?lang=en#primitives">drawer primitives</a>, and every node of that type fills it with data. Design the layout once, reuse it across the whole map.</p>
+
+      <h3>The mental model</h3>
+      <p>Two halves, kept apart on purpose:</p>
+      <ul>
+        <li><strong>The type defines the layout.</strong> <code>meta.nodeTypes.&lt;type&gt;.layout</code> is a tree of primitives — the shape of the drawer. It says <em>what</em> sections exist and <em>where</em> each piece of data lands, but holds no data itself.</li>
+        <li><strong>The node passes the context.</strong> Each node sets <code>type</code> to pick a layout and carries its own data in <code>context</code>. The app walks the layout and resolves every binding against that node's context.</li>
+      </ul>
+      <p>So one layout, many nodes: change the layout once and every node of that type re-renders the new way; change a node's context and only that drawer changes.</p>
+
+      <h3>A complete worked example</h3>
+      <p>Define a custom type <code>service</code> with four primitives stacked top to bottom: a <code>Prose</code> intro, a <code>KeyValue</code> fact table, and a <code>Section</code> wrapping a <code>List</code> that renders one <code>Tile</code> per element.</p>
+      <pre><code>{
+  "meta": {
+    "nodeTypes": {
+      "service": {
+        "layout": [
+          { "type": "Prose", "bind": "$summary" },
+          { "type": "KeyValue", "bind": "$facts" },
+          { "type": "Section", "title": "Dependencies", "sub": "$depsSub",
+            "children": [
+              { "type": "List", "bind": "$deps",
+                "item": { "type": "Tile", "title": "$name", "sub": "$owner",
+                          "pills": "$status" } }
+            ] }
+        ]
+      }
+    }
+  }
+}</code></pre>
+      <p>Now a node that selects that type and fills it. Grid position (<code>id</code>, <code>lane</code>, <code>phase</code>, <code>col</code>) stays <strong>outside</strong> <code>context</code>; everything the layout binds to lives <strong>inside</strong> it.</p>
+      <pre><code>{
+  "nodes": [
+    { "id": "billing-api", "lane": "platform", "phase": "run", "col": 0,
+      "title": "Billing API",
+      "type": "service",
+      "context": {
+        "summary": "Owns invoices and charge state. &lt;strong&gt;Tier-1&lt;/strong&gt; service.",
+        "facts": [
+          { "label": "Runtime", "value": "Go 1.22" },
+          { "label": "SLO", "value": "99.95%" }
+        ],
+        "depsSub": "upstream services this calls",
+        "deps": [
+          { "name": "Ledger", "owner": "payments-team", "status": ["healthy"] },
+          { "name": "Tax engine", "owner": "vendor", "status": ["degraded"] }
+        ]
+      } }
+  ]
+}</code></pre>
+      <p>What renders, top to bottom: a sanitized paragraph (the <code>&lt;strong&gt;</code> survives, anything else would be stripped); a two-row label/value table; a <strong>Dependencies</strong> heading with the sub-line "upstream services this calls"; then two tiles — "Ledger / payments-team" with a <code>healthy</code> pill, and "Tax engine / vendor" with a <code>degraded</code> pill.</p>
+
+      <h3>Binding rules to keep in mind</h3>
+      <ul>
+        <li><strong><code>$key</code> vs literal.</strong> A string starting with <code>$</code> reads from context: <code>"$deps"</code> → <code>context.deps</code>. A string without <code>$</code> is a literal, rendered as-is — that's why <code>"title": "Dependencies"</code> prints the word, while <code>"bind": "$deps"</code> looks up data.</li>
+        <li><strong>List item local context.</strong> Inside a <code>List</code>, each array element becomes the <em>local</em> context for the <code>item</code> primitive. So <code>Tile.title: "$name"</code> reads <code>element.name</code> — not the node-level context. The <code>item</code> can't see <code>$summary</code> from above; it only sees its own element.</li>
+        <li><strong>Missing → omit.</strong> Every binding is optional. A binding that resolves to <code>undefined</code> / missing makes that primitive (or that one prop) drop out — no crash, no placeholder. Leave <code>owner</code> off one dependency and only that tile loses its sub-line; the rest render normally.</li>
+      </ul>
+
+      <h3>Composing a rubric-style drawer</h3>
+      <p>The same Section &gt; List &gt; Tile spine gives you a scorecard. Put the rubric <strong>name</strong> as the Tile <code>title</code>, the maturity <strong>levels</strong> as <code>pills</code>, and category <strong>tags</strong> as a second pill row. A <code>Tile</code> has two independent pill rows — <code>pills</code> and <code>tags</code> — each a binding to an array of strings or <code>{ label, color? }</code> objects.</p>
+      <pre><code>{
+  "meta": {
+    "nodeTypes": {
+      "round": {
+        "layout": [
+          { "type": "Section", "title": "Rubrics", "sub": "$rubricsSub",
+            "children": [
+              { "type": "List", "bind": "$rubrics",
+                "item": { "type": "Tile", "title": "$name", "sub": "$id",
+                          "pills": "$levels", "tags": "$tags" } }
+            ] }
+        ]
+      }
+    }
+  },
+  "nodes": [
+    { "id": "coding", "lane": "panel", "phase": "onsite", "col": 0,
+      "title": "Coding round",
+      "type": "round",
+      "context": {
+        "rubricsSub": "signals measured this round",
+        "rubrics": [
+          { "name": "Code fluency", "id": "r:fluency",
+            "levels": [ { "label": "L1" }, { "label": "L4" } ],
+            "tags": ["core"] },
+          { "name": "Problem decomposition", "id": "r:decomp",
+            "levels": [ { "label": "L2" }, { "label": "L5" } ],
+            "tags": ["core", "design"] }
+        ]
+      } }
+  ]
+}</code></pre>
+      <p>Each element of <code>rubrics</code> becomes one tile: its <code>name</code> is the title, <code>id</code> the sub-line, <code>levels</code> the top pill row, <code>tags</code> the second. Add a <code>color</code> to a level object (<code>{ "label": "L4", "color": "#047857" }</code>) to tint that pill.</p>
+
+      <h3>Reusing a nodeType across many nodes</h3>
+      <p>A type is defined once and referenced by any number of nodes. Every node with <code>"type": "service"</code> draws from the same <code>meta.nodeTypes.service.layout</code> — they differ only in <code>context</code>. This is the payoff: dozens of nodes share one drawer design, and editing the layout updates all of them at once. You can also define several types (<code>service</code>, <code>round</code>, <code>handoff</code>, …) in the same map and let each node pick the one that fits.</p>
+      <p>If a layout key resolves to nothing for a given node, that part simply omits — so a single shared type can serve both rich and sparse nodes without per-node layouts. A node that has no <code>deps</code> just won't render the Dependencies section.</p>
+
+      <h3>Layout vs. theme</h3>
+      <p>Customizing a <code>nodeType</code> changes <strong>what content</strong> the drawer shows. It does not touch <strong>visual styling</strong> — fonts, colors, light/dark. Those come from the visual theme, switched in Settings or via <code>?theme=&amp;mode=</code> in the URL. The two are independent: any layout renders correctly under any theme. See <a href="?lang=en#themes">Themes</a> for the built-in themes and dark mode, and <a href="?lang=en#primitives">Drawer primitives</a> for the exact prop names of all 10 primitives.</p>
+    ` },
+
+    { id: 'api', label: 'API reference', render: () => `
+      <h1>API reference <em>— the data model</em></h1>
+      <p class="lead">A lifecycle map is one JSON (or YAML) document. This is the complete contract: every top-level key, the node-type layout engine, the 10 drawer primitives, and the binding grammar that wires node data into rendered drawers.</p>
+
+      <h2>Document shape</h2>
+      <p>One object. Only <code>lanes</code>, <code>phases</code>, and <code>nodes</code> are structurally required to render; the rest add labels, drawers, and flow.</p>
+      <table>
+        <thead><tr><th>Key</th><th>Type</th><th>Req?</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>meta</code></td><td>object</td><td>—</td><td>Title, subtitle, default language, modes, and the <code>nodeTypes</code> drawer registry.</td></tr>
+          <tr><td><code>lanes</code></td><td>array</td><td>yes</td><td>Rows — the actors / roles / systems.</td></tr>
+          <tr><td><code>phases</code></td><td>array</td><td>yes</td><td>Columns — the sequential stages.</td></tr>
+          <tr><td><code>nodes</code></td><td>array</td><td>yes</td><td>Steps placed in a lane × phase cell.</td></tr>
+          <tr><td><code>edges</code></td><td>array</td><td>—</td><td>Directed flow between nodes.</td></tr>
+          <tr><td><code>modules</code></td><td>object</td><td>—</td><td>Optional top-level capability catalog (see <code>meta.modules_source</code>).</td></tr>
+        </tbody>
+      </table>
+      <p>Strings shown below as <code>LStr</code> are <strong>localized strings</strong>: either a plain string, or an object <code>{ en, pt, es, ... }</code> (see <a href="#api">Localized strings</a> at the end).</p>
+
+      <h2><code>meta</code></h2>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>title</code></td><td>LStr</td><td>—</td><td>Map title, shown in the header.</td></tr>
+          <tr><td><code>subtitle</code></td><td>LStr</td><td>—</td><td>Sub-line under the title.</td></tr>
+          <tr><td><code>context</code></td><td>LStr</td><td>—</td><td>Free-text framing for the whole map.</td></tr>
+          <tr><td><code>default_lang</code></td><td>string</td><td>—</td><td>Language key picked first, e.g. <code>"en"</code>.</td></tr>
+          <tr><td><code>modes</code></td><td>array</td><td>—</td><td>Legend entries: each <code>{ id, label: LStr, color }</code>. Referenced by node state / pill values.</td></tr>
+          <tr><td><code>nodeTypes</code></td><td>object</td><td>—</td><td>Map of <code>typeName → { layout: [...] }</code>. The drawer engine. See below.</td></tr>
+          <tr><td><code>modules_source</code></td><td>string</td><td>—</td><td>Pointer to where the top-level <code>modules</code> catalog comes from.</td></tr>
+        </tbody>
+      </table>
+
+      <h2><code>lanes</code></h2>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>string</td><td>yes</td><td>Unique. Referenced by <code>node.lane</code>.</td></tr>
+          <tr><td><code>label</code></td><td>LStr</td><td>yes</td><td>Row label.</td></tr>
+          <tr><td><code>sub</code></td><td>LStr</td><td>—</td><td>Secondary line under the lane label.</td></tr>
+        </tbody>
+      </table>
+
+      <h2><code>phases</code></h2>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>string</td><td>yes</td><td>Unique. Referenced by <code>node.phase</code>.</td></tr>
+          <tr><td><code>label</code></td><td>LStr</td><td>yes</td><td>Column label.</td></tr>
+          <tr><td><code>roman</code></td><td>string</td><td>—</td><td>Display ordinal, e.g. <code>"III"</code>.</td></tr>
+          <tr><td><code>subCols</code></td><td>number</td><td>—</td><td>How many sub-columns the phase spans (node <code>col</code> indexes into these).</td></tr>
+        </tbody>
+      </table>
+
+      <h2><code>nodes</code></h2>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>string</td><td>yes</td><td>Unique. Referenced by edges.</td></tr>
+          <tr><td><code>lane</code></td><td>string</td><td>yes</td><td>A <code>lanes[].id</code>.</td></tr>
+          <tr><td><code>phase</code></td><td>string</td><td>yes</td><td>A <code>phases[].id</code>.</td></tr>
+          <tr><td><code>col</code></td><td>number</td><td>—</td><td>0-based sub-column within the phase. Default <code>0</code>.</td></tr>
+          <tr><td><code>title</code></td><td>LStr</td><td>yes</td><td>Node card title.</td></tr>
+          <tr><td><code>sub</code></td><td>LStr</td><td>—</td><td>Secondary line on the card.</td></tr>
+          <tr><td><code>type</code></td><td>string</td><td>—</td><td>Selects <code>meta.nodeTypes[type]</code> for the drawer. No <code>type</code> → no drawer body.</td></tr>
+          <tr><td><code>context</code></td><td>object</td><td>—</td><td>The data the layout binds against. Free-form; keys are referenced by <code>$key</code> bindings.</td></tr>
+        </tbody>
+      </table>
+
+      <h2><code>edges</code></h2>
+      <p>Directed links. Both naming conventions are accepted — use one consistently and check the example you're copying.</p>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>source</code> / <code>from</code></td><td>string</td><td>yes</td><td>Origin <code>node.id</code>.</td></tr>
+          <tr><td><code>target</code> / <code>to</code></td><td>string</td><td>yes</td><td>Destination <code>node.id</code>.</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Node types &amp; the layout engine</h2>
+      <p>A node's drawer is not hardcoded. It is computed: the node's <code>type</code> selects an entry in <code>meta.nodeTypes</code>, whose <code>layout</code> is an array of <strong>primitives</strong> the drawer walks top-to-bottom. Each primitive resolves its bindings against the node's <code>context</code> and renders itself.</p>
+      <pre><code>"meta": {
+  "nodeTypes": {
+    "step": {
+      "layout": [
+        { "type": "Prose",   "bind": "$objective" },
+        { "type": "KeyValue","bind": "$meta" },
+        { "type": "Section", "title": "States", "children": [
+          { "type": "List", "bind": "$states", "item": {
+            "type": "Tile", "title": "$label", "sub": "$mode", "pills": "$tools"
+          } }
+        ] }
+      ]
+    }
+  }
+}</code></pre>
+      <p>A node with <code>"type": "step"</code> renders that layout against its own <code>context</code>. Two nodes sharing a type share a layout but supply different context. A <code>type</code> with no matching <code>nodeTypes</code> entry, or a node with no <code>type</code>, renders no body.</p>
+
+      <h2>Primitive catalog</h2>
+      <p>Ten primitives. Every primitive carries <code>type</code> (its name). Props ending in a binding (<code>$key</code>) read from the local context; literal strings render as-is. A binding that resolves to <code>undefined</code> makes that primitive — or that single prop — omit itself.</p>
+
+      <h3>Prose</h3>
+      <p>A paragraph block. Input is sanitized to an allowlist (<code>em</code>, <code>strong</code>, <code>br</code> only); everything else is stripped.</p>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Prose"</code></td><td>yes</td><td>—</td></tr>
+          <tr><td><code>bind</code></td><td>binding</td><td>yes</td><td>Resolves to the (sanitized) text.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Prose", "bind": "$objective" }</code></pre>
+
+      <h3>KeyValue</h3>
+      <p>A label/value list.</p>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"KeyValue"</code></td><td>yes</td><td>—</td></tr>
+          <tr><td><code>bind</code></td><td>binding</td><td>yes</td><td>Resolves to an array of <code>{ label, value }</code> rows.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "KeyValue", "bind": "$meta" }</code></pre>
+
+      <h3>Section</h3>
+      <p>A titled group that nests other primitives.</p>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Section"</code></td><td>yes</td><td>—</td></tr>
+          <tr><td><code>title</code></td><td>string / binding</td><td>yes</td><td>Heading.</td></tr>
+          <tr><td><code>sub</code></td><td>string / binding</td><td>—</td><td>Sub-heading.</td></tr>
+          <tr><td><code>children</code></td><td>primitive[]</td><td>yes</td><td>Nested primitives, walked in order.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Section", "title": "States", "sub": "$statesSub", "children": [ ... ] }</code></pre>
+
+      <h3>List</h3>
+      <p>Repeats one primitive over an array. <strong>Each array element becomes the local context</strong> for <code>item</code> — so inside <code>item</code>, <code>$name</code> reads <code>element.name</code>, not the node-level context.</p>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"List"</code></td><td>yes</td><td>—</td></tr>
+          <tr><td><code>bind</code></td><td>binding</td><td>yes</td><td>Resolves to the array.</td></tr>
+          <tr><td><code>item</code></td><td>primitive</td><td>yes</td><td>Rendered once per element, with the element as its context.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "List", "bind": "$modules", "item": {
+  "type": "Tile", "title": "$feature", "sub": "$id", "pills": "$levels"
+} }</code></pre>
+
+      <h3>Tile</h3>
+      <p>A compact card, typically the <code>item</code> of a List.</p>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Tile"</code></td><td>yes</td><td>—</td></tr>
+          <tr><td><code>title</code></td><td>string / binding</td><td>yes</td><td>Tile heading.</td></tr>
+          <tr><td><code>sub</code></td><td>string / binding</td><td>—</td><td>Secondary line.</td></tr>
+          <tr><td><code>pills</code></td><td>binding</td><td>—</td><td>Array → rendered as pills (same value shape as Pills).</td></tr>
+          <tr><td><code>tags</code></td><td>binding</td><td>—</td><td>Array of tag strings.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Tile", "title": "$label", "sub": "$mode", "pills": "$tools" }</code></pre>
+
+      <h3>Pills</h3>
+      <p>A row of pills. No variant prop.</p>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Pills"</code></td><td>yes</td><td>—</td></tr>
+          <tr><td><code>bind</code></td><td>binding</td><td>yes</td><td>Resolves to an array of strings, or of <code>{ label, color? }</code>.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Pills", "bind": "$levels" }</code></pre>
+
+      <h3>Title</h3>
+      <p>A standalone heading with literal text.</p>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Title"</code></td><td>yes</td><td>—</td></tr>
+          <tr><td><code>text</code></td><td>string / binding</td><td>yes</td><td>The heading text.</td></tr>
+          <tr><td><code>variant</code></td><td>enum</td><td>—</td><td>One of <code>h1</code>, <code>h2</code>, <code>eyebrow</code>.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Title", "text": "Overview", "variant": "h2" }</code></pre>
+
+      <h3>Text</h3>
+      <p>A standalone line of body text.</p>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Text"</code></td><td>yes</td><td>—</td></tr>
+          <tr><td><code>text</code></td><td>string / binding</td><td>yes</td><td>The text.</td></tr>
+          <tr><td><code>variant</code></td><td>enum</td><td>—</td><td>One of <code>body</code>, <code>caption</code>, <code>mono</code>.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Text", "text": "$note", "variant": "caption" }</code></pre>
+
+      <h3>Button</h3>
+      <p>An action control.</p>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Button"</code></td><td>yes</td><td>—</td></tr>
+          <tr><td><code>text</code></td><td>string / binding</td><td>yes</td><td>Label.</td></tr>
+          <tr><td><code>action</code></td><td>enum</td><td>—</td><td><code>navigate</code> or <code>copy</code>.</td></tr>
+          <tr><td><code>target</code></td><td>string / binding</td><td>—</td><td>Node id to navigate to, or text to copy.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Button", "text": "Go to debrief", "action": "navigate", "target": "debrief" }</code></pre>
+
+      <h3>Link</h3>
+      <p>An external link. Non-<code>http</code>/<code>https</code> schemes are rejected (no <code>javascript:</code>, <code>data:</code>, etc.).</p>
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Req?</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Link"</code></td><td>yes</td><td>—</td></tr>
+          <tr><td><code>text</code></td><td>string / binding</td><td>yes</td><td>Link text.</td></tr>
+          <tr><td><code>href</code></td><td>string / binding</td><td>yes</td><td>URL — <code>http</code>/<code>https</code> only.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Link", "text": "Docs", "href": "https://example.com" }</code></pre>
+
+      <h2>Binding grammar</h2>
+      <p>The rules the engine applies when resolving any prop value:</p>
+      <ul>
+        <li><strong><code>$</code>-prefix → binding.</strong> A string starting with <code>$</code> (e.g. <code>$objective</code>) is looked up by key against the current context.</li>
+        <li><strong>No <code>$</code> → literal.</strong> Any other string renders verbatim (e.g. <code>"States"</code> as a Section title).</li>
+        <li><strong>List local context.</strong> Inside a <code>List.item</code>, the current context is the array <em>element</em>, not the node. <code>Tile.title: "$name"</code> reads <code>element.name</code>.</li>
+        <li><strong>Undefined omits.</strong> A binding that resolves to <code>undefined</code> / missing causes that primitive (or just that prop) to drop out — no empty placeholder.</li>
+      </ul>
+
+      <h3>Security constraints</h3>
+      <ul>
+        <li><strong>Prose</strong> sanitizes to an allowlist of <code>em</code>, <code>strong</code>, <code>br</code>. All other tags/attributes are stripped.</li>
+        <li><strong>Link</strong> accepts only <code>http</code> and <code>https</code> hrefs; other schemes are rejected.</li>
+      </ul>
+
+      <h2>Localized strings</h2>
+      <p>Anywhere the tables above say <code>LStr</code>, you may pass either a plain string or a per-language object:</p>
+      <pre><code>"label": { "en": "Candidate", "pt": "Candidato", "es": "Candidato" }</code></pre>
+      <p>The viewer picks <code>meta.default_lang</code> first, then falls back across available keys. Localized objects are honored on <strong>data-level display strings</strong> — <code>meta.title</code>/<code>subtitle</code>/<code>context</code>, <code>modes[].label</code>, <code>lanes[].label</code>/<code>sub</code>, <code>phases[].label</code>, and <code>nodes[].title</code>/<code>sub</code>. Values inside <code>node.context</code> are plain data resolved by bindings; localize them by giving the bound value the <code>{ en, pt, es }</code> shape where your layout reads it.</p>
     ` },
 
     { id: 'modes', label: 'Modes', render: () => `
@@ -574,14 +987,108 @@ Then compress and embed it in a URL: https://zalkowitsch.github.io/lifecycle-map
 
     { id: 'examples', label: 'Examples', render: () => `
       <h2>Examples</h2>
-      <p>Each one demonstrates a different feature combination:</p>
-      <ul>
-        <li><a href="../#minimal">Minimal</a> · the smallest possible map (10 lines), now with EN/PT/ES strings</li>
-        <li><a href="../#hiring-pipeline">Hiring pipeline</a> · full example: 17 nodes, today/tomorrow narratives, modules, custom modes, localized titles</li>
-        <li><a href="../#hiring-pipeline-yaml">Hiring pipeline (YAML)</a> · same shape in YAML, including localized narratives</li>
-        <li><a href="../#multi-language">Multi-language</a> · 6-node support-triage example, fully translated EN/PT/ES</li>
-        <li><a href="../#hiring-pipeline-modules">With shared modules</a> · catalog reference pattern</li>
-      </ul>
+      <p>Five bundled files, each demonstrating a different feature combination. Every snippet below is drawn verbatim from the actual file in <code>examples/</code>.</p>
+
+      <h3>Minimal</h3>
+      <p>The smallest possible map: two lanes, two phases, four nodes, no drawer content. <code>nodeTypes.step.layout</code> is empty and every node carries an empty <code>context</code>.</p>
+      <pre><code>"nodeTypes": { "step": { "layout": [] } }
+...
+"nodes": [
+  { "id": "ask", "lane": "user", "phase": "request",
+    "title": { "en": "Ask question", "pt": "Fazer pergunta", "es": "Hacer pregunta" },
+    "type": "step", "context": {} }
+]</code></pre>
+      <p><a href="../#minimal">Open in viewer →</a></p>
+
+      <h3>Hiring pipeline</h3>
+      <p>The full reference map: 17 nodes, custom <code>modes</code>, localized titles, and a typed <code>step</code> nodeType whose layout walks <code>Prose</code> → <code>KeyValue</code> → two <code>Section</code>/<code>List</code>/<code>Tile</code> blocks. This is the canonical typed <code>nodeTypes</code> + <code>context</code> shape.</p>
+      <pre><code>"nodeTypes": {
+  "step": {
+    "layout": [
+      { "type": "Prose", "bind": "$objective" },
+      { "type": "KeyValue", "bind": "$meta" },
+      { "type": "Section", "title": "Modules", "sub": "$modulesSub",
+        "children": [
+          { "type": "List", "bind": "$modules",
+            "item": { "type": "Tile", "title": "$feature", "sub": "$id", "pills": "$levels" } }
+        ] },
+      { "type": "Section", "title": "States",
+        "children": [
+          { "type": "List", "bind": "$states",
+            "item": { "type": "Tile", "title": "$label", "sub": "$mode", "pills": "$tools" } }
+        ] }
+    ]
+  }
+}</code></pre>
+      <p>Each node supplies the matching <code>context</code> the layout binds against — <code>$objective</code>, <code>$meta</code>, <code>$modules</code>, <code>$states</code>:</p>
+      <pre><code>"type": "step",
+"context": {
+  "objective": "Hiring manager defines the role, level, target start date, and gets sign-off on headcount.",
+  "meta": [
+    { "label": "Entity", "value": "Job requisition · Job description · Comp band" },
+    { "label": "Actors", "value": "HM drafts → Recruiter reviews → Approver signs off" }
+  ],
+  "states": [
+    { "label": "Today", "mode": "manual", "narrative": "HM writes the JD from scratch...",
+      "tools": ["Google Docs", "Comp spreadsheet", "Email"] }
+  ]
+}</code></pre>
+      <p><a href="../#hiring-pipeline">Open in viewer →</a></p>
+
+      <h3>Hiring pipeline (YAML)</h3>
+      <p>The same map authored in YAML — terser, and a good template for hand-editing. Localized strings become nested maps and node fields read inline:</p>
+      <pre><code>nodes:
+  - id: openReq
+    lane: hm
+    phase: sourcing
+    col: 0
+    title:
+      en: Open requisition
+      pt: Abrir requisição
+      es: Abrir requisición
+    objective: Hiring manager defines the role, level, and gets sign-off on headcount.
+    states:
+      today:
+        mode: manual
+        tools:
+          - Google Docs
+          - Comp spreadsheet</code></pre>
+      <p><a href="../#hiring-pipeline-yaml">Open in viewer →</a></p>
+
+      <h3>Multi-language</h3>
+      <p>A 6-node customer-support-triage map, fully translated EN/PT/ES, with a top-level <code>meta.context</code> label. Demonstrates localized <code>title</code>/<code>subtitle</code>/<code>context</code> objects driving the language switcher.</p>
+      <pre><code>"meta": {
+  "title":    { "en": "Customer Support Triage", "pt": "Triagem de Suporte ao Cliente", "es": "Triaje de Soporte al Cliente" },
+  "subtitle": { "en": "from ticket to resolution", "pt": "do ticket à resolução", "es": "del ticket a la resolución" },
+  "context":  { "en": "support · multi-language demo", "pt": "suporte · demo multi-idioma", "es": "soporte · demo multi-idioma" },
+  "default_lang": "en"
+}</code></pre>
+      <p><a href="../#multi-language">Open in viewer →</a></p>
+
+      <h3>With shared modules</h3>
+      <p>Same hiring pipeline, but modules are pulled from a shared catalog via <code>meta.modules_source</code> and referenced by id from each node's <code>context.modules</code>. Useful when many nodes share the same feature inventory.</p>
+      <pre><code>"meta": {
+  "modules_source": "./modules.json",
+  ...
+}
+...
+"context": {
+  "modules": [
+    { "feature": "outreach:templates", "id": "outreach:templates", "levels": [] },
+    { "feature": "ats:duplicate-detection", "id": "ats:duplicate-detection", "levels": [] }
+  ],
+  "modulesSub": "features that make this step work"
+}</code></pre>
+      <p>The catalog (<code>modules.json</code>) keys each module by id, with localized names and <code>today</code>/<code>tomorrow</code> levels:</p>
+      <pre><code>"modules": {
+  "ats:resume-parser": {
+    "name": { "en": "Resume parser", "pt": "Parser de currículo", "es": "Parser de CV" },
+    "today": "automated",
+    "tomorrow": "ai",
+    "tags": [{ "en": "★ Tablestakes", "pt": "★ Básico", "es": "★ Básico" }]
+  }
+}</code></pre>
+      <p><a href="../#hiring-pipeline-modules">Open in viewer →</a></p>
 
       <h3>Direct theme links</h3>
       <ul>

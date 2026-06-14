@@ -33,6 +33,69 @@
       </ul>
     ` },
 
+    { id: 'use-cases', label: 'Casos de uso', render: () => `
+      <h2>Casos de uso</h2>
+      <p>lifecycle-map serve para qualquer processo com <strong>atores</strong>, <strong>estágios ordenados</strong> e <strong>passos que carregam detalhe estruturado</strong>. Lanes são quem age, phases são quando, nodes são o que acontece, edges são o que dispara o quê. O drawer do node é dirigido por <code>type</code> + <code>context</code> contra <code>meta.nodeTypes</code> — então cada passo pode renderizar sua própria rubrica, lista de sinais ou divisão hoje/amanhã. Abaixo: cinco encaixes concretos, depois onde é a ferramenta errada.</p>
+
+      <h3>1 · Loops de entrevista / contratação</h3>
+      <p>Um mapa por loop. Cada rodada (recruiter screen, coding, system design, comportamental, hiring-manager) é um node. O <code>context</code> da rodada guarda a rubrica: uma <code>List</code> de <strong>sinais</strong>, cada um renderizado como um <code>Tile</code> com o nome do sinal, um id e <code>pills</code> de nível (L1→L4). Por que encaixa: um loop é exatamente uma sequência de passos de coleta de sinal, e o drawer torna a rubrica navegável em vez de enterrada num doc por entrevistador.</p>
+      <ul>
+        <li><strong>Lanes</strong> → candidato, entrevistadores, hiring manager, comitê.</li>
+        <li><strong>Phases</strong> → screen → onsite → debrief → decisão.</li>
+        <li><strong>Nodes</strong> → rodadas individuais; <code>nodeType</code> "round".</li>
+      </ul>
+      <pre><code>"round": { "layout": [
+  { "type": "Prose", "bind": "$objective" },
+  { "type": "KeyValue", "bind": "$meta" },
+  { "type": "Section", "title": "Signals", "sub": "$signalsSub",
+    "children": [
+      { "type": "List", "bind": "$signals",
+        "item": { "type": "Tile", "title": "$name", "sub": "$id",
+                  "pills": "$levels", "tags": "$tags" } } ] } ] }</code></pre>
+
+      <h3>2 · Pipeline de contratação / fluxo de ATS</h3>
+      <p>Dê zoom out de um loop para o funil inteiro: sourcing → screen → phone → onsite → decisão → oferta → onboard. Cada passo recebe um estado <strong>hoje</strong> e <strong>amanhã</strong> (manual vs. aumentado por IA) mais uma <code>List</code> de modules de apoio. Por que encaixa: ele mapeia os handoffs entre sourcer, recruiter, hiring manager e aprovador que um quadro Kanban plano esconde, e a divisão hoje/amanhã o transforma também num roadmap de automação. Este é o exemplo <a href="../#hiring-pipeline">hiring-pipeline</a> incluído.</p>
+      <ul>
+        <li><strong>Lanes</strong> → candidato, sourcer, recruiter, hiring manager, entrevistador, aprovador.</li>
+        <li><strong>Phases</strong> → os seis estágios do funil.</li>
+        <li><strong>Nodes</strong> → passos com <code>states</code> (Tiles Today/Tomorrow) e <code>modules</code>.</li>
+      </ul>
+
+      <h3>3 · Suporte ao cliente / triagem</h3>
+      <p>Do ticket de entrada à resolução: intake → classify → route → resolve → follow-up. Lanes dividem o trabalho entre o cliente, a camada de bot/auto-triagem, tier-1 e o time de escalação. Por que encaixa: triagem é um problema de roteamento com ownership explícito a cada salto — lanes tornam a fronteira de escalação visível, e edges (incluindo loops para trás de tickets reabertos) mostram onde o trabalho quica. O drawer por node pode carregar metas de SLA num <code>KeyValue</code> e <code>Pills</code> de canal.</p>
+      <ul>
+        <li><strong>Lanes</strong> → cliente, auto-triagem, tier-1, tier-2 / escalação.</li>
+        <li><strong>Phases</strong> → intake → classify → route → resolve → follow-up.</li>
+        <li><strong>Nodes</strong> → passos de atendimento; edges para trás para reabertura / re-roteamento.</li>
+      </ul>
+
+      <h3>4 · Onboarding / ativação</h3>
+      <p>Do cadastro ao primeiro valor: criação de conta → setup → primeira ação-chave → hábito. Lanes separam o novo usuário dos nudges automatizados do produto e do time de CS / onboarding. Por que encaixa: ativação é um funil em estágios onde cada passo tem um drop-off e um dono — modelá-lo como nodes permite anexar a métrica de ativação e a intervenção (email, in-app, toque humano) a cada estágio como <code>Pills</code> ou uma <code>List</code> de modules. Hoje/amanhã captura "hand-holding manual de CS agora → self-serve depois".</p>
+      <ul>
+        <li><strong>Lanes</strong> → usuário, produto (automatizado), CS / onboarding.</li>
+        <li><strong>Phases</strong> → cadastro → setup → primeira ação → ativação → hábito.</li>
+        <li><strong>Nodes</strong> → marcos com lane dona + intervenção.</li>
+      </ul>
+
+      <h3>5 · Roadmaps de capability / transformação</h3>
+      <p>Menos um fluxo de quem-faz-o-quê, mais um mapa de onde-estamos. Phases são domínios de capability; nodes são capabilities; o modo <strong>hoje</strong> vs. <strong>amanhã</strong> de cada node (manual → assistido → automatizado → IA) é o ponto inteiro. Por que encaixa: os dois pontinhos de modo por node dão uma leitura de calor instantânea de quão longe cada capability está do seu estado-alvo, e <code>meta.modes</code> dá uma legenda de cor consistente por todo o mapa. Use lanes para times ou value streams que possuem cada capability.</p>
+      <ul>
+        <li><strong>Lanes</strong> → value streams / times donos.</li>
+        <li><strong>Phases</strong> → domínios de capability.</li>
+        <li><strong>Nodes</strong> → capabilities; <code>today.mode</code> / <code>tomorrow.mode</code> carregam o gap.</li>
+      </ul>
+
+      <h3>Quando NÃO usar</h3>
+      <p>É a ferramenta errada quando a estrutura não é lanes × phases:</p>
+      <ul>
+        <li><strong>Diagramas ad-hoc minúsculos</strong> — um flowchart de 5 caixas sem atores ou estágios. Use <a href="https://mermaid.js.org">Mermaid</a>; é um bloco de código fenced e renderiza inline em qualquer lugar.</li>
+        <li><strong>Colaboração freeform</strong> — clusterização de post-its, brainstorming ao vivo, layouts espaciais sem grade fixa. Use <a href="https://miro.com">Miro</a> ou FigJam.</li>
+        <li><strong>Org charts, mind maps, grafos de dependência</strong> — hierarquias e redes arbitrárias, não fluxo direcionado lane-a-lane. Use uma ferramenta de grafo.</li>
+        <li><strong>Dashboards operacionais ao vivo</strong> — isto renderiza um modelo estático source-controlled, não um feed de estado em tempo real. Conecte métricas em outro lugar.</li>
+      </ul>
+      <p>Regra de bolso: se você consegue nomear as <strong>lanes</strong> e as <strong>phases</strong> antes de começar, encaixa. Se não consegue, recorra a Mermaid ou Miro.</p>
+    ` },
+
     { id: 'quickstart', label: 'Início rápido', render: () => `
       <h2>Início rápido</h2>
       <p>Abra o viewer com qualquer uma destas URLs:</p>
@@ -131,6 +194,446 @@ https://zalkowitsch.github.io/lifecycle-map/#minimal</code></pre>
   { "from": "a", "to": "b" },
   { "from": "b", "to": "a" }   // backward (detectado auto)
 ]</code></pre>
+    ` },
+
+    { id: 'primitives', label: 'Primitivas do drawer', render: () => `
+      <h2>Primitivas do drawer</h2>
+      <p>O conteúdo do drawer do node não é mais hardcoded. Um node declara um <code>type</code>; o layout do tipo é uma árvore de primitivas de UI genéricas com bindings de dados. O node carrega seus dados em <code>context</code>. O app renderiza o layout, resolvendo cada binding contra o context do node.</p>
+
+      <h3>Formato do node &amp; meta.nodeTypes</h3>
+      <p>Um node referencia <code>meta.nodeTypes[type].layout</code> — uma árvore de primitivas — e carrega seus dados em <code>context</code>. A posição na grade (<code>id</code>, <code>lane</code>, <code>phase</code>, <code>col</code>) fica fora de <code>context</code>.</p>
+      <pre><code>{
+  "meta": {
+    "nodeTypes": {
+      "interview-round": {
+        "layout": [
+          { "type": "Prose", "bind": "$objective" },
+          { "type": "KeyValue", "bind": "$meta" },
+          { "type": "Section", "title": "Rubrics", "sub": "$rubricsSub",
+            "children": [
+              { "type": "List", "bind": "$rubrics",
+                "item": { "type": "Tile", "title": "$name", "sub": "$id",
+                          "pills": "$levels", "tags": "$tags" } }
+            ] }
+        ]
+      }
+    }
+  },
+  "nodes": [
+    { "id": "coding", "lane": "interviewers", "phase": "onsite",
+      "type": "interview-round",
+      "context": {
+        "objective": "A problem that starts simple...",
+        "meta": [ { "label": "Duration", "value": "75 min" } ],
+        "rubricsSub": "signals measured this round",
+        "rubrics": [
+          { "name": "Code fluency", "id": "rubric:code-fluency",
+            "levels": [ { "label": "L1" }, { "label": "L4" } ],
+            "tags": ["Code fluency"] }
+        ]
+      } }
+  ]
+}</code></pre>
+
+      <h3>A regra de binding</h3>
+      <p>Um valor de string começando com <code>$</code> é um binding: lê <code>context.&lt;key&gt;</code> — <code>"$rubrics"</code> resolve para <code>context.rubrics</code>. Uma string sem <code>$</code> à frente é um literal, renderizado como está.</p>
+      <p>Dentro de uma <code>List</code>, a primitiva <code>item</code> recebe cada elemento do array como seu context <strong>local</strong>. Então <code>Tile.title: "$name"</code> lê <code>item.name</code>, não o context de nível do node.</p>
+      <p>Todo binding é opcional no momento da renderização. Um binding que resolve para <code>undefined</code> / ausente faz aquela primitiva (ou aquela prop) se omitir — sem crash, sem placeholder.</p>
+
+      <h3>As 10 primitivas</h3>
+      <p>Cada <code>type</code> seleciona um componente fixo provido pelo app. Os campos abaixo são os nomes exatos das props.</p>
+
+      <h4>Section</h4>
+      <p>Um grupo com título. <code>title</code> e <code>sub</code> são str-ou-binding; <code>children</code> é um array de primitivas. Linhas de cabeçalho se omitem quando vazias.</p>
+      <pre><code>{ "type": "Section", "title": "Rubrics", "sub": "$rubricsSub", "children": [ ... ] }</code></pre>
+
+      <h4>KeyValue</h4>
+      <p><code>bind</code> resolve para um array de linhas <code>{ label, value }</code>. Omite se não for um array ou estiver vazio.</p>
+      <pre><code>{ "type": "KeyValue", "bind": "$meta" }</code></pre>
+
+      <h4>List</h4>
+      <p><code>bind</code> resolve para um array; <code>item</code> é renderizado uma vez por elemento, cada elemento passado como o context local do item. Omite se vazio ou sem <code>item</code>.</p>
+      <pre><code>{ "type": "List", "bind": "$rubrics", "item": { "type": "Tile", "title": "$name" } }</code></pre>
+
+      <h4>Tile</h4>
+      <p>Um card com <code>title</code>, <code>sub</code> opcional, e duas linhas de pills: <code>pills</code> e <code>tags</code> (cada uma um binding para um array). Omite inteiramente se <code>title</code> resolver vazio.</p>
+      <pre><code>{ "type": "Tile", "title": "$name", "sub": "$id", "pills": "$levels", "tags": "$tags" }</code></pre>
+
+      <h4>Pills</h4>
+      <p><code>bind</code> resolve para um array de strings ou objetos <code>{ label, color? }</code>. O <code>color</code> por pill tinge o label. Omite se o array estiver vazio ou ausente.</p>
+      <pre><code>{ "type": "Pills", "bind": "$levels" }</code></pre>
+
+      <h4>Prose</h4>
+      <p>Um parágrafo. <code>bind</code> resolve para texto. O HTML é sanitizado para um allowlist de apenas <code>&lt;em&gt;</code>, <code>&lt;strong&gt;</code>, <code>&lt;br&gt;</code> — scripts, atributos e quaisquer outras tags são removidos. Omite se vazio.</p>
+      <pre><code>{ "type": "Prose", "bind": "$objective" }</code></pre>
+
+      <h4>Title</h4>
+      <p>Um cabeçalho. <code>text</code> é str-ou-binding; <code>variant</code> é <code>h1</code>, <code>h2</code> (padrão), ou <code>eyebrow</code>. Omite se vazio.</p>
+      <pre><code>{ "type": "Title", "text": "How We Interview", "variant": "h1" }</code></pre>
+
+      <h4>Text</h4>
+      <p>Uma sequência inline de texto. <code>text</code> é str-ou-binding; <code>variant</code> é <code>body</code> (padrão), <code>caption</code>, ou <code>mono</code>. Omite se vazio.</p>
+      <pre><code>{ "type": "Text", "text": "$duration", "variant": "caption" }</code></pre>
+
+      <h4>Button</h4>
+      <p>Um botão. <code>text</code> é o label; <code>action</code> é <code>navigate</code> (padrão) ou <code>copy</code>; <code>target</code> é um binding passado ao handler da ação. Omite se o label estiver vazio.</p>
+      <pre><code>{ "type": "Button", "text": "Open spec", "action": "navigate", "target": "$specUrl" }</code></pre>
+
+      <h4>Link</h4>
+      <p>Um link externo. <code>text</code> é o label; <code>href</code> é um binding. Apenas hrefs <code>http</code> / <code>https</code> são permitidos — <code>javascript:</code>, <code>data:</code> e outros esquemas são rejeitados e o link se omite.</p>
+      <pre><code>{ "type": "Link", "text": "Docs", "href": "$docsUrl" }</code></pre>
+
+      <p>Objetos localizados (<code>{ en, pt, es, ... }</code>) funcionam em qualquer lugar onde uma primitiva renderiza texto — mesmas regras do resto do documento (veja <a href="?lang=pt#multilang">Multi-idioma</a>).</p>
+    ` },
+
+    { id: 'customization', label: 'Customização', render: () => `
+      <h2>Customização</h2>
+      <p>Este é o coração do modelo data-driven: <strong>você</strong> decide o que o drawer de um node mostra. O drawer não é mais hardcoded — não há layout fixo de Objective / Modules / States. Em vez disso você cria seu próprio <code>nodeType</code> a partir das 10 <a href="?lang=pt#primitives">primitivas do drawer</a>, e todo node desse tipo o preenche com dados. Desenhe o layout uma vez, reutilize por todo o mapa.</p>
+
+      <h3>O modelo mental</h3>
+      <p>Duas metades, mantidas separadas de propósito:</p>
+      <ul>
+        <li><strong>O tipo define o layout.</strong> <code>meta.nodeTypes.&lt;type&gt;.layout</code> é uma árvore de primitivas — o formato do drawer. Ele diz <em>quais</em> seções existem e <em>onde</em> cada pedaço de dado cai, mas não guarda dado nenhum.</li>
+        <li><strong>O node passa o context.</strong> Cada node define <code>type</code> para escolher um layout e carrega seus próprios dados em <code>context</code>. O app percorre o layout e resolve cada binding contra o context daquele node.</li>
+      </ul>
+      <p>Então um layout, muitos nodes: mude o layout uma vez e todo node desse tipo re-renderiza do jeito novo; mude o context de um node e só aquele drawer muda.</p>
+
+      <h3>Um exemplo completo trabalhado</h3>
+      <p>Defina um tipo custom <code>service</code> com quatro primitivas empilhadas de cima para baixo: um <code>Prose</code> de intro, uma tabela de fatos <code>KeyValue</code>, e uma <code>Section</code> envolvendo uma <code>List</code> que renderiza um <code>Tile</code> por elemento.</p>
+      <pre><code>{
+  "meta": {
+    "nodeTypes": {
+      "service": {
+        "layout": [
+          { "type": "Prose", "bind": "$summary" },
+          { "type": "KeyValue", "bind": "$facts" },
+          { "type": "Section", "title": "Dependencies", "sub": "$depsSub",
+            "children": [
+              { "type": "List", "bind": "$deps",
+                "item": { "type": "Tile", "title": "$name", "sub": "$owner",
+                          "pills": "$status" } }
+            ] }
+        ]
+      }
+    }
+  }
+}</code></pre>
+      <p>Agora um node que seleciona esse tipo e o preenche. A posição na grade (<code>id</code>, <code>lane</code>, <code>phase</code>, <code>col</code>) fica <strong>fora</strong> de <code>context</code>; tudo a que o layout faz binding vive <strong>dentro</strong> dele.</p>
+      <pre><code>{
+  "nodes": [
+    { "id": "billing-api", "lane": "platform", "phase": "run", "col": 0,
+      "title": "Billing API",
+      "type": "service",
+      "context": {
+        "summary": "Owns invoices and charge state. &lt;strong&gt;Tier-1&lt;/strong&gt; service.",
+        "facts": [
+          { "label": "Runtime", "value": "Go 1.22" },
+          { "label": "SLO", "value": "99.95%" }
+        ],
+        "depsSub": "upstream services this calls",
+        "deps": [
+          { "name": "Ledger", "owner": "payments-team", "status": ["healthy"] },
+          { "name": "Tax engine", "owner": "vendor", "status": ["degraded"] }
+        ]
+      } }
+  ]
+}</code></pre>
+      <p>O que renderiza, de cima para baixo: um parágrafo sanitizado (o <code>&lt;strong&gt;</code> sobrevive, qualquer outra coisa seria removida); uma tabela label/value de duas linhas; um cabeçalho <strong>Dependencies</strong> com a sub-linha "upstream services this calls"; depois dois tiles — "Ledger / payments-team" com um pill <code>healthy</code>, e "Tax engine / vendor" com um pill <code>degraded</code>.</p>
+
+      <h3>Regras de binding para ter em mente</h3>
+      <ul>
+        <li><strong><code>$key</code> vs literal.</strong> Uma string começando com <code>$</code> lê do context: <code>"$deps"</code> → <code>context.deps</code>. Uma string sem <code>$</code> é um literal, renderizado como está — é por isso que <code>"title": "Dependencies"</code> imprime a palavra, enquanto <code>"bind": "$deps"</code> busca dado.</li>
+        <li><strong>Context local do item da List.</strong> Dentro de uma <code>List</code>, cada elemento do array vira o context <em>local</em> da primitiva <code>item</code>. Então <code>Tile.title: "$name"</code> lê <code>element.name</code> — não o context de nível do node. O <code>item</code> não enxerga <code>$summary</code> lá de cima; só enxerga o próprio elemento.</li>
+        <li><strong>Ausente → omite.</strong> Todo binding é opcional. Um binding que resolve para <code>undefined</code> / ausente faz aquela primitiva (ou aquela prop) cair fora — sem crash, sem placeholder. Deixe o <code>owner</code> de fora de uma dependência e só aquele tile perde sua sub-linha; o resto renderiza normalmente.</li>
+      </ul>
+
+      <h3>Compondo um drawer estilo rubrica</h3>
+      <p>A mesma espinha Section &gt; List &gt; Tile te dá um scorecard. Coloque o <strong>nome</strong> da rubrica como <code>title</code> do Tile, os <strong>níveis</strong> de maturidade como <code>pills</code>, e <strong>tags</strong> de categoria como uma segunda linha de pills. Um <code>Tile</code> tem duas linhas de pills independentes — <code>pills</code> e <code>tags</code> — cada uma um binding para um array de strings ou objetos <code>{ label, color? }</code>.</p>
+      <pre><code>{
+  "meta": {
+    "nodeTypes": {
+      "round": {
+        "layout": [
+          { "type": "Section", "title": "Rubrics", "sub": "$rubricsSub",
+            "children": [
+              { "type": "List", "bind": "$rubrics",
+                "item": { "type": "Tile", "title": "$name", "sub": "$id",
+                          "pills": "$levels", "tags": "$tags" } }
+            ] }
+        ]
+      }
+    }
+  },
+  "nodes": [
+    { "id": "coding", "lane": "panel", "phase": "onsite", "col": 0,
+      "title": "Coding round",
+      "type": "round",
+      "context": {
+        "rubricsSub": "signals measured this round",
+        "rubrics": [
+          { "name": "Code fluency", "id": "r:fluency",
+            "levels": [ { "label": "L1" }, { "label": "L4" } ],
+            "tags": ["core"] },
+          { "name": "Problem decomposition", "id": "r:decomp",
+            "levels": [ { "label": "L2" }, { "label": "L5" } ],
+            "tags": ["core", "design"] }
+        ]
+      } }
+  ]
+}</code></pre>
+      <p>Cada elemento de <code>rubrics</code> vira um tile: seu <code>name</code> é o título, <code>id</code> a sub-linha, <code>levels</code> a linha de pills de cima, <code>tags</code> a segunda. Adicione um <code>color</code> a um objeto de level (<code>{ "label": "L4", "color": "#047857" }</code>) para tingir aquele pill.</p>
+
+      <h3>Reutilizando um nodeType por muitos nodes</h3>
+      <p>Um tipo é definido uma vez e referenciado por qualquer número de nodes. Todo node com <code>"type": "service"</code> deriva do mesmo <code>meta.nodeTypes.service.layout</code> — diferem apenas no <code>context</code>. Esse é o payoff: dúzias de nodes compartilham um design de drawer, e editar o layout atualiza todos de uma vez. Você também pode definir vários tipos (<code>service</code>, <code>round</code>, <code>handoff</code>, …) no mesmo mapa e deixar cada node escolher o que encaixa.</p>
+      <p>Se uma chave do layout resolver para nada num dado node, aquela parte simplesmente se omite — então um único tipo compartilhado pode servir nodes ricos e esparsos sem layouts por node. Um node que não tem <code>deps</code> só não renderiza a seção Dependencies.</p>
+
+      <h3>Layout vs. tema</h3>
+      <p>Customizar um <code>nodeType</code> muda <strong>qual conteúdo</strong> o drawer mostra. Não toca no <strong>estilo visual</strong> — fontes, cores, claro/escuro. Esses vêm do tema visual, trocado em Settings ou via <code>?theme=&amp;mode=</code> na URL. Os dois são independentes: qualquer layout renderiza corretamente sob qualquer tema. Veja <a href="?lang=pt#themes">Temas</a> para os temas built-in e o modo escuro, e <a href="?lang=pt#primitives">Primitivas do drawer</a> para os nomes exatos das props de todas as 10 primitivas.</p>
+    ` },
+
+    { id: 'api', label: 'Referência da API', render: () => `
+      <h1>Referência da API <em>— o modelo de dados</em></h1>
+      <p class="lead">Um lifecycle map é um documento JSON (ou YAML). Este é o contrato completo: cada chave de nível superior, o engine de layout de node-type, as 10 primitivas do drawer e a gramática de binding que liga os dados do node aos drawers renderizados.</p>
+
+      <h2>Formato do documento</h2>
+      <p>Um objeto. Apenas <code>lanes</code>, <code>phases</code> e <code>nodes</code> são estruturalmente obrigatórios para renderizar; o resto adiciona labels, drawers e fluxo.</p>
+      <table>
+        <thead><tr><th>Chave</th><th>Tipo</th><th>Obr.?</th><th>Propósito</th></tr></thead>
+        <tbody>
+          <tr><td><code>meta</code></td><td>object</td><td>—</td><td>Título, subtítulo, idioma padrão, modes, e o registro de drawers <code>nodeTypes</code>.</td></tr>
+          <tr><td><code>lanes</code></td><td>array</td><td>sim</td><td>Linhas — os atores / papéis / sistemas.</td></tr>
+          <tr><td><code>phases</code></td><td>array</td><td>sim</td><td>Colunas — os estágios sequenciais.</td></tr>
+          <tr><td><code>nodes</code></td><td>array</td><td>sim</td><td>Passos posicionados numa célula lane × phase.</td></tr>
+          <tr><td><code>edges</code></td><td>array</td><td>—</td><td>Fluxo direcionado entre nodes.</td></tr>
+          <tr><td><code>modules</code></td><td>object</td><td>—</td><td>Catálogo de capabilities opcional de nível superior (veja <code>meta.modules_source</code>).</td></tr>
+        </tbody>
+      </table>
+      <p>Strings mostradas abaixo como <code>LStr</code> são <strong>strings localizadas</strong>: ou uma string simples, ou um objeto <code>{ en, pt, es, ... }</code> (veja <a href="#api">Strings localizadas</a> no final).</p>
+
+      <h2><code>meta</code></h2>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>title</code></td><td>LStr</td><td>—</td><td>Título do mapa, mostrado no header.</td></tr>
+          <tr><td><code>subtitle</code></td><td>LStr</td><td>—</td><td>Sub-linha abaixo do título.</td></tr>
+          <tr><td><code>context</code></td><td>LStr</td><td>—</td><td>Texto livre de enquadramento do mapa inteiro.</td></tr>
+          <tr><td><code>default_lang</code></td><td>string</td><td>—</td><td>Chave de idioma escolhida primeiro, ex. <code>"en"</code>.</td></tr>
+          <tr><td><code>modes</code></td><td>array</td><td>—</td><td>Entradas de legenda: cada <code>{ id, label: LStr, color }</code>. Referenciada por valores de state / pill do node.</td></tr>
+          <tr><td><code>nodeTypes</code></td><td>object</td><td>—</td><td>Mapa de <code>typeName → { layout: [...] }</code>. O engine de drawer. Veja abaixo.</td></tr>
+          <tr><td><code>modules_source</code></td><td>string</td><td>—</td><td>Ponteiro para de onde o catálogo <code>modules</code> de nível superior vem.</td></tr>
+        </tbody>
+      </table>
+
+      <h2><code>lanes</code></h2>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>string</td><td>sim</td><td>Único. Referenciado por <code>node.lane</code>.</td></tr>
+          <tr><td><code>label</code></td><td>LStr</td><td>sim</td><td>Label da linha.</td></tr>
+          <tr><td><code>sub</code></td><td>LStr</td><td>—</td><td>Linha secundária sob o label da lane.</td></tr>
+        </tbody>
+      </table>
+
+      <h2><code>phases</code></h2>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>string</td><td>sim</td><td>Único. Referenciado por <code>node.phase</code>.</td></tr>
+          <tr><td><code>label</code></td><td>LStr</td><td>sim</td><td>Label da coluna.</td></tr>
+          <tr><td><code>roman</code></td><td>string</td><td>—</td><td>Ordinal de exibição, ex. <code>"III"</code>.</td></tr>
+          <tr><td><code>subCols</code></td><td>number</td><td>—</td><td>Quantas sub-colunas a phase ocupa (o <code>col</code> do node indexa nelas).</td></tr>
+        </tbody>
+      </table>
+
+      <h2><code>nodes</code></h2>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>id</code></td><td>string</td><td>sim</td><td>Único. Referenciado por edges.</td></tr>
+          <tr><td><code>lane</code></td><td>string</td><td>sim</td><td>Um <code>lanes[].id</code>.</td></tr>
+          <tr><td><code>phase</code></td><td>string</td><td>sim</td><td>Um <code>phases[].id</code>.</td></tr>
+          <tr><td><code>col</code></td><td>number</td><td>—</td><td>Sub-coluna 0-based dentro da phase. Padrão <code>0</code>.</td></tr>
+          <tr><td><code>title</code></td><td>LStr</td><td>sim</td><td>Título do card do node.</td></tr>
+          <tr><td><code>sub</code></td><td>LStr</td><td>—</td><td>Linha secundária no card.</td></tr>
+          <tr><td><code>type</code></td><td>string</td><td>—</td><td>Seleciona <code>meta.nodeTypes[type]</code> para o drawer. Sem <code>type</code> → sem corpo de drawer.</td></tr>
+          <tr><td><code>context</code></td><td>object</td><td>—</td><td>Os dados a que o layout faz binding. Livre; as chaves são referenciadas por bindings <code>$key</code>.</td></tr>
+        </tbody>
+      </table>
+
+      <h2><code>edges</code></h2>
+      <p>Links direcionados. Ambas as convenções de nome são aceitas — use uma consistentemente e cheque o exemplo que você está copiando.</p>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>source</code> / <code>from</code></td><td>string</td><td>sim</td><td><code>node.id</code> de origem.</td></tr>
+          <tr><td><code>target</code> / <code>to</code></td><td>string</td><td>sim</td><td><code>node.id</code> de destino.</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Node types &amp; o engine de layout</h2>
+      <p>O drawer de um node não é hardcoded. É computado: o <code>type</code> do node seleciona uma entrada em <code>meta.nodeTypes</code>, cujo <code>layout</code> é um array de <strong>primitivas</strong> que o drawer percorre de cima para baixo. Cada primitiva resolve seus bindings contra o <code>context</code> do node e se renderiza.</p>
+      <pre><code>"meta": {
+  "nodeTypes": {
+    "step": {
+      "layout": [
+        { "type": "Prose",   "bind": "$objective" },
+        { "type": "KeyValue","bind": "$meta" },
+        { "type": "Section", "title": "States", "children": [
+          { "type": "List", "bind": "$states", "item": {
+            "type": "Tile", "title": "$label", "sub": "$mode", "pills": "$tools"
+          } }
+        ] }
+      ]
+    }
+  }
+}</code></pre>
+      <p>Um node com <code>"type": "step"</code> renderiza esse layout contra seu próprio <code>context</code>. Dois nodes compartilhando um tipo compartilham um layout mas fornecem context diferente. Um <code>type</code> sem entrada correspondente em <code>nodeTypes</code>, ou um node sem <code>type</code>, não renderiza corpo.</p>
+
+      <h2>Catálogo de primitivas</h2>
+      <p>Dez primitivas. Toda primitiva carrega <code>type</code> (seu nome). Props terminando num binding (<code>$key</code>) leem do context local; strings literais renderizam como estão. Um binding que resolve para <code>undefined</code> faz aquela primitiva — ou aquela prop única — se omitir.</p>
+
+      <h3>Prose</h3>
+      <p>Um bloco de parágrafo. A entrada é sanitizada para um allowlist (<code>em</code>, <code>strong</code>, <code>br</code> apenas); todo o resto é removido.</p>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Prose"</code></td><td>sim</td><td>—</td></tr>
+          <tr><td><code>bind</code></td><td>binding</td><td>sim</td><td>Resolve para o texto (sanitizado).</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Prose", "bind": "$objective" }</code></pre>
+
+      <h3>KeyValue</h3>
+      <p>Uma lista label/value.</p>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"KeyValue"</code></td><td>sim</td><td>—</td></tr>
+          <tr><td><code>bind</code></td><td>binding</td><td>sim</td><td>Resolve para um array de linhas <code>{ label, value }</code>.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "KeyValue", "bind": "$meta" }</code></pre>
+
+      <h3>Section</h3>
+      <p>Um grupo com título que aninha outras primitivas.</p>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Section"</code></td><td>sim</td><td>—</td></tr>
+          <tr><td><code>title</code></td><td>string / binding</td><td>sim</td><td>Cabeçalho.</td></tr>
+          <tr><td><code>sub</code></td><td>string / binding</td><td>—</td><td>Sub-cabeçalho.</td></tr>
+          <tr><td><code>children</code></td><td>primitive[]</td><td>sim</td><td>Primitivas aninhadas, percorridas em ordem.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Section", "title": "States", "sub": "$statesSub", "children": [ ... ] }</code></pre>
+
+      <h3>List</h3>
+      <p>Repete uma primitiva sobre um array. <strong>Cada elemento do array vira o context local</strong> do <code>item</code> — então dentro do <code>item</code>, <code>$name</code> lê <code>element.name</code>, não o context de nível do node.</p>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"List"</code></td><td>sim</td><td>—</td></tr>
+          <tr><td><code>bind</code></td><td>binding</td><td>sim</td><td>Resolve para o array.</td></tr>
+          <tr><td><code>item</code></td><td>primitive</td><td>sim</td><td>Renderizado uma vez por elemento, com o elemento como seu context.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "List", "bind": "$modules", "item": {
+  "type": "Tile", "title": "$feature", "sub": "$id", "pills": "$levels"
+} }</code></pre>
+
+      <h3>Tile</h3>
+      <p>Um card compacto, tipicamente o <code>item</code> de uma List.</p>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Tile"</code></td><td>sim</td><td>—</td></tr>
+          <tr><td><code>title</code></td><td>string / binding</td><td>sim</td><td>Cabeçalho do tile.</td></tr>
+          <tr><td><code>sub</code></td><td>string / binding</td><td>—</td><td>Linha secundária.</td></tr>
+          <tr><td><code>pills</code></td><td>binding</td><td>—</td><td>Array → renderizado como pills (mesmo formato de valor que Pills).</td></tr>
+          <tr><td><code>tags</code></td><td>binding</td><td>—</td><td>Array de strings de tag.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Tile", "title": "$label", "sub": "$mode", "pills": "$tools" }</code></pre>
+
+      <h3>Pills</h3>
+      <p>Uma linha de pills. Sem prop variant.</p>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Pills"</code></td><td>sim</td><td>—</td></tr>
+          <tr><td><code>bind</code></td><td>binding</td><td>sim</td><td>Resolve para um array de strings, ou de <code>{ label, color? }</code>.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Pills", "bind": "$levels" }</code></pre>
+
+      <h3>Title</h3>
+      <p>Um cabeçalho standalone com texto literal.</p>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Title"</code></td><td>sim</td><td>—</td></tr>
+          <tr><td><code>text</code></td><td>string / binding</td><td>sim</td><td>O texto do cabeçalho.</td></tr>
+          <tr><td><code>variant</code></td><td>enum</td><td>—</td><td>Um de <code>h1</code>, <code>h2</code>, <code>eyebrow</code>.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Title", "text": "Overview", "variant": "h2" }</code></pre>
+
+      <h3>Text</h3>
+      <p>Uma linha standalone de texto de corpo.</p>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Text"</code></td><td>sim</td><td>—</td></tr>
+          <tr><td><code>text</code></td><td>string / binding</td><td>sim</td><td>O texto.</td></tr>
+          <tr><td><code>variant</code></td><td>enum</td><td>—</td><td>Um de <code>body</code>, <code>caption</code>, <code>mono</code>.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Text", "text": "$note", "variant": "caption" }</code></pre>
+
+      <h3>Button</h3>
+      <p>Um controle de ação.</p>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Button"</code></td><td>sim</td><td>—</td></tr>
+          <tr><td><code>text</code></td><td>string / binding</td><td>sim</td><td>Label.</td></tr>
+          <tr><td><code>action</code></td><td>enum</td><td>—</td><td><code>navigate</code> ou <code>copy</code>.</td></tr>
+          <tr><td><code>target</code></td><td>string / binding</td><td>—</td><td>Id do node para navegar, ou texto para copiar.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Button", "text": "Go to debrief", "action": "navigate", "target": "debrief" }</code></pre>
+
+      <h3>Link</h3>
+      <p>Um link externo. Esquemas não-<code>http</code>/<code>https</code> são rejeitados (sem <code>javascript:</code>, <code>data:</code>, etc.).</p>
+      <table>
+        <thead><tr><th>Campo</th><th>Tipo</th><th>Obr.?</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td><code>"Link"</code></td><td>sim</td><td>—</td></tr>
+          <tr><td><code>text</code></td><td>string / binding</td><td>sim</td><td>Texto do link.</td></tr>
+          <tr><td><code>href</code></td><td>string / binding</td><td>sim</td><td>URL — <code>http</code>/<code>https</code> apenas.</td></tr>
+        </tbody>
+      </table>
+      <pre><code>{ "type": "Link", "text": "Docs", "href": "https://example.com" }</code></pre>
+
+      <h2>Gramática de binding</h2>
+      <p>As regras que o engine aplica ao resolver qualquer valor de prop:</p>
+      <ul>
+        <li><strong>Prefixo <code>$</code> → binding.</strong> Uma string começando com <code>$</code> (ex. <code>$objective</code>) é buscada por chave contra o context atual.</li>
+        <li><strong>Sem <code>$</code> → literal.</strong> Qualquer outra string renderiza verbatim (ex. <code>"States"</code> como título de Section).</li>
+        <li><strong>Context local da List.</strong> Dentro de um <code>List.item</code>, o context atual é o <em>elemento</em> do array, não o node. <code>Tile.title: "$name"</code> lê <code>element.name</code>.</li>
+        <li><strong>Undefined omite.</strong> Um binding que resolve para <code>undefined</code> / ausente faz aquela primitiva (ou só aquela prop) cair fora — sem placeholder vazio.</li>
+      </ul>
+
+      <h3>Restrições de segurança</h3>
+      <ul>
+        <li><strong>Prose</strong> sanitiza para um allowlist de <code>em</code>, <code>strong</code>, <code>br</code>. Todas as outras tags/atributos são removidos.</li>
+        <li><strong>Link</strong> aceita apenas hrefs <code>http</code> e <code>https</code>; outros esquemas são rejeitados.</li>
+      </ul>
+
+      <h2>Strings localizadas</h2>
+      <p>Em qualquer lugar onde as tabelas acima dizem <code>LStr</code>, você pode passar ou uma string simples ou um objeto por idioma:</p>
+      <pre><code>"label": { "en": "Candidate", "pt": "Candidato", "es": "Candidato" }</code></pre>
+      <p>O viewer escolhe <code>meta.default_lang</code> primeiro, depois cai pelas chaves disponíveis. Objetos localizados são honrados em <strong>strings de exibição de nível de dado</strong> — <code>meta.title</code>/<code>subtitle</code>/<code>context</code>, <code>modes[].label</code>, <code>lanes[].label</code>/<code>sub</code>, <code>phases[].label</code>, e <code>nodes[].title</code>/<code>sub</code>. Valores dentro de <code>node.context</code> são dados simples resolvidos por bindings; localize-os dando ao valor bound o formato <code>{ en, pt, es }</code> onde seu layout o lê.</p>
     ` },
 
     { id: 'modes', label: 'Modes', render: () => `
@@ -347,20 +850,117 @@ echo "https://zalkowitsch.github.io/lifecycle-map/#data=$ENCODED"</code></pre>
 
     { id: 'examples', label: 'Exemplos', render: () => `
       <h2>Exemplos</h2>
-      <ul>
-        <li><a href="../#minimal">Mínimo</a> · o menor mapa possível, agora com EN/PT/ES</li>
-        <li><a href="../#hiring-pipeline">Pipeline de contratação</a> · exemplo completo: 17 nodes, today/tomorrow, modules, modes custom, títulos localizados</li>
-        <li><a href="../#hiring-pipeline-yaml">Pipeline de contratação (YAML)</a> · mesmo mapa em YAML, incluindo narrativas localizadas</li>
-        <li><a href="../#multi-language">Multi-idioma</a> · exemplo de triagem de suporte, totalmente traduzido EN/PT/ES</li>
-        <li><a href="../#hiring-pipeline-modules">Com modules compartilhados</a> · padrão de referência por catálogo</li>
-      </ul>
+      <p>Cinco arquivos incluídos, cada um demonstrando uma combinação de features diferente. Cada trecho abaixo é tirado verbatim do arquivo real em <code>examples/</code>.</p>
+
+      <h3>Mínimo</h3>
+      <p>O menor mapa possível: duas lanes, duas phases, quatro nodes, sem conteúdo de drawer. <code>nodeTypes.step.layout</code> é vazio e todo node carrega um <code>context</code> vazio.</p>
+      <pre><code>"nodeTypes": { "step": { "layout": [] } }
+...
+"nodes": [
+  { "id": "ask", "lane": "user", "phase": "request",
+    "title": { "en": "Ask question", "pt": "Fazer pergunta", "es": "Hacer pregunta" },
+    "type": "step", "context": {} }
+]</code></pre>
+      <p><a href="../#minimal">Abrir no viewer →</a></p>
+
+      <h3>Pipeline de contratação</h3>
+      <p>O mapa de referência completo: 17 nodes, <code>modes</code> custom, títulos localizados, e um nodeType <code>step</code> tipado cujo layout percorre <code>Prose</code> → <code>KeyValue</code> → dois blocos <code>Section</code>/<code>List</code>/<code>Tile</code>. Este é o formato canônico de <code>nodeTypes</code> tipado + <code>context</code>.</p>
+      <pre><code>"nodeTypes": {
+  "step": {
+    "layout": [
+      { "type": "Prose", "bind": "$objective" },
+      { "type": "KeyValue", "bind": "$meta" },
+      { "type": "Section", "title": "Modules", "sub": "$modulesSub",
+        "children": [
+          { "type": "List", "bind": "$modules",
+            "item": { "type": "Tile", "title": "$feature", "sub": "$id", "pills": "$levels" } }
+        ] },
+      { "type": "Section", "title": "States",
+        "children": [
+          { "type": "List", "bind": "$states",
+            "item": { "type": "Tile", "title": "$label", "sub": "$mode", "pills": "$tools" } }
+        ] }
+    ]
+  }
+}</code></pre>
+      <p>Cada node fornece o <code>context</code> correspondente a que o layout faz binding — <code>$objective</code>, <code>$meta</code>, <code>$modules</code>, <code>$states</code>:</p>
+      <pre><code>"type": "step",
+"context": {
+  "objective": "Hiring manager defines the role, level, target start date, and gets sign-off on headcount.",
+  "meta": [
+    { "label": "Entity", "value": "Job requisition · Job description · Comp band" },
+    { "label": "Actors", "value": "HM drafts → Recruiter reviews → Approver signs off" }
+  ],
+  "states": [
+    { "label": "Today", "mode": "manual", "narrative": "HM writes the JD from scratch...",
+      "tools": ["Google Docs", "Comp spreadsheet", "Email"] }
+  ]
+}</code></pre>
+      <p><a href="../#hiring-pipeline">Abrir no viewer →</a></p>
+
+      <h3>Pipeline de contratação (YAML)</h3>
+      <p>O mesmo mapa escrito em YAML — mais enxuto, e um bom template para edição à mão. Strings localizadas viram mapas aninhados e os campos do node são lidos inline:</p>
+      <pre><code>nodes:
+  - id: openReq
+    lane: hm
+    phase: sourcing
+    col: 0
+    title:
+      en: Open requisition
+      pt: Abrir requisição
+      es: Abrir requisición
+    objective: Hiring manager defines the role, level, and gets sign-off on headcount.
+    states:
+      today:
+        mode: manual
+        tools:
+          - Google Docs
+          - Comp spreadsheet</code></pre>
+      <p><a href="../#hiring-pipeline-yaml">Abrir no viewer →</a></p>
+
+      <h3>Multi-idioma</h3>
+      <p>Um mapa de triagem de suporte ao cliente com 6 nodes, totalmente traduzido EN/PT/ES, com um label <code>meta.context</code> de nível superior. Demonstra objetos <code>title</code>/<code>subtitle</code>/<code>context</code> localizados dirigindo o seletor de idioma.</p>
+      <pre><code>"meta": {
+  "title":    { "en": "Customer Support Triage", "pt": "Triagem de Suporte ao Cliente", "es": "Triaje de Soporte al Cliente" },
+  "subtitle": { "en": "from ticket to resolution", "pt": "do ticket à resolução", "es": "del ticket a la resolución" },
+  "context":  { "en": "support · multi-language demo", "pt": "suporte · demo multi-idioma", "es": "soporte · demo multi-idioma" },
+  "default_lang": "en"
+}</code></pre>
+      <p><a href="../#multi-language">Abrir no viewer →</a></p>
+
+      <h3>Com modules compartilhados</h3>
+      <p>Mesmo pipeline de contratação, mas os modules são puxados de um catálogo compartilhado via <code>meta.modules_source</code> e referenciados por id a partir do <code>context.modules</code> de cada node. Útil quando muitos nodes compartilham o mesmo inventário de features.</p>
+      <pre><code>"meta": {
+  "modules_source": "./modules.json",
+  ...
+}
+...
+"context": {
+  "modules": [
+    { "feature": "outreach:templates", "id": "outreach:templates", "levels": [] },
+    { "feature": "ats:duplicate-detection", "id": "ats:duplicate-detection", "levels": [] }
+  ],
+  "modulesSub": "features that make this step work"
+}</code></pre>
+      <p>O catálogo (<code>modules.json</code>) indexa cada module por id, com nomes localizados e levels <code>today</code>/<code>tomorrow</code>:</p>
+      <pre><code>"modules": {
+  "ats:resume-parser": {
+    "name": { "en": "Resume parser", "pt": "Parser de currículo", "es": "Parser de CV" },
+    "today": "automated",
+    "tomorrow": "ai",
+    "tags": [{ "en": "★ Tablestakes", "pt": "★ Básico", "es": "★ Básico" }]
+  }
+}</code></pre>
+      <p><a href="../#hiring-pipeline-modules">Abrir no viewer →</a></p>
 
       <h3>Links diretos por tema</h3>
       <ul>
-        <li><a href="../?theme=mono&amp;mode=dark#hiring-pipeline">Pipeline em mono dark</a></li>
-        <li><a href="../?theme=blueprint&amp;mode=dark#hiring-pipeline">Pipeline em blueprint dark</a></li>
+        <li><a href="../?theme=mono&amp;mode=dark#hiring-pipeline">Pipeline de contratação em mono dark</a></li>
+        <li><a href="../?theme=blueprint&amp;mode=dark#hiring-pipeline">Pipeline de contratação em blueprint dark</a></li>
         <li><a href="../?theme=midcentury&amp;mode=light#multi-language">Multi-idioma em mid-century light</a></li>
       </ul>
+
+      <p>Os arquivos-fonte estão em <a href="https://github.com/zalkowitsch/lifecycle-map/tree/main/examples">examples/</a>.</p>
     ` },
 
     { id: 'faq', label: 'FAQ', render: () => `
