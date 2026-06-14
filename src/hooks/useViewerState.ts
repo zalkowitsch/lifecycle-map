@@ -327,11 +327,20 @@ export function useViewerState() {
         setState((s) => ({ ...s, loading: false, needsPassword: { url: imgUrl } }));
         return;
       }
-      if (slugHash && EXAMPLE_SLUGS[slugHash]) {
-        await loadFromExample(slugHash);
+      // An explicit slug hash is an explicit intent and WINS over a saved
+      // session: restoring a previously-uploaded map under someone's #typo URL
+      // (and rewriting the URL to its slug) is surprising. A known slug loads
+      // its example; an unknown slug falls through to the splash rather than
+      // silently restoring an unrelated saved map.
+      if (slugHash) {
+        if (EXAMPLE_SLUGS[slugHash]) {
+          await loadFromExample(slugHash);
+          return;
+        }
+        setState((s) => ({ ...s, loading: false }));
         return;
       }
-      // Try session restore for DnD/paste sources
+      // No slug intent — try session restore for DnD/paste sources.
       const restored = session.load();
       if (restored && restored.rawJson && (restored.source === 'dnd' || restored.source === 'paste')) {
         try {

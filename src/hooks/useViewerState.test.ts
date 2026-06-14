@@ -761,4 +761,50 @@ describe('useViewerState (hook)', () => {
     expect(result.current.state.slug).toBe('my-restored');
     expect(result.current.state.data?.meta.title).toBe('Hiring');
   });
+
+  it('does NOT restore a saved session when the URL has an unknown slug hash', async () => {
+    // An explicit slug in the URL is an explicit intent: load that example.
+    // A saved dnd session (e.g. a previously uploaded map) must NOT silently
+    // win over an unknown slug — that made #some-typo load the saved map and
+    // rewrite the URL to its slug. Unknown slug → error, not session restore.
+    setLocation({ hash: '#this-slug-does-not-exist' });
+    sessionStorage.setItem(
+      'lifecycle-map.session',
+      JSON.stringify({
+        source: 'dnd',
+        slug: 'previously-uploaded',
+        rawJson: JSON.stringify(SAMPLE_MAP),
+        ts: Date.now(),
+      }),
+    );
+
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+
+    // The saved session must NOT have been restored under the unknown slug.
+    expect(result.current.state.source).not.toBe('restored');
+    expect(result.current.state.data).toBeNull();
+    // The hash is left as-is (not rewritten to the saved map's slug).
+    expect(window.location.hash).toBe('#this-slug-does-not-exist');
+  });
+
+  it('still restores a saved session when the URL hash is a non-slug param (#data=)', async () => {
+    // A #data=/#img= style hash is not a slug intent, so an existing session
+    // restore should still apply when the data blob is absent/handled elsewhere.
+    setLocation({ hash: '' });
+    sessionStorage.setItem(
+      'lifecycle-map.session',
+      JSON.stringify({
+        source: 'dnd',
+        slug: 'my-restored',
+        rawJson: JSON.stringify(SAMPLE_MAP),
+        ts: Date.now(),
+      }),
+    );
+
+    const { result } = renderHook(() => useViewerState());
+    await waitFor(() => expect(result.current.state.loading).toBe(false));
+
+    expect(result.current.state.source).toBe('restored');
+  });
 });
