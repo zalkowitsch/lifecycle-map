@@ -64,14 +64,19 @@ function parseCsv(text: string, opts: ParseDatatableOpts): Datatable {
   const lines = text.replace(/\r\n/g, '\n').split('\n').filter((l) => l.trim() !== '');
   const rows: Record<string, Record<string, unknown>> = {};
   if (lines.length === 0) return { name: opts.name || 'table', schema, rows };
-  const headers = splitCsvLine(lines[0]);
+  const header = lines[0];
+  if (header === undefined) return { name: opts.name || 'table', schema, rows };
+  const headers = splitCsvLine(header);
   for (let r = 1; r < lines.length; r++) {
-    const cells = splitCsvLine(lines[r]);
+    const line = lines[r];
+    if (line === undefined) continue;
+    const cells = splitCsvLine(line);
     const id = cells[0];
     if (!id) continue;
     const row: Record<string, unknown> = {};
     for (let c = 1; c < headers.length; c++) {
       const col = headers[c];
+      if (col === undefined) continue;
       const val = cells[c] ?? '';
       // split into a list ONLY when the column is schema-declared.
       row[col] = schema[col] ? val.split(';').map((s) => s.trim()) : val;
