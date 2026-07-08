@@ -17,3 +17,10 @@ npm-debug.log*
 # Local-only files
 .env
 .env.local
+
+# Local workspace for personal / proprietary maps.
+# The folder + its README are tracked; the map data inside is ignored
+# (see workspace/**/.gitignore).
+workspace/**/*.json
+workspace/**/*.yaml
+workspace/**/*.yml
