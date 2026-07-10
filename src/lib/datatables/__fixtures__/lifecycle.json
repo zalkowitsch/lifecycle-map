@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "title": "Fixture Flow",
+    "modes": [{ "id": "Auto", "label": "Auto", "color": "#16a34a" }],
+    "nodeTypes": {
+      "stage": {
+        "layout": [
+          { "type": "Prose", "bind": "$objective" },
+          { "type": "Section", "title": "Features", "children": [
+            { "type": "List", "bind": "$modules", "item": {
+              "type": "Tile", "title": "$name", "sub": "$tomorrow"
+            }}
+          ]}
+        ],
+        "contextRefs": { "modules": { "ref": "features" } }
+      }
+    },
+    "datatables": {
+      "features": { "schema": { "owner": { "ref": "people" } } },
+      "people": { "schema": {} }
+    }
+  },
+  "lanes": [{ "id": "l", "label": "Lane" }],
+  "phases": [{ "id": "p", "label": "Phase" }],
+  "nodes": [
+    { "id": "n1", "lane": "l", "phase": "p", "title": "Node One", "type": "stage",
+      "context": { "objective": "Fixture objective text.", "modules": ["feat-a", "feat-b"] } }
+  ],
+  "edges": []
+}

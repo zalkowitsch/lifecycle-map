@@ -1,0 +1,8 @@
+{
+  "_meta": { "name": "features" },
+  "_schema": { "owner": { "ref": "people" } },
+  "rows": {
+    "feat-a": { "name": "Alpha feature", "tomorrow": "Auto", "owner": "pat" },
+    "feat-b": { "name": "Beta feature", "tomorrow": "Auto" }
+  }
+}

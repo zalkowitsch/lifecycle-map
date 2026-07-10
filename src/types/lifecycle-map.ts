@@ -1,4 +1,5 @@
 import type { PrimitiveNode } from '@/components/NodeDrawer/primitives/types';
+import type { DatatableSchema } from '@/lib/datatables/types';
 
 // Lifecycle map schema — the JSON/YAML shape the viewer accepts.
 //
@@ -149,8 +150,14 @@ export interface MapMeta {
   modules_source?: string;
   /** Layout direction. Defaults to LR. */
   direction?: Direction;
-  /** Map of node-type id -> layout (primitive tree). Consumed by the drawer. */
-  nodeTypes?: Record<string, { layout: PrimitiveNode[] }>;
+  /** Map of node-type id -> layout (primitive tree) + optional context ref decls. */
+  nodeTypes?: Record<string, {
+    layout: PrimitiveNode[];
+    /** Declares which context fields are datatable refs, and into which table. */
+    contextRefs?: Record<string, { ref: string }>;
+  }>;
+  /** Declared datatables: CSV schema and/or a fetchable src. */
+  datatables?: Record<string, { schema?: DatatableSchema; src?: string }>;
 }
 
 export interface LifecycleMap {
