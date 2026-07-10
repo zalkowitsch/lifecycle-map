@@ -27,6 +27,16 @@ export default defineConfig(({ mode }) => ({
           'vendor-compress': ['pako'],
           'vendor-yaml': ['js-yaml'],
         },
+        // The DatabasePanel facade module is named "index" (src/components/
+        // DatabasePanel/index.ts), which Rollup would otherwise reuse to name
+        // its own dynamic-import chunk "index-<hash>.js" — colliding in name
+        // (though not in content) with the real entry chunk. Force a distinct
+        // name so build tooling (and code-split verification scripts) can
+        // unambiguously tell the lazy Glide-grid chunk apart from the main one.
+        chunkFileNames: (chunkInfo) =>
+          chunkInfo.moduleIds?.some((id) => id.includes('/components/DatabasePanel/'))
+            ? 'assets/database-panel-[hash].js'
+            : 'assets/[name]-[hash].js',
       },
     },
   },

@@ -1,0 +1,28 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--surface, #fff);
+  display: flex;
+  flex-direction: column;
+}
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+.tab { padding: 6px 12px; border: none; background: none; cursor: pointer; border-radius: 6px; color: var(--text-muted, #6b7280); }
+.tabActive { background: var(--text, #111); color: #fff; }
+.back { margin-left: auto; color: var(--accent, #2563eb); background: none; border: none; cursor: pointer; }
+.body { flex: 1; min-height: 0; display: flex; }
+.split { display: flex; flex: 1; min-height: 0; position: relative; }
+.splitLeft { width: 52%; min-width: 0; border-right: 1px solid var(--border, #e5e7eb); }
+.splitRight { flex: 1; min-width: 0; }
+.marker {
+  position: absolute; left: 52%; transform: translateX(-50%);
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent, #2563eb); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-weight: 700; z-index: 2;
+}

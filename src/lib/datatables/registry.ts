@@ -29,4 +29,10 @@ export class DatatableRegistry {
   get size(): number {
     return this.tables.size;
   }
+
+  /** All row ids in a table, in insertion order. Empty if the table is absent. */
+  ids(table: string): string[] {
+    const t = this.tables.get(table);
+    return t ? Object.keys(t.rows) : [];
+  }
 }

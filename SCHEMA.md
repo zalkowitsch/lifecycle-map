@@ -499,6 +499,17 @@ resolution — its `context` is passed straight through as before. Existing inli
 maps that embed all their data directly (no `meta.datatables`, no `contextRefs`) continue
 to work exactly as they did; relational datatables are opt-in per node type and per field.
 
+### Editing in the Database panel
+
+The viewer includes a full-screen Database editor, opened from the DB icon in the header.
+It shows one tab per entity — **Personas**, **Steps**, **Features**, **Nodes** — as an
+editable grid, and edits apply live to the rendered map. Editing a feature mutates the
+underlying features datatable directly, and the change is immediately reflected in every
+node that references that feature. To edit both the map and its relational data together,
+drop the lifecycle map file and its `.datatable.json`/`.datatable.csv` files onto the viewer
+at the same time (see [Multi-file bundle loading](#multi-file-bundle-loading) above) — the
+panel then edits whichever file actually backs each tab.
+
 ---
 
 ## Complete minimal typed example
