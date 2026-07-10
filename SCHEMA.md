@@ -39,6 +39,7 @@ Node **drawer content** (what you see when you open a node) is produced entirely
 - [`nodes`](#nodes)
 - [`edges`](#edges)
 - [`modules` (top-level catalog)](#modules-top-level-catalog)
+- [Datatables (relational references)](#datatables-relational-references)
 - [Complete minimal typed example](#complete-minimal-typed-example)
 - [Worked examples](#worked-examples)
 
@@ -334,6 +335,166 @@ Optional. Shared module definitions you can reference by string id from a node's
 Module fields: `feature` (or `name`), `today`, `tomorrow`, `tags[]`, `pricing` (string),
 `wedge` (string). How a module renders is up to the `Tile`/`List` primitives in your
 layout — the catalog only supplies the data.
+
+---
+
+## Datatables (relational references)
+
+Optional. A **datatable** is a separate JSON or CSV file of rows keyed by id — a
+lightweight relational table. A node's `context` can hold a bare row id (or an array of
+ids) instead of an inline object; the viewer looks the id up in the matching datatable and
+substitutes the resolved row before the drawer renders. This lets you keep one shared
+"people" or "features" table instead of duplicating rows inline across nodes.
+
+Inline maps that never reference a datatable are unaffected — see
+[Coexistence with inline maps](#coexistence-with-inline-maps) below.
+
+### Declaring datatables and refs
+
+Two pieces of `meta` opt a node type into relational lookups:
+
+```jsonc
+{
+  "meta": {
+    "nodeTypes": {
+      "stage": {
+        "layout": [ /* … primitives … */ ],
+        // Declares which context fields are datatable refs, and which table
+        // a bare string id in that field resolves against.
+        "contextRefs": { "modules": { "ref": "features" } }
+      }
+    },
+    // Declares each datatable by name. `schema` is required for CSV tables
+    // (CSV can't embed it — see below). `src` is a fetchable URL, reserved
+    // for URL/example loads that need to fetch the table remotely.
+    "datatables": {
+      "features": { "schema": { "owner": { "ref": "people" } } },
+      "people":   { "src": "people.datatable.csv" }
+    }
+  },
+  "nodes": [
+    { "id": "n1", "type": "stage", "context": { "modules": ["feat-a", "feat-b"] } }
+  ]
+}
+```
+
+- `meta.nodeTypes[type].contextRefs` — `{ field: { ref: tableName } }`. Only fields
+  listed here are treated as references; every other `context` field is left as literal
+  data, even if it happens to look like an id.
+- `meta.datatables` — `{ tableName: { schema?, src? } }`. `schema` declares a table's
+  foreign-key (and list) columns — required for CSV, optional (and normally omitted, since
+  JSON embeds its own) for JSON. `src` is a fetchable path/URL for the table.
+
+### JSON datatable shape
+
+```jsonc
+// features.datatable.json
+{
+  "_meta": { "name": "features" },
+  "_schema": { "owner": { "ref": "people" } },
+  "rows": {
+    "feat-a": { "name": "Alpha feature", "tomorrow": "Auto", "owner": "pat" },
+    "feat-b": { "name": "Beta feature", "tomorrow": "Auto" }
+  }
+}
+```
+
+- `_meta.name` — the table's registered name. Falls back to the derived filename (see
+  naming convention below) when omitted.
+- `_schema` — foreign-key columns, `{ column: { ref: tableName } }`. A row's `owner`
+  column above is declared as a reference into `people`.
+- `rows` — an object keyed by row id. Legacy files may use `features` or `modules` as the
+  rows key instead of `rows` (both are accepted, for compatibility with earlier
+  module-catalog files). Any row entry that is a plain **string** rather than an object —
+  e.g. a `"_comment_1": "…"` marker — is silently dropped, so you can leave inline
+  comments in the JSON without them being parsed as rows.
+
+### CSV datatable shape
+
+```csv
+id,name,role,tags
+pat,Pat Owner,Engineer,ops;oncall
+```
+
+- The **first column is always `id`**; every other column becomes a field on the row.
+- CSV cannot embed a schema, so foreign-key/list columns must be declared in
+  `meta.datatables.<name>.schema` on the lifecycle map. A column with **no** schema entry
+  stays a plain string cell.
+- A cell is split on `;` into a list **only** when its column is schema-declared (a
+  `{ ref }` entry doubles as "this is a list/ref column"). Above, `tags` would need a
+  `meta.datatables.people.schema.tags` entry for `"ops;oncall"` to become
+  `["ops", "oncall"]` — otherwise it stays the literal string `"ops;oncall"`.
+
+### File-naming convention: the `.datatable` infix
+
+When multiple files are loaded together (see below), each datatable's registered name is
+derived from its filename: the extension is stripped, then a trailing **`.datatable`**
+infix is stripped too. So:
+
+| Filename                     | Registered table name |
+| ----------------------------- | ---------------------- |
+| `features.datatable.json`     | `features`             |
+| `people.datatable.csv`         | `people`                |
+| `features.json`               | `features`             |
+
+This is intentional — `.datatable` is a marker in the filename, not part of the name, so
+`features.datatable.json` and `features.json` register identically. A JSON file's own
+`_meta.name` still wins over the derived name if present.
+
+### Hybrid reference forms
+
+A `context` field listed in `contextRefs` accepts either form, and the two can be mixed
+within the same array:
+
+- **Bare string id** — resolved against the table named in `contextRefs`. `"modules":
+  ["feat-a", "feat-b"]` resolves each string into `features` (per the `stage` type's
+  `contextRefs` above).
+- **Explicit `{ "table": "...", "id": "..." }` object** — resolves into `table` directly,
+  ignoring whatever table `contextRefs` names. Use this to reference a *different* table
+  than the field's declared default: `"modules": [{ "table": "archive", "id": "feat-z" }]`.
+
+A plain string in a field that has **no** `contextRefs` entry is never treated as a
+reference — it's left as literal text. Only fields explicitly declared in `contextRefs`
+are eligible for resolution.
+
+### Multi-file bundle loading
+
+Datatables live in files separate from the lifecycle map. Drag-and-drop accepts multiple
+files at once — drop the map together with its `.datatable.json`/`.datatable.csv` files
+in one gesture, and the viewer assembles them into one bundle:
+
+- The file containing an array `nodes` is treated as the lifecycle map; every other
+  dropped file is parsed as a datatable (JSON if not `.csv`, otherwise CSV) and added to a
+  registry, using the map's `meta.datatables.<name>.schema` for CSV columns.
+- `meta.datatables.<name>.src` is reserved for fetching a table from a URL (for
+  URL/example loads, as opposed to drag-and-drop, which has no fetchable base and requires
+  the datatable files to be dropped alongside the map).
+
+### Resolution: depth cap and degrade-on-error
+
+Reference resolution recurses — a resolved row's own columns are resolved too, per that
+row's table schema, so `features.feat-a.owner` above expands into a full `people` row. To
+keep this safe against bad data:
+
+- **Depth cap** — resolution stops at a default max depth of **3**. Hitting the cap logs a
+  `console.warn` and leaves the reference **raw**: `{ table, id }` (unresolved, but not
+  crashed).
+- **Cycle guard** — if a `{table, id}` pair is revisited while resolving its own chain
+  (e.g. A references B references A), resolution stops there too: `console.warn` + the raw
+  `{ table, id }` marker.
+- **Broken ref** — if `table:id` doesn't exist in the registry, resolution logs a
+  `console.warn` and returns `{ _unresolved: true, table, id }` in its place.
+
+In every case, resolution **degrades gracefully and never throws** — a broken, cyclic, or
+too-deep reference shows up as a marker object in the rendered context instead of crashing
+the viewer.
+
+### Coexistence with inline maps
+
+Datatables are fully additive. A node type with no `contextRefs` entry is never touched by
+resolution — its `context` is passed straight through as before. Existing inline lifecycle
+maps that embed all their data directly (no `meta.datatables`, no `contextRefs`) continue
+to work exactly as they did; relational datatables are opt-in per node type and per field.
 
 ---
 
