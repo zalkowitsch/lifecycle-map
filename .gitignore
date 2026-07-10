@@ -24,3 +24,4 @@ npm-debug.log*
 workspace/**/*.json
 workspace/**/*.yaml
 workspace/**/*.yml
+.superpowers/
