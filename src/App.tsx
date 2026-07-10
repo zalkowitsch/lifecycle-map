@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { I18nProvider, useI18n } from '@/contexts/I18nContext';
 import { useViewerState } from '@/hooks/useViewerState';
@@ -17,6 +17,12 @@ import { VersionBadge } from '@/components/VersionBadge';
 import { ZoomControl } from '@/components/ZoomControl';
 import ShortcutsModal from '@/components/ShortcutsModal';
 import './App.css';
+
+// Lazy-loaded so the Glide Data Grid (and its dependencies) are code-split
+// out of the main bundle — only fetched when the user opens the Database panel.
+const DatabasePanel = lazy(() =>
+  import('@/components/DatabasePanel').then((m) => ({ default: m.DatabasePanel })),
+);
 
 function AppShell() {
   const { L, t, availableLangs, setAvailableLangs, setDataLang } = useI18n();
@@ -91,6 +97,7 @@ function AppShell() {
   const [codeOpen, setCodeOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [dbOpen, setDbOpen] = useState(false);
 
   // Decrypt prompt state
   const [decryptPassword, setDecryptPassword] = useState('');
@@ -186,6 +193,7 @@ function AppShell() {
       setCodeOpen(false);
       setSettingsOpen(false);
       setShortcutsOpen(false);
+      setDbOpen(false);
       if (activeNodeId || activeEdge) handleCloseNodeDrawer();
     },
     onArrowLeft: walkPrev,
@@ -328,6 +336,9 @@ function AppShell() {
               <button className="h-icon-btn" title={t('header.settings.title')} onClick={() => setSettingsOpen(true)} aria-label="Settings">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
               </button>
+              <button className="h-icon-btn" title="Database" onClick={() => setDbOpen(true)} aria-label="Database">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
+              </button>
             </div>
           </div>
         </div>
@@ -372,6 +383,19 @@ function AppShell() {
         sources={viewer.state.rawSources}
         onEdit={handleCodeEdit}
       />
+
+      {dbOpen && (
+        <Suspense fallback={<div className="loading">Loading editor…</div>}>
+          <DatabasePanel
+            open={dbOpen}
+            onClose={() => setDbOpen(false)}
+            data={data}
+            rawSources={viewer.state.rawSources}
+            registry={viewer.state.datatables}
+            onCommit={viewer.commitSource}
+          />
+        </Suspense>
+      )}
 
       <ShareModal
         open={shareOpen}
