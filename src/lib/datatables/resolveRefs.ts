@@ -8,8 +8,7 @@ function isObject(v: unknown): v is Record<string, unknown> {
 }
 
 function isExplicitRef(v: unknown): v is { table: string; id: string } {
-  return isObject(v) && typeof v.table === 'string' && typeof v.id === 'string'
-    && Object.keys(v).length === 2;
+  return isObject(v) && typeof v.table === 'string' && typeof v.id === 'string';
 }
 
 /**

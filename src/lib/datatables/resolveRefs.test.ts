@@ -24,6 +24,11 @@ describe('resolveFieldValue', () => {
     expect(resolveFieldValue({ table: 'people', id: 'jake' }, 'features', r, ctx())).toEqual({ role: 'Eng' });
   });
 
+  it('resolves an explicit {table,id} object even with extra keys', () => {
+    const r = reg({ name: 'people', schema: {}, rows: { jake: { role: 'Eng' } } });
+    expect(resolveFieldValue({ table: 'people', id: 'jake', note: 'x' }, undefined, r, ctx())).toEqual({ role: 'Eng' });
+  });
+
   it('recurses into a resolved row\'s own ref columns via its schema', () => {
     const r = reg(
       { name: 'features', schema: { owner: { ref: 'people' } }, rows: { f1: { name: 'Rules', owner: 'jake' } } },
