@@ -42,4 +42,22 @@ describe('multi-source rawSources + commitSource', () => {
       expect(after[0].name).toBe('Edited');
     });
   });
+
+  it('commitSource on parse failure keeps last-good data and surfaces an error', async () => {
+    const { result } = renderHook(() => useViewerState());
+    await act(async () => { await result.current.handleFileDrop(dropFiles(mapText, featText)); });
+    await waitFor(() => expect(result.current.state.data).toBeTruthy());
+
+    const featIdx = result.current.state.rawSources.findIndex((s) => s.name === 'features.json');
+    expect(featIdx).toBeGreaterThanOrEqual(0);
+
+    const goodData = result.current.state.data;
+
+    await act(async () => { result.current.commitSource(featIdx, '{ this is not valid json ]'); });
+
+    expect(result.current.state.data).toBe(goodData);
+    expect(result.current.state.data).not.toBeNull();
+    expect(result.current.state.error).toBeTruthy();
+    expect(typeof result.current.state.error).toBe('string');
+  });
 });
