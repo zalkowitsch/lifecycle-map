@@ -17,7 +17,9 @@ export interface Bundle {
 }
 
 function baseName(fileName: string): string {
-  return fileName.replace(/\.[^.]+$/, '');
+  // Strip the extension, then an optional trailing `.datatable` marker
+  // (e.g. `people.datatable.csv` -> `people`, `features.json` -> `features`).
+  return fileName.replace(/\.[^.]+$/, '').replace(/\.datatable$/, '');
 }
 
 /**
