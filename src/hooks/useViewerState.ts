@@ -217,6 +217,7 @@ export function useViewerState() {
     slug?: string,
     baseUrl?: string,
     registry?: DatatableRegistry,
+    datatableSources?: RawSource[],
   ) => {
     try {
       const data = parseSource(text);
@@ -243,7 +244,7 @@ export function useViewerState() {
         data: normalized,
         source,
         slug: finalSlug,
-        rawSources: [{ name, text, lang: detectLang(name, text) }],
+        rawSources: [{ name, text, lang: detectLang(name, text) }, ...(datatableSources ?? [])],
         loading: false,
         error: null,
         needsPassword: null,
@@ -279,10 +280,16 @@ export function useViewerState() {
     );
     try {
       const { mapText, mapName } = mergeDroppedFiles(dropped);
-      const bundle = loadBundle(
-        dropped.map((f) => (f.name === mapName ? { name: mapName, text: mapText } : f)),
+      const bundleInput = dropped.map((f) => (f.name === mapName ? { name: mapName, text: mapText } : f));
+      const bundle = loadBundle(bundleInput);
+      // Datatable sources = every dropped file that isn't the map.
+      const datatableSources = bundleInput
+        .filter((f) => f.name !== bundle.lifecycleName)
+        .map((f) => ({ name: f.name, text: f.text, lang: detectLang(f.name, f.text) }));
+      await loadFromText(
+        bundle.lifecycleText, bundle.lifecycleName, 'dnd',
+        undefined, undefined, bundle.registry, datatableSources,
       );
-      await loadFromText(bundle.lifecycleText, bundle.lifecycleName, 'dnd', undefined, undefined, bundle.registry);
     } catch (e) {
       setState((s) => ({ ...s, error: e instanceof Error ? e.message : String(e) }));
     }
@@ -315,6 +322,29 @@ export function useViewerState() {
 
   const showPasteUI = useCallback(() => {
     setState((s) => ({ ...s, loading: false, needsPaste: true }));
+  }, []);
+
+  const commitSource = useCallback((index: number, newText: string) => {
+    setState((s) => {
+      const sources = s.rawSources.slice();
+      const target = sources[index];
+      if (!target) return s;
+      sources[index] = { ...target, text: newText };
+      try {
+        // Source 0 is the map; the rest are datatables. Rebuild registry from them.
+        const mapSource = sources[0];
+        if (!mapSource) return s;
+        const mapData = parseSource(mapSource.text);
+        const dtFiles = sources.slice(1).map((src) => ({ name: src.name, text: src.text }));
+        const bundle = loadBundle([{ name: mapSource.name, text: mapSource.text }, ...dtFiles]);
+        const withRefs = resolveDatatableRefs(mapData, bundle.registry);
+        const normalized = normalize(withRefs);
+        return { ...s, rawSources: sources, data: normalized, datatables: bundle.registry, error: null };
+      } catch (e) {
+        // Keep last good data; surface the error.
+        return { ...s, rawSources: sources, error: e instanceof Error ? e.message : String(e) };
+      }
+    });
   }, []);
 
   // Initial bootstrap — runs once
@@ -398,6 +428,7 @@ export function useViewerState() {
     loadFromUrl,
     handleFileDrop,
     handlePaste,
+    commitSource,
     decryptImage,
     showPasteUI,
     EXAMPLE_SLUGS,
