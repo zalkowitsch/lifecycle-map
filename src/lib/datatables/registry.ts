@@ -17,7 +17,9 @@ export class DatatableRegistry {
   }
 
   getRow(table: string, id: string): Record<string, unknown> | undefined {
-    return this.tables.get(table)?.rows[id];
+    const t = this.tables.get(table);
+    if (!t || !Object.prototype.hasOwnProperty.call(t.rows, id)) return undefined;
+    return t.rows[id];
   }
 
   getSchema(table: string): Datatable['schema'] | undefined {

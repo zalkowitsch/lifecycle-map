@@ -443,7 +443,9 @@ This is intentional — `.datatable` is a marker in the filename, not part of th
 
 ### Hybrid reference forms
 
-A `context` field listed in `contextRefs` accepts either form, and the two can be mixed
+In Phase 1, resolution only ever looks at fields declared in
+`meta.nodeTypes[type].contextRefs` — that declaration is what makes a field eligible at
+all. Within such a declared field, a value may take either form, and the two can be mixed
 within the same array:
 
 - **Bare string id** — resolved against the table named in `contextRefs`. `"modules":
@@ -453,9 +455,10 @@ within the same array:
   ignoring whatever table `contextRefs` names. Use this to reference a *different* table
   than the field's declared default: `"modules": [{ "table": "archive", "id": "feat-z" }]`.
 
-A plain string in a field that has **no** `contextRefs` entry is never treated as a
-reference — it's left as literal text. Only fields explicitly declared in `contextRefs`
-are eligible for resolution.
+A field with **no** `contextRefs` entry is never touched by resolution, regardless of what
+its value looks like — a bare string is left as literal text, and even an explicit
+`{ "table": "...", "id": "..." }` object is left as-is, unresolved. Only fields explicitly
+declared in `contextRefs` are eligible for resolution.
 
 ### Multi-file bundle loading
 

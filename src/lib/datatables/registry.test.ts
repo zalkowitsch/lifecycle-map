@@ -27,4 +27,11 @@ describe('DatatableRegistry', () => {
     reg.add(features);
     expect(reg.getRow('features', 'f1')).toEqual({ name: 'Rules' });
   });
+
+  it('returns undefined for inherited/reserved-word ids (no prototype leakage)', () => {
+    const reg = new DatatableRegistry([features]);
+    expect(reg.getRow('features', '__proto__')).toBeUndefined();
+    expect(reg.getRow('features', 'constructor')).toBeUndefined();
+    expect(reg.getRow('features', 'toString')).toBeUndefined();
+  });
 });

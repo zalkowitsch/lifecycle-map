@@ -82,4 +82,13 @@ describe('resolveFieldValue', () => {
     const r = reg();
     expect(resolveFieldValue('just text', undefined, r, ctx())).toBe('just text');
   });
+
+  it('flags a reserved-word id as a broken ref, not prototype', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const r = reg({ name: 'features', schema: {}, rows: {} });
+    expect(resolveFieldValue('__proto__', 'features', r, ctx())).toEqual({
+      _unresolved: true, table: 'features', id: '__proto__',
+    });
+    warn.mockRestore();
+  });
 });
