@@ -4,6 +4,9 @@ import { parseSource, decodeHashData } from '@/lib/parseSource';
 import { decodeFromImageUrl } from '@/lib/share/encrypted';
 import { resolveExternalModules } from '@/lib/resolveModules';
 import { mergeDroppedFiles } from '@/lib/mergeDroppedFiles';
+import { loadBundle } from '@/lib/datatables/loadBundle';
+import { resolveDatatableRefs } from '@/lib/datatables/resolveDatatableRefs';
+import type { DatatableRegistry } from '@/lib/datatables/registry';
 import { useSessionState } from './useSessionState';
 
 // Fetch a (possibly relative) catalog URL, resolved against the map's location.
@@ -159,6 +162,7 @@ export interface ViewerState {
   error: string | null;
   needsPassword: { url: string } | null;
   needsPaste: boolean;
+  datatables?: DatatableRegistry;
 }
 
 function detectLang(name: string, text: string): 'json' | 'yaml' {
@@ -174,6 +178,7 @@ export function useViewerState() {
     data: null, source: null, slug: null,
     rawSources: [], loading: true, error: null,
     needsPassword: null, needsPaste: false,
+    datatables: undefined,
   });
   const session = useSessionState();
   const lastHandledSlug = useRef<string | null>(null);
@@ -205,7 +210,14 @@ export function useViewerState() {
     }
   }, []);
 
-  const loadFromText = useCallback(async (text: string, name: string, source: ViewerSource, slug?: string, baseUrl?: string) => {
+  const loadFromText = useCallback(async (
+    text: string,
+    name: string,
+    source: ViewerSource,
+    slug?: string,
+    baseUrl?: string,
+    registry?: DatatableRegistry,
+  ) => {
     try {
       const data = parseSource(text);
       // If the map points at an external module/rubric catalog and we have a
@@ -215,7 +227,10 @@ export function useViewerState() {
       const resolved = baseUrl
         ? await resolveExternalModules(data, (u) => fetchRelativeText(u, baseUrl), name)
         : data;
-      const normalized = normalize(resolved);
+      // Substitute datatable refs (if any) before normalize, so mode discovery
+      // and the drawer see resolved row objects (not raw ids).
+      const withRefs = registry ? resolveDatatableRefs(resolved, registry) : resolved;
+      const normalized = normalize(withRefs);
       const finalSlug = slug ?? (source === 'dnd' ? slugify(name) : null);
       if (finalSlug) {
         const newHash = '#' + finalSlug;
@@ -233,6 +248,7 @@ export function useViewerState() {
         error: null,
         needsPassword: null,
         needsPaste: false,
+        datatables: registry,
       });
       if (source === 'dnd' || source === 'paste') {
         session.save({ source: source === 'dnd' ? 'dnd' : 'paste', slug: finalSlug ?? undefined, rawJson: text });
@@ -253,14 +269,20 @@ export function useViewerState() {
   }, [loadFromText]);
 
   const handleFileDrop = useCallback(async (files: File[]) => {
-    // A map may be dropped alongside a separate module/rubric catalog; merge
-    // them into one map so module refs resolve instead of showing "Unknown".
+    // A map may be dropped alongside a legacy module/rubric catalog and/or
+    // separate datatables (JSON/CSV). mergeDroppedFiles handles the legacy
+    // catalog (embedding `modules` into the map so `_moduleCatalog` resolves
+    // it); loadBundle then splits any remaining datatables into a registry
+    // so `resolveDatatableRefs` can substitute them before normalize.
     const dropped = await Promise.all(
       files.map(async (f) => ({ name: f.name, text: await f.text() })),
     );
     try {
       const { mapText, mapName } = mergeDroppedFiles(dropped);
-      await loadFromText(mapText, mapName, 'dnd');
+      const bundle = loadBundle(
+        dropped.map((f) => (f.name === mapName ? { name: mapName, text: mapText } : f)),
+      );
+      await loadFromText(bundle.lifecycleText, bundle.lifecycleName, 'dnd', undefined, undefined, bundle.registry);
     } catch (e) {
       setState((s) => ({ ...s, error: e instanceof Error ? e.message : String(e) }));
     }
