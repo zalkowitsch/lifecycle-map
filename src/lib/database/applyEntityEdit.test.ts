@@ -27,6 +27,32 @@ describe('applyEntityEdit — lanes (map source)', () => {
   });
 });
 
+describe('applyEntityEdit — preserves localized strings on edit', () => {
+  it('updating a lang-map label only overwrites the active language', () => {
+    const src = { lanes: [{ id: 'a', label: { en: 'A', pt: 'B' } }], phases: [], nodes: [], edges: [] };
+    const out = applyEntityEdit(src, 'lanes', { op: 'update', id: 'a', field: 'label', value: 'X' }, 'en');
+    expect((out.lanes as any)[0].label).toEqual({ en: 'X', pt: 'B' });
+  });
+
+  it('updating a plain-string label still works (no lang param)', () => {
+    const src = { lanes: [{ id: 'a', label: 'A' }], phases: [], nodes: [], edges: [] };
+    const out = applyEntityEdit(src, 'lanes', { op: 'update', id: 'a', field: 'label', value: 'AA' });
+    expect((out.lanes as any)[0].label).toBe('AA');
+  });
+
+  it('updating a lang-map with a different active lang updates that key', () => {
+    const src = { lanes: [{ id: 'a', label: { en: 'A', pt: 'B' } }], phases: [], nodes: [], edges: [] };
+    const out = applyEntityEdit(src, 'lanes', { op: 'update', id: 'a', field: 'label', value: 'BB' }, 'pt');
+    expect((out.lanes as any)[0].label).toEqual({ en: 'A', pt: 'BB' });
+  });
+
+  it('applies the same preservation to features datatable rows', () => {
+    const dt = { _meta: { name: 'features' }, rows: { f1: { name: { en: 'One', es: 'Uno' } } } };
+    const out = applyEntityEdit(dt, 'features', { op: 'update', id: 'f1', field: 'name', value: 'Two' }, 'en');
+    expect((out.rows as any).f1.name).toEqual({ en: 'Two', es: 'Uno' });
+  });
+});
+
 describe('applyEntityEdit — phases coerces subCols to number', () => {
   it('update subCols stores a number', () => {
     const src = { lanes: [], phases: [{ id: 'p' }], nodes: [], edges: [] };

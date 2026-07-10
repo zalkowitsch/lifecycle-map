@@ -25,7 +25,7 @@ const DatabasePanel = lazy(() =>
 );
 
 function AppShell() {
-  const { L, t, availableLangs, setAvailableLangs, setDataLang } = useI18n();
+  const { L, t, dataLang, availableLangs, setAvailableLangs, setDataLang } = useI18n();
   const { mode } = useTheme();
   const viewer = useViewerState();
   const session = useSessionState();
@@ -393,6 +393,7 @@ function AppShell() {
             rawSources={viewer.state.rawSources}
             registry={viewer.state.datatables}
             onCommit={viewer.commitSource}
+            lang={dataLang ?? 'en'}
           />
         </Suspense>
       )}

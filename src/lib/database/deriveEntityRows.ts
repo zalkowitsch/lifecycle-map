@@ -4,12 +4,12 @@ import type { Entity, GridColumn, GridRows } from './types';
 
 const COLUMNS: Record<Entity, GridColumn[]> = {
   lanes: [
-    { id: 'id', title: 'id', kind: 'text' },
+    { id: 'id', title: 'id', kind: 'text', readOnly: true },
     { id: 'label', title: 'label', kind: 'text' },
     { id: 'sub', title: 'sub', kind: 'text' },
   ],
   phases: [
-    { id: 'id', title: 'id', kind: 'text' },
+    { id: 'id', title: 'id', kind: 'text', readOnly: true },
     { id: 'label', title: 'label', kind: 'text' },
     { id: 'roman', title: 'roman', kind: 'text' },
     { id: 'subCols', title: 'subCols', kind: 'text' },
@@ -22,7 +22,7 @@ const COLUMNS: Record<Entity, GridColumn[]> = {
     { id: 'tags', title: 'tags', kind: 'text' },
   ],
   nodes: [
-    { id: 'id', title: 'id', kind: 'text' },
+    { id: 'id', title: 'id', kind: 'text', readOnly: true },
     { id: 'title', title: 'title', kind: 'text' },
     { id: 'lane', title: 'lane', kind: 'text' },
     { id: 'phase', title: 'phase', kind: 'text' },

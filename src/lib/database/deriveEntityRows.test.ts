@@ -22,12 +22,14 @@ describe('deriveEntityRows', () => {
   it('lanes → id/label/sub columns and one row', () => {
     const g = deriveEntityRows(map, registry, 'lanes');
     expect(g.columns.map((c) => c.id)).toEqual(['id', 'label', 'sub']);
+    expect(g.columns.find((c) => c.id === 'id')?.readOnly).toBe(true);
     expect(g.rows[0]).toMatchObject({ id: 'patient', label: 'Patient', sub: 'consumer' });
   });
 
   it('phases → id/label/roman/subCols', () => {
     const g = deriveEntityRows(map, registry, 'phases');
     expect(g.columns.map((c) => c.id)).toEqual(['id', 'label', 'roman', 'subCols']);
+    expect(g.columns.find((c) => c.id === 'id')?.readOnly).toBe(true);
     expect(g.rows[0]).toMatchObject({ id: 'preVisit', roman: 'I', subCols: 3 });
   });
 
@@ -41,6 +43,7 @@ describe('deriveEntityRows', () => {
   it('nodes → flat columns only (no nested context)', () => {
     const g = deriveEntityRows(map, registry, 'nodes');
     expect(g.columns.map((c) => c.id)).toEqual(['id', 'title', 'lane', 'phase', 'sub']);
+    expect(g.columns.find((c) => c.id === 'id')?.readOnly).toBe(true);
     expect(g.rows[0]).toMatchObject({ id: 'sched', title: 'Schedule', lane: 'patient', phase: 'preVisit' });
     expect(g.rows[0]).not.toHaveProperty('context');
   });

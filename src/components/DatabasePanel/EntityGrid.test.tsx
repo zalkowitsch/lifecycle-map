@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { GridCellKind } from '@glideapps/glide-data-grid';
-import { cellForColumn, glideCellFor, modeOptions, isValidRef } from '@/components/DatabasePanel/EntityGrid';
-import type { GridColumn } from '@/lib/database/types';
+import {
+  cellForColumn,
+  glideCellFor,
+  modeOptions,
+  isValidRef,
+  selectedRowIndex,
+  canDeleteSelected,
+} from '@/components/DatabasePanel/EntityGrid';
+import type { GridColumn, GridRows } from '@/lib/database/types';
 
 const modes = [
   { id: 'Auto', label: 'Auto', color: '#16a34a' },
@@ -66,5 +73,37 @@ describe('EntityGrid helpers', () => {
     const glideCell = glideCellFor(desc);
     expect(glideCell.allowOverlay).toBe(false);
     expect(glideCell.readonly).toBe(true);
+  });
+});
+
+describe('selectedRowIndex', () => {
+  const grid: GridRows = {
+    columns: [{ id: 'id', title: 'id', kind: 'text' }],
+    rows: [{ id: 'a' }, { id: 'b' }, { id: 'c' }],
+  };
+
+  it('finds the index of the row matching the selected id', () => {
+    expect(selectedRowIndex(grid, 'b')).toBe(1);
+  });
+
+  it('returns -1 when no row matches', () => {
+    expect(selectedRowIndex(grid, 'nope')).toBe(-1);
+  });
+
+  it('returns -1 when no id is selected', () => {
+    expect(selectedRowIndex(grid, undefined)).toBe(-1);
+    expect(selectedRowIndex(grid, null)).toBe(-1);
+  });
+});
+
+describe('canDeleteSelected', () => {
+  it('is false with no selection', () => {
+    expect(canDeleteSelected(undefined)).toBe(false);
+    expect(canDeleteSelected(null)).toBe(false);
+    expect(canDeleteSelected('')).toBe(false);
+  });
+
+  it('is true with a selected row id', () => {
+    expect(canDeleteSelected('row-1')).toBe(true);
   });
 });

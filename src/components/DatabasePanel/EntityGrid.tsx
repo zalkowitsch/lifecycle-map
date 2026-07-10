@@ -1,5 +1,6 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  CompactSelection,
   DataEditor,
   GridCellKind,
   type GridCell,
@@ -22,6 +23,19 @@ export function modeOptions(modes: Mode[]): string[] {
 // eslint-disable-next-line react-refresh/only-export-components -- pure helper, exported for unit tests (see brief)
 export function isValidRef(id: string, ids: string[]): boolean {
   return ids.includes(id);
+}
+
+/** Pure: the row index whose `id` matches `selectedRowId`, or -1 if none/absent. */
+// eslint-disable-next-line react-refresh/only-export-components -- pure helper, exported for unit tests (see brief)
+export function selectedRowIndex(grid: GridRows, selectedRowId: string | null | undefined): number {
+  if (selectedRowId == null) return -1;
+  return grid.rows.findIndex((r) => String(r.id) === selectedRowId);
+}
+
+/** Pure: whether the delete-selected control should be enabled. */
+// eslint-disable-next-line react-refresh/only-export-components -- pure helper, exported for unit tests (see brief)
+export function canDeleteSelected(selectedRowId: string | null | undefined): boolean {
+  return selectedRowId != null && selectedRowId !== '';
 }
 
 /** Pure: a lightweight cell descriptor (decouples tests from Glide's runtime). */
@@ -78,7 +92,24 @@ export interface EntityGridProps {
   onSelectRow?: (rowId: string) => void;
 }
 
-export function EntityGrid({ grid, modes, featureIds = [], onEdit, onAdd, onDelete, onSelectRow }: EntityGridProps) {
+export function EntityGrid({
+  grid,
+  modes,
+  featureIds = [],
+  onEdit,
+  onAdd,
+  onDelete,
+  selectedRowId,
+  onSelectRow,
+}: EntityGridProps) {
+  const [internalSelectedRowId, setInternalSelectedRowId] = useState<string | undefined>(selectedRowId);
+
+  // Keep internal selection in sync with the `selectedRowId` prop (e.g. the
+  // nodes tab drives selection externally via the nested-table split view).
+  useEffect(() => {
+    setInternalSelectedRowId(selectedRowId);
+  }, [selectedRowId]);
+
   const glideCols: GlideColumn[] = useMemo(
     () => grid.columns.map((c) => ({ title: c.title, id: c.id, width: 180 })),
     [grid.columns],
@@ -111,15 +142,31 @@ export function EntityGrid({ grid, modes, featureIds = [], onEdit, onAdd, onDele
     const rowIdx = sel.current?.cell?.[1];
     if (rowIdx == null) return;
     const row = grid.rows[rowIdx];
-    if (row && onSelectRow) onSelectRow(String(row.id));
+    if (!row) return;
+    const id = String(row.id);
+    setInternalSelectedRowId(id);
+    if (onSelectRow) onSelectRow(id);
   }, [grid, onSelectRow]);
+
+  const gridSelection: GridSelection = useMemo(() => {
+    const rowIdx = selectedRowIndex(grid, internalSelectedRowId);
+    return {
+      current: undefined,
+      columns: CompactSelection.empty(),
+      rows: rowIdx >= 0 ? CompactSelection.fromSingleSelection(rowIdx) : CompactSelection.empty(),
+    };
+  }, [grid, internalSelectedRowId]);
+
+  const handleDeleteSelected = useCallback(() => {
+    if (internalSelectedRowId != null) onDelete(internalSelectedRowId);
+  }, [internalSelectedRowId, onDelete]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={{ padding: '6px 8px', display: 'flex', gap: 8 }}>
         <button onClick={onAdd}>+ Add</button>
-        <button onClick={() => { const r = grid.rows[0]; if (r) onDelete(String(r.id)); }} disabled={grid.rows.length === 0}>
-          Delete first
+        <button onClick={handleDeleteSelected} disabled={!canDeleteSelected(internalSelectedRowId)}>
+          Delete selected
         </button>
       </div>
       <div style={{ flex: 1, minHeight: 0 }}>
@@ -128,6 +175,7 @@ export function EntityGrid({ grid, modes, featureIds = [], onEdit, onAdd, onDele
           rows={grid.rows.length}
           getCellContent={getCellContent}
           onCellEdited={onCellEdited}
+          gridSelection={gridSelection}
           onGridSelectionChange={onRowSelected}
           rowMarkers="number"
           smoothScrollX

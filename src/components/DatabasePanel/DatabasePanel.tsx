@@ -33,9 +33,11 @@ export interface DatabasePanelProps {
   rawSources: RawSource[];
   registry?: DatatableRegistry;
   onCommit: (sourceIndex: number, newText: string) => void;
+  /** Active data language for localized fields (label/title/sub). Defaults to 'en'. */
+  lang?: string;
 }
 
-export function DatabasePanel({ open, onClose, data, rawSources, registry, onCommit }: DatabasePanelProps) {
+export function DatabasePanel({ open, onClose, data, rawSources, registry, onCommit, lang = 'en' }: DatabasePanelProps) {
   const [tab, setTab] = useState<Entity>('lanes');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [nestedField, setNestedField] = useState<'modules' | 'states' | 'meta'>('modules');
@@ -50,7 +52,7 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
     const src = rawSources[idx];
     if (!src) return;
     const obj = parseSource(src.text) as unknown as Record<string, unknown>;
-    const next = applyEntityEdit(obj, tab, edit);
+    const next = applyEntityEdit(obj, tab, edit, lang);
     onCommit(idx, serializeSource(next, src.lang));
   };
 
