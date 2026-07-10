@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { cellForColumn, modeOptions, isValidRef } from '@/components/DatabasePanel/EntityGrid';
+import { GridCellKind } from '@glideapps/glide-data-grid';
+import { cellForColumn, glideCellFor, modeOptions, isValidRef } from '@/components/DatabasePanel/EntityGrid';
 import type { GridColumn } from '@/lib/database/types';
 
 const modes = [
@@ -35,5 +36,35 @@ describe('EntityGrid helpers', () => {
   it('isValidRef flags whether a ref exists among feature ids', () => {
     expect(isValidRef('f1', ['f1', 'f2'])).toBe(true);
     expect(isValidRef('nope', ['f1', 'f2'])).toBe(false);
+  });
+
+  it('glideCellFor renders a mode column (via cellForColumn) as an editable Text cell', () => {
+    const col: GridColumn = { id: 'today', title: 'today', kind: 'mode' };
+    const desc = cellForColumn(col, 'Auto', modes, []);
+    const glideCell = glideCellFor(desc);
+    // The grid's render path uses a built-in Text cell (Glide 6.0.3 ships no
+    // custom dropdown-cell renderer), so mode/ref columns must render/edit
+    // as text, not as a GridCellKind.Custom cell.
+    expect(glideCell.kind).toBe(GridCellKind.Text);
+    expect(glideCell.data).toBe('Auto');
+    expect(glideCell.displayData).toBe('Auto');
+    expect(glideCell.allowOverlay).toBe(true);
+    expect(glideCell.readonly).toBe(false);
+  });
+
+  it('glideCellFor renders a ref column (via cellForColumn) as an editable Text cell', () => {
+    const col: GridColumn = { id: 'ref', title: 'feature', kind: 'ref', refTable: 'features' };
+    const desc = cellForColumn(col, 'f1', modes, ['f1', 'f2']);
+    const glideCell = glideCellFor(desc);
+    expect(glideCell.kind).toBe(GridCellKind.Text);
+    expect(glideCell.data).toBe('f1');
+  });
+
+  it('glideCellFor marks a readonly column as non-overlaying', () => {
+    const col: GridColumn = { id: 'today', title: 'today', kind: 'mode', readOnly: true };
+    const desc = cellForColumn(col, 'Auto', modes, []);
+    const glideCell = glideCellFor(desc);
+    expect(glideCell.allowOverlay).toBe(false);
+    expect(glideCell.readonly).toBe(true);
   });
 });

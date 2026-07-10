@@ -4,6 +4,7 @@ import {
   GridCellKind,
   type GridCell,
   type GridColumn as GlideColumn,
+  type GridSelection,
   type Item,
   type EditableGridCell,
 } from '@glideapps/glide-data-grid';
@@ -42,6 +43,30 @@ export function cellForColumn(col: GridColumn, value: string, modes: Mode[], fea
   return { kind: 'text', value, readonly: !!col.readOnly };
 }
 
+/**
+ * Pure: maps a CellDesc to a Glide Text cell. Glide 6.0.3's core ships no
+ * built-in dropdown cell renderer/editor, so 'dropdown' cells are rendered
+ * as editable text too — the 'kind' distinction on CellDesc is preserved
+ * for a future richer editor, but the render path always uses Text so it
+ * actually works in the browser.
+ */
+// eslint-disable-next-line react-refresh/only-export-components -- pure helper, exported for unit tests (see brief)
+export function glideCellFor(desc: CellDesc): {
+  kind: typeof GridCellKind.Text;
+  data: string;
+  displayData: string;
+  allowOverlay: boolean;
+  readonly: boolean;
+} {
+  return {
+    kind: GridCellKind.Text,
+    data: desc.value,
+    displayData: desc.value,
+    allowOverlay: !desc.readonly,
+    readonly: !!desc.readonly,
+  };
+}
+
 export interface EntityGridProps {
   grid: GridRows;
   modes: Mode[];
@@ -65,23 +90,11 @@ export function EntityGrid({ grid, modes, featureIds = [], onEdit, onAdd, onDele
     const row = grid.rows[rowIdx];
     const raw = col && row ? row[col.id] : '';
     const value = raw == null ? '' : String(raw);
-    if (col && (col.kind === 'mode' || col.kind === 'ref')) {
-      const allowed = col.kind === 'mode' ? modeOptions(modes) : featureIds;
-      return {
-        kind: GridCellKind.Custom as never, // dropdown via allowedValues in overlay editor
-        allowCustomValue: col.kind === 'mode',
-        readonly: !!col.readOnly,
-        copyData: value,
-        data: { kind: 'dropdown-cell', value, allowedValues: allowed },
-      } as unknown as GridCell;
+    if (!col) {
+      return { kind: GridCellKind.Text, data: value, displayData: value, allowOverlay: true, readonly: false };
     }
-    return {
-      kind: GridCellKind.Text,
-      data: value,
-      displayData: value,
-      allowOverlay: !col?.readOnly,
-      readonly: !!col?.readOnly,
-    };
+    const desc = cellForColumn(col, value, modes, featureIds);
+    return glideCellFor(desc);
   }, [grid, modes, featureIds]);
 
   const onCellEdited = useCallback((cell: Item, newVal: EditableGridCell): void => {
@@ -94,7 +107,7 @@ export function EntityGrid({ grid, modes, featureIds = [], onEdit, onAdd, onDele
     onEdit(id, col.id, v);
   }, [grid, onEdit]);
 
-  const onRowSelected = useCallback((sel: { current?: { cell: Item } }) => {
+  const onRowSelected = useCallback((sel: GridSelection) => {
     const rowIdx = sel.current?.cell?.[1];
     if (rowIdx == null) return;
     const row = grid.rows[rowIdx];
@@ -115,7 +128,7 @@ export function EntityGrid({ grid, modes, featureIds = [], onEdit, onAdd, onDele
           rows={grid.rows.length}
           getCellContent={getCellContent}
           onCellEdited={onCellEdited}
-          onGridSelectionChange={onRowSelected as never}
+          onGridSelectionChange={onRowSelected}
           rowMarkers="number"
           smoothScrollX
           smoothScrollY
