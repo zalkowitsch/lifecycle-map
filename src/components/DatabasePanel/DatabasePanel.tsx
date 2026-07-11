@@ -47,6 +47,15 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
   const featureIds = registry?.ids('features') ?? [];
   const grid = deriveEntityRows(data, registry, tab);
 
+  const counts: Record<Entity, number> = {
+    lanes: data.lanes.length,
+    phases: data.phases.length,
+    features: featureIds.length,
+    nodes: data.nodes.length,
+  };
+  // Features live in a separate datatable; if none was loaded there's nothing to edit.
+  const featuresMissing = tab === 'features' && sourceIndexForEntity(rawSources, 'features') < 0;
+
   const commitEntity = (edit: EntityEdit): void => {
     const idx = sourceIndexForEntity(rawSources, tab);
     const src = rawSources[idx];
@@ -77,13 +86,21 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
             key={t.id}
             className={`${styles.tab} ${tab === t.id ? styles.tabActive : ''}`}
             onClick={() => setTab(t.id)}
-          >{t.label}</button>
+          >
+            {t.label}
+            <span className={styles.tabCount}>{counts[t.id]}</span>
+          </button>
         ))}
         <button className={styles.back} onClick={onClose}>← back to map</button>
       </div>
 
       <div className={styles.body}>
-        {tab === 'nodes' ? (
+        {featuresMissing ? (
+          <div className={styles.empty}>
+            No features datatable loaded. Drop the map together with its<br />
+            <code>features.json</code> datatable to view and edit features here.
+          </div>
+        ) : tab === 'nodes' ? (
           <div className={styles.split}>
             <div className={styles.splitLeft}>
               <EntityGrid
@@ -96,23 +113,25 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
                 onSelectRow={setSelectedNodeId}
               />
             </div>
-            {selectedNode && <div className={styles.marker}>&lt;</div>}
+            {selectedNode && <div className={styles.marker} aria-hidden="true">&lt;</div>}
             <div className={styles.splitRight}>
               {selectedNode
                 ? <NestedTable node={selectedNode} field={nestedField} featureIds={featureIds}
                     onFieldChange={setNestedField} onEdit={commitNodeNested} />
-                : <div style={{ padding: 12, color: '#6b7280' }}>Select a node row to edit its nested fields.</div>}
+                : <div className={styles.placeholder}>Select a node on the left to edit its features and nested fields.</div>}
             </div>
           </div>
         ) : (
-          <EntityGrid
-            grid={grid}
-            modes={modes}
-            featureIds={tab === 'features' ? featureIds : undefined}
-            onEdit={(id, field, value) => commitEntity({ op: 'update', id, field, value })}
-            onAdd={() => commitEntity({ op: 'add', id: `${tab}-${Date.now()}` })}
-            onDelete={(id) => commitEntity({ op: 'delete', id })}
-          />
+          <div className={styles.gridWrap}>
+            <EntityGrid
+              grid={grid}
+              modes={modes}
+              featureIds={tab === 'features' ? featureIds : undefined}
+              onEdit={(id, field, value) => commitEntity({ op: 'update', id, field, value })}
+              onAdd={() => commitEntity({ op: 'add', id: `${tab}-${Date.now()}` })}
+              onDelete={(id) => commitEntity({ op: 'delete', id })}
+            />
+          </div>
         )}
       </div>
     </div>
