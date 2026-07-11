@@ -2777,6 +2777,30 @@ echo '{"lanes":[...]}' | gzip -9 | base64 | tr -d '\\n' | tr '+/' '-_' | tr -d '
       <p>Customizing a <code>nodeType</code> changes <strong>what content</strong> the drawer shows. It does not touch <strong>visual styling</strong> — fonts, colors, light/dark. Those come from the visual theme, switched in Settings or via <code>?theme=&amp;mode=</code> in the URL. The two are independent: any layout renders correctly under any theme. See <a href="?lang=en#themes">Themes</a> for the built-in themes and dark mode, and <a href="?lang=en#primitives">Drawer primitives</a> for the exact prop names of all 10 primitives.</p>
     ` },
 
+    { id: 'database', label: 'Database editor', render: () => `
+      <h2>Database editor</h2>
+      <p>Every field you can set in JSON has a spreadsheet-style editor too. Click the <strong>DB icon</strong> in the header to open a full-screen Database editor over the current map — no separate tool, no round-trip through a text editor.</p>
+
+      <h3>Four tabs, one grid each</h3>
+      <p>The editor shows one tab per entity, each an editable grid:</p>
+      <ul>
+        <li><strong>Personas</strong> — the lanes.</li>
+        <li><strong>Steps</strong> — the phases.</li>
+        <li><strong>Features</strong> — the datatable (see <a href="?lang=en#datatables">Datatables</a>) backing the map, if one is loaded.</li>
+        <li><strong>Nodes</strong> — the cards themselves, one row per node.</li>
+      </ul>
+      <p>Click any cell to edit it in place. Use <strong>+ Add</strong> to append a row, or select rows and use <strong>Delete selected</strong> to remove them. Every change applies to the map <strong>live</strong> — there's no separate save step. Close the editor with <strong>← back to map</strong> to return to the rendered view and see the result.</p>
+
+      <h3>Editing nodes: a split view</h3>
+      <p>The Nodes tab isn't a flat grid — it's a split view. Select a node on the left, and its nested fields open on the right for editing, including its referenced features through a picker that only offers ids that already exist in the features datatable. This keeps node edits from drifting into inventing new, unresolvable references by hand.</p>
+
+      <h3>Feature edits are relational</h3>
+      <p>Editing a row on the Features tab mutates the underlying features datatable directly, and the change is immediately reflected in every node that references that feature — there is exactly one copy of the data, no matter how many nodes point at it. To edit both the map and its relational data together, drop the lifecycle map file and its <code>.datatable.json</code> / <code>.datatable.csv</code> files onto the viewer at the same time (see <a href="?lang=en#datatables">Datatables</a>); the editor then knows which file actually backs each tab.</p>
+
+      <h3>Localized fields and read-only ids</h3>
+      <p>Fields that carry multiple languages (<code>{ en, pt, es, ... }</code>) edit only the <strong>active</strong> language — switch language first, then edit, and the other languages' text is preserved untouched. <code>id</code> columns are always read-only: ids are the join key between nodes, lanes, phases, and datatable rows, so the editor won't let you edit one into a dangling reference by accident.</p>
+    ` },
+
     { id: 'api', label: 'API reference', render: () => `
       <h1>API reference <em>— the data model</em></h1>
       <p class="lead">A lifecycle map is one JSON (or YAML) document. This is the complete contract: every top-level key, the node-type layout engine, the 10 drawer primitives, and the binding grammar that wires node data into rendered drawers.</p>
@@ -3193,6 +3217,66 @@ nodes:
       <p>Inline and catalog references can mix in the same node's <code>modules</code> array.</p>
 
       <p>See <a href="../?src=../examples/with-modules/hiring-pipeline.json">the with-modules example</a>.</p>
+    ` },
+
+    { id: 'datatables', label: 'Datatables', render: () => `
+      <h2>Datatables <em>— relational references</em></h2>
+      <p>External refs (above) solve one problem: reuse a module by ID from a catalog living in the same file. Datatables generalize that idea into a small relational model. Instead of embedding a shared entity — a feature, a person, a module — inline on every node that mentions it, you keep the entity in a separate datatable file and reference it by id. The viewer joins the map and its datatables together when it loads, so the drawer still sees a fully resolved object.</p>
+
+      <h3>Declaring a datatable and its refs</h3>
+      <p>Two <code>meta</code> keys opt a node type into relational lookups: <code>meta.datatables</code> registers each table by name, and <code>meta.nodeTypes.&lt;type&gt;.contextRefs</code> declares which <code>context</code> fields on that node type are references, and which table a bare id resolves against.</p>
+      <pre><code>{
+  "meta": {
+    "nodeTypes": {
+      "stage": {
+        "layout": [ /* … primitives … */ ],
+        "contextRefs": { "modules": { "ref": "features" } }
+      }
+    },
+    "datatables": {
+      "features": { "schema": { "owner": { "ref": "people" } } },
+      "people":   { "src": "people.datatable.csv" }
+    }
+  },
+  "nodes": [
+    { "id": "n1", "type": "stage", "context": { "modules": ["feat-a", "feat-b"] } }
+  ]
+}</code></pre>
+      <p>Only fields listed in <code>contextRefs</code> are ever treated as references — every other <code>context</code> field is left as literal data, even if it happens to look like an id.</p>
+
+      <h3>JSON datatable shape</h3>
+      <pre><code>// features.datatable.json
+{
+  "_meta": { "name": "features" },
+  "_schema": { "owner": { "ref": "people" } },
+  "rows": {
+    "feat-a": { "name": "Alpha feature", "tomorrow": "Auto", "owner": "pat" },
+    "feat-b": { "name": "Beta feature", "tomorrow": "Auto" }
+  }
+}</code></pre>
+      <p><code>_meta.name</code> is the table's registered name (falls back to the derived filename when omitted). <code>_schema</code> declares foreign-key columns as <code>{ column: { ref: tableName } }</code> — above, every row's <code>owner</code> resolves into <code>people</code>. <code>rows</code> is an object keyed by row id; legacy files may use <code>features</code> or <code>modules</code> as the rows key instead (both accepted, for compatibility with older module-catalog files). Any row entry that is a plain <strong>string</strong> rather than an object — e.g. a <code>"_comment_1": "…"</code> marker — is silently dropped, so you can leave comments in the JSON without them being parsed as rows.</p>
+
+      <h3>CSV datatable shape</h3>
+      <pre><code>id,name,role,tags
+pat,Pat Owner,Engineer,ops;oncall</code></pre>
+      <p>The first column is always <code>id</code>; every other column becomes a field on the row. CSV can't embed a schema, so foreign-key/list columns must be declared in <code>meta.datatables.&lt;name&gt;.schema</code> on the map itself. A cell splits on <code>;</code> into a list only when its column is schema-declared — above, <code>tags</code> needs a <code>meta.datatables.people.schema.tags</code> entry for <code>"ops;oncall"</code> to become <code>["ops", "oncall"]</code>; without it, the cell stays the literal string.</p>
+
+      <h3>The <code>.datatable</code> filename infix</h3>
+      <p>When multiple files load together, each table's registered name is derived from its filename: strip the extension, then strip a trailing <code>.datatable</code> infix. <code>features.datatable.json</code>, <code>features.json</code>, and a JSON file whose <code>_meta.name</code> is <code>"features"</code> all register as the same table, <code>features</code>. The infix is a naming convention, not a requirement — it just lets you tell datatable files apart from regular map files at a glance.</p>
+
+      <h3>Hybrid reference forms</h3>
+      <p>Within a field declared in <code>contextRefs</code>, a value may take either form — and the two can mix inside the same array:</p>
+      <ul>
+        <li><strong>Bare string id</strong> — resolved against the table named in <code>contextRefs</code>. <code>"modules": ["feat-a", "feat-b"]</code> resolves each id into <code>features</code>.</li>
+        <li><strong>Explicit <code>{ "table": "...", "id": "..." }</code> object</strong> — resolves into <code>table</code> directly, overriding whatever table <code>contextRefs</code> names. Use this to point at a different table than the field's default: <code>{ "table": "archive", "id": "feat-z" }</code>.</li>
+      </ul>
+      <p>Plain text is never a ref — a field with no <code>contextRefs</code> entry is left untouched by resolution no matter what its value looks like.</p>
+
+      <h3>Loading a bundle</h3>
+      <p>Drag-and-drop accepts multiple files at once: drop the map together with its <code>.datatable.json</code> / <code>.datatable.csv</code> files in one gesture and the viewer assembles them into a bundle before rendering. A broken reference — a <code>table:id</code> that doesn't exist in the registry — degrades to an unresolved marker in the drawer; it never crashes the viewer. Resolution also recurses (a resolved row's own foreign-key columns get resolved too), guarded by a default max depth of <strong>3</strong> and a cycle check, so a bad chain of references logs a warning and stops instead of looping forever.</p>
+
+      <h3>Backward compatible</h3>
+      <p>Datatables are fully additive. A node type with no <code>contextRefs</code> entry is never touched by resolution — inline maps that embed all their data directly keep working exactly as before. Relational datatables are opt-in per node type and per field.</p>
     ` },
 
     { id: 'themes', label: 'Themes', render: () => `

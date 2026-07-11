@@ -2718,6 +2718,30 @@ https://zalkowitsch.github.io/lifecycle-map/#multi-language</code></pre>
       <p>Personalizar un <code>nodeType</code> cambia <strong>qué contenido</strong> muestra el drawer. No toca el <strong>estilo visual</strong> — fuentes, colores, claro/oscuro. Eso viene del tema visual, cambiado en Settings o vía <code>?theme=&amp;mode=</code> en la URL. Los dos son independientes: cualquier layout se renderiza correctamente bajo cualquier tema. Ver <a href="?lang=es#themes">Temas</a> para los temas integrados y el modo oscuro, y <a href="?lang=es#primitives">Primitivas del drawer</a> para los nombres exactos de las props de las 10 primitivas.</p>
     ` },
 
+    { id: 'database', label: 'Editor Database', render: () => `
+      <h2>Editor Database</h2>
+      <p>Cada campo que puedes definir en JSON también tiene un editor estilo hoja de cálculo. Haz clic en el <strong>ícono DB</strong> del header para abrir un editor Database a pantalla completa sobre el mapa actual — sin herramienta separada, sin ida y vuelta por un editor de texto.</p>
+
+      <h3>Cuatro pestañas, un grid cada una</h3>
+      <p>El editor muestra una pestaña por entidad, cada una un grid editable:</p>
+      <ul>
+        <li><strong>Personas</strong> — las lanes.</li>
+        <li><strong>Steps</strong> — las phases.</li>
+        <li><strong>Features</strong> — el datatable (ver <a href="?lang=es#datatables">Datatables</a>) que sostiene el mapa, si hay uno cargado.</li>
+        <li><strong>Nodes</strong> — las cards mismas, una row por node.</li>
+      </ul>
+      <p>Haz clic en cualquier celda para editarla en el lugar. Usa <strong>+ Add</strong> para agregar una row, o selecciona rows y usa <strong>Delete selected</strong> para eliminarlas. Cada cambio se aplica al mapa <strong>en vivo</strong> — no hay un paso de guardado separado. Cierra el editor con <strong>← back to map</strong> para volver a la vista renderizada y ver el resultado.</p>
+
+      <h3>Editando nodes: una vista dividida</h3>
+      <p>La pestaña Nodes no es un grid plano — es una vista dividida. Selecciona un node a la izquierda, y sus campos anidados se abren a la derecha para editar, incluyendo sus features referenciadas mediante un selector que solo ofrece ids que ya existen en el datatable de features. Esto evita que la edición de un node termine inventando referencias nuevas y no resolubles a mano.</p>
+
+      <h3>Las ediciones de feature son relacionales</h3>
+      <p>Editar una row en la pestaña Features muta directamente el datatable de features subyacente, y el cambio se refleja de inmediato en cada node que referencia esa feature — hay exactamente una copia del dato, sin importar cuántos nodes apunten hacia él. Para editar el mapa y sus datos relacionales juntos, suelta el archivo del lifecycle map y sus archivos <code>.datatable.json</code> / <code>.datatable.csv</code> en el viewer al mismo tiempo (ver <a href="?lang=es#datatables">Datatables</a>); el editor entonces sabe qué archivo respalda cada pestaña en realidad.</p>
+
+      <h3>Campos localizados e ids de solo lectura</h3>
+      <p>Los campos que llevan varios idiomas (<code>{ en, pt, es, ... }</code>) editan solo el idioma <strong>activo</strong> — cambia el idioma primero, luego edita, y el texto de los otros idiomas queda preservado intacto. Las columnas <code>id</code> siempre son de solo lectura: los ids son la clave de unión entre nodes, lanes, phases y rows de datatable, así que el editor no te deja convertir una en una referencia rota por accidente.</p>
+    ` },
+
     { id: 'api', label: 'Referencia de API', render: () => `
       <h1>Referencia de API <em>— el modelo de datos</em></h1>
       <p class="lead">Un mapa de lifecycle es un documento JSON (o YAML). Este es el contrato completo: cada key de nivel superior, el motor de layout de node-type, las 10 primitivas del drawer y la gramática de binding que conecta los datos del node con los drawers renderizados.</p>
@@ -3035,6 +3059,66 @@ nodes:
   },
   "nodes": [{ "modules": ["shared:bulk-edit"] }]
 }</code></pre>
+    ` },
+
+    { id: 'datatables', label: 'Datatables', render: () => `
+      <h2>Datatables <em>— referencias relacionales</em></h2>
+      <p>Las refs externas (arriba) resuelven un problema: reusar un module por ID desde un catálogo que vive en el mismo archivo. Los datatables generalizan esa idea en un pequeño modelo relacional. En lugar de embeber una entidad compartida — una feature, una persona, un module — inline en cada node que la menciona, mantienes la entidad en un archivo de datatable separado y la referencias por id. El viewer une el mapa y sus datatables al cargar, así que el drawer sigue viendo un objeto completamente resuelto.</p>
+
+      <h3>Declarando un datatable y sus refs</h3>
+      <p>Dos claves de <code>meta</code> habilitan lookups relacionales en un node type: <code>meta.datatables</code> registra cada tabla por nombre, y <code>meta.nodeTypes.&lt;type&gt;.contextRefs</code> declara qué campos de <code>context</code> de ese node type son referencias, y contra qué tabla se resuelve un id simple.</p>
+      <pre><code>{
+  "meta": {
+    "nodeTypes": {
+      "stage": {
+        "layout": [ /* … primitivas … */ ],
+        "contextRefs": { "modules": { "ref": "features" } }
+      }
+    },
+    "datatables": {
+      "features": { "schema": { "owner": { "ref": "people" } } },
+      "people":   { "src": "people.datatable.csv" }
+    }
+  },
+  "nodes": [
+    { "id": "n1", "type": "stage", "context": { "modules": ["feat-a", "feat-b"] } }
+  ]
+}</code></pre>
+      <p>Solo los campos listados en <code>contextRefs</code> se tratan como referencias — todo otro campo de <code>context</code> queda como dato literal, aunque parezca un id.</p>
+
+      <h3>Formato de datatable en JSON</h3>
+      <pre><code>// features.datatable.json
+{
+  "_meta": { "name": "features" },
+  "_schema": { "owner": { "ref": "people" } },
+  "rows": {
+    "feat-a": { "name": "Alpha feature", "tomorrow": "Auto", "owner": "pat" },
+    "feat-b": { "name": "Beta feature", "tomorrow": "Auto" }
+  }
+}</code></pre>
+      <p><code>_meta.name</code> es el nombre registrado de la tabla (recae en el nombre derivado del archivo cuando se omite). <code>_schema</code> declara columnas de foreign-key como <code>{ column: { ref: tableName } }</code> — arriba, el <code>owner</code> de cada row resuelve hacia <code>people</code>. <code>rows</code> es un objeto indexado por id de row; los archivos legacy pueden usar <code>features</code> o <code>modules</code> como la clave de rows en su lugar (ambas aceptadas, por compatibilidad con archivos de catálogo de modules más antiguos). Cualquier entrada de row que sea un <strong>string</strong> simple en vez de un objeto — por ejemplo un marcador <code>"_comment_1": "…"</code> — se descarta silenciosamente, así puedes dejar comentarios en el JSON sin que se interpreten como rows.</p>
+
+      <h3>Formato de datatable en CSV</h3>
+      <pre><code>id,name,role,tags
+pat,Pat Owner,Engineer,ops;oncall</code></pre>
+      <p>La primera columna siempre es <code>id</code>; cada otra columna se vuelve un campo de la row. CSV no puede embeber un schema, así que las columnas de foreign-key/lista deben declararse en <code>meta.datatables.&lt;name&gt;.schema</code> en el propio mapa. Una celda se divide en lista por <code>;</code> solo cuando su columna está declarada en el schema — arriba, <code>tags</code> necesita una entrada <code>meta.datatables.people.schema.tags</code> para que <code>"ops;oncall"</code> se vuelva <code>["ops", "oncall"]</code>; sin ella, la celda queda como el string literal.</p>
+
+      <h3>El infijo de nombre de archivo <code>.datatable</code></h3>
+      <p>Cuando varios archivos se cargan juntos, el nombre registrado de cada tabla se deriva de su nombre de archivo: se quita la extensión, luego se quita un infijo <code>.datatable</code> al final. <code>features.datatable.json</code>, <code>features.json</code>, y un archivo JSON cuyo <code>_meta.name</code> sea <code>"features"</code> todos se registran como la misma tabla, <code>features</code>. El infijo es una convención de nombres, no un requisito — solo ayuda a distinguir archivos de datatable de archivos de mapa normales a simple vista.</p>
+
+      <h3>Formas híbridas de referencia</h3>
+      <p>Dentro de un campo declarado en <code>contextRefs</code>, un valor puede tomar cualquiera de las dos formas — y ambas pueden mezclarse dentro del mismo array:</p>
+      <ul>
+        <li><strong>Id como string simple</strong> — resuelto contra la tabla nombrada en <code>contextRefs</code>. <code>"modules": ["feat-a", "feat-b"]</code> resuelve cada id hacia <code>features</code>.</li>
+        <li><strong>Objeto explícito <code>{ "table": "...", "id": "..." }</code></strong> — resuelve directo hacia <code>table</code>, ignorando la tabla que <code>contextRefs</code> nombra. Úsalo para apuntar a una tabla distinta a la default del campo: <code>{ "table": "archive", "id": "feat-z" }</code>.</li>
+      </ul>
+      <p>El texto plano nunca es un ref — un campo sin entrada en <code>contextRefs</code> queda intacto por la resolución, sin importar qué aspecto tenga su valor.</p>
+
+      <h3>Cargando un bundle</h3>
+      <p>El drag-and-drop acepta múltiples archivos a la vez: suelta el mapa junto con sus archivos <code>.datatable.json</code> / <code>.datatable.csv</code> en un solo gesto, y el viewer los ensambla en un bundle antes de renderizar. Una referencia rota — un <code>table:id</code> que no existe en el registro — degrada a un marcador no resuelto en el drawer; nunca hace crashear al viewer. La resolución también es recursiva (las columnas de foreign-key de la propia row resuelta también se resuelven), protegida por un límite de profundidad default de <strong>3</strong> y una verificación de ciclos, así que una cadena de referencias mala registra una advertencia y se detiene en vez de entrar en bucle para siempre.</p>
+
+      <h3>Compatible con lo anterior</h3>
+      <p>Los datatables son totalmente aditivos. Un node type sin entrada en <code>contextRefs</code> nunca es tocado por la resolución — los mapas inline que embeben todos sus datos directamente siguen funcionando exactamente como antes. Los datatables relacionales son opt-in por node type y por campo.</p>
     ` },
 
     { id: 'themes', label: 'Temas', render: () => `
