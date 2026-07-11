@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DatabasePanel, sourceIndexForEntity } from '@/components/DatabasePanel';
@@ -44,6 +45,51 @@ describe('DatabasePanel', () => {
     render(<DatabasePanel open data={data} rawSources={sources} onClose={onClose} onCommit={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: /back to map/i }));
     expect(onClose).toHaveBeenCalled();
+  });
+});
+
+describe('DatabasePanel undo history survives live commits', () => {
+  const histData = {
+    meta: { modes: [] },
+    lanes: [{ id: 'l', label: 'L' }], phases: [{ id: 'p', label: 'P' }],
+    nodes: [{ id: 'n1', lane: 'l', phase: 'p', title: 'N', states: {} }],
+    edges: [], _modeMap: {}, _moduleCatalog: {},
+  } as unknown as NormalizedMap;
+
+  // Mirrors useViewerState.commitSource: every commit replaces the rawSources
+  // ARRAY IDENTITY (same names/count, new text). The panel must NOT wipe its
+  // undo history on such an edit — otherwise Cmd+Z can never revert a live edit.
+  function Harness(): JSX.Element {
+    const [srcs, setSrcs] = useState<RawSource[]>([
+      { name: 'map.json', text: JSON.stringify({ lanes: [{ id: 'l', label: 'L' }] }), lang: 'json' },
+    ]);
+    return (
+      <DatabasePanel
+        open
+        data={histData}
+        rawSources={srcs}
+        onClose={vi.fn()}
+        onCommit={(index, newText) => {
+          setSrcs((prev) => {
+            const next = prev.slice(); // new array identity, exactly like commitSource
+            const t = next[index];
+            if (t) next[index] = { ...t, text: newText };
+            return next;
+          });
+        }}
+      />
+    );
+  }
+
+  it('keeps Undo enabled after an edit commits (rawSources identity change must not reset history)', () => {
+    render(<Harness />);
+    const undoBtn = screen.getByRole('button', { name: /^undo$/i });
+    expect(undoBtn).toBeDisabled();
+    // "+ Add row" routes through commitEntity → commitWithHistory → record + onCommit.
+    fireEvent.click(screen.getByRole('button', { name: /add row/i }));
+    // After the commit re-renders with a new rawSources array, Undo must still be
+    // available — the just-recorded history entry must survive.
+    expect(screen.getByRole('button', { name: /^undo$/i })).toBeEnabled();
   });
 });
 

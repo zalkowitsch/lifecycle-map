@@ -214,17 +214,13 @@ function AppShell() {
   }, []);
 
   const handleCodeEdit = useCallback((idx: number, newText: string) => {
-    if (idx !== 0) return;
-    const existing = viewer.state.rawSources[0];
-    const existingSource = viewer.state.source;
-    if (!existing) return;
-    // Re-parse + re-render, preserving source identity (don't switch to 'paste').
-    viewer.loadFromText(
-      newText,
-      existing.name,
-      existingSource ?? 'paste',
-      viewer.state.slug ?? undefined,
-    ).catch(() => { /* parseSource already surfaces errors via state.error */ });
+    // Commit the edited tab in place. `commitSource` preserves the FULL source
+    // bundle (map + datatables) and re-resolves refs, so editing/Formatting the
+    // map source no longer discards the loaded datatables — unlike loadFromText,
+    // which replaces rawSources with a single entry. This also lets datatable
+    // tabs (idx > 0) be edited from the Code drawer.
+    if (!viewer.state.rawSources[idx]) return;
+    viewer.commitSource(idx, newText);
   }, [viewer]);
 
   const getJsonText = useCallback((): string => {

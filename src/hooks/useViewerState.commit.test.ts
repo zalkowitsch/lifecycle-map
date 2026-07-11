@@ -43,6 +43,30 @@ describe('multi-source rawSources + commitSource', () => {
     });
   });
 
+  it('commitSource on the MAP source (index 0) keeps the datatable and re-resolves refs', async () => {
+    // Regression: the Code drawer used to route map edits through loadFromText,
+    // which replaced rawSources with a single entry — silently dropping the
+    // loaded datatable. Formatting/editing the map must preserve the bundle.
+    const { result } = renderHook(() => useViewerState());
+    await act(async () => { await result.current.handleFileDrop(dropFiles(mapText, featText)); });
+    await waitFor(() => expect(result.current.state.data).toBeTruthy());
+    expect(result.current.state.rawSources.length).toBe(2);
+
+    // Pretty-print (Format) the map source and commit at index 0.
+    const prettyMap = JSON.stringify(JSON.parse(mapText), null, 2);
+    await act(async () => { result.current.commitSource(0, prettyMap); });
+
+    await waitFor(() => {
+      // Both sources survive; the map text is now the formatted (multi-line) one.
+      expect(result.current.state.rawSources.length).toBe(2);
+      expect(result.current.state.rawSources[0]!.text).toContain('\n  "meta"');
+      expect(result.current.state.rawSources.some((s) => s.name === 'features.json')).toBe(true);
+      // The feature ref still resolves through the retained datatable.
+      const mods = result.current.state.data!.nodes[0].context!.modules as any[];
+      expect(mods[0].name).toBe('Orig');
+    });
+  });
+
   it('commitSource on parse failure keeps last-good data and surfaces an error', async () => {
     const { result } = renderHook(() => useViewerState());
     await act(async () => { await result.current.handleFileDrop(dropFiles(mapText, featText)); });

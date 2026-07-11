@@ -68,9 +68,15 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
   const getSourceText = (i: number): string | undefined => rawSources[i]?.text;
   const history = useSourceHistory(onCommit, getSourceText);
 
-  // Reset history when the panel opens or the source set changes.
+  // Reset history when the panel opens or a genuinely NEW document loads.
+  // `commitSource` replaces the `rawSources` ARRAY IDENTITY on every live edit
+  // (same files, new text), so keying the reset on the array reference would
+  // wipe the just-recorded undo entry after each edit — making Cmd+Z inert.
+  // Key instead on a stable document signature (file names + count): live edits
+  // leave it unchanged, while loading a new map/bundle changes it.
+  const sourcesKey = rawSources.map((s) => s.name).join('|');
   // eslint-disable-next-line react-hooks/exhaustive-deps -- `history` is stable (from useSourceHistory) and intentionally excluded
-  useEffect(() => { history.reset(); }, [open, rawSources]);
+  useEffect(() => { history.reset(); }, [open, sourcesKey]);
 
   useEffect(() => {
     if (!open) return;
