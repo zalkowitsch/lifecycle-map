@@ -7,6 +7,7 @@ import {
   isValidRef,
   selectedRowIndex,
   canDeleteSelected,
+  pasteEditsFromClipboard,
 } from '@/components/DatabasePanel/EntityGrid';
 import type { GridColumn, GridRows } from '@/lib/database/types';
 
@@ -105,5 +106,19 @@ describe('canDeleteSelected', () => {
 
   it('is true with a selected row id', () => {
     expect(canDeleteSelected('row-1')).toBe(true);
+  });
+});
+
+describe('EntityGrid paste helper', () => {
+  const grid: GridRows = {
+    columns: [
+      { id: 'id', title: 'id', kind: 'text', readOnly: true },
+      { id: 'label', title: 'label', kind: 'text' },
+    ],
+    rows: [{ id: 'a', label: 'A' }],
+  };
+  it('builds batch edits from a paste at a target', () => {
+    const edits = pasteEditsFromClipboard(grid, [1, 0], [['X']]);
+    expect(edits).toEqual([{ op: 'update', id: 'a', field: 'label', value: 'X' }]);
   });
 });

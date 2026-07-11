@@ -10,7 +10,8 @@ import {
   type EditableGridCell,
 } from '@glideapps/glide-data-grid';
 import '@glideapps/glide-data-grid/dist/index.css';
-import type { GridColumn, GridRows } from '@/lib/database/types';
+import { pasteEdits } from '@/lib/database/applyPaste';
+import type { GridColumn, GridRows, EntityEdit } from '@/lib/database/types';
 import type { Mode } from '@/types/lifecycle-map';
 import { useGlideTheme } from './useGlideTheme';
 import styles from './DatabasePanel.module.css';
@@ -89,11 +90,22 @@ export function glideCellFor(desc: CellDesc): {
   };
 }
 
+/** Pure: maps a clipboard paste at `target` to structured entity edits. */
+// eslint-disable-next-line react-refresh/only-export-components -- pure helper, exported for unit tests (see brief)
+export function pasteEditsFromClipboard(
+  grid: GridRows,
+  target: [number, number],
+  values: readonly (readonly string[])[],
+): EntityEdit[] {
+  return pasteEdits(grid, target, values);
+}
+
 export interface EntityGridProps {
   grid: GridRows;
   modes: Mode[];
   featureIds?: string[];
   onEdit: (rowId: string, field: string, value: string) => void;
+  onEditBatch?: (edits: EntityEdit[]) => void;
   onAdd: () => void;
   onDelete: (rowId: string) => void;
   selectedRowId?: string;
@@ -111,6 +123,7 @@ export function EntityGrid({
   modes,
   featureIds = [],
   onEdit,
+  onEditBatch,
   onAdd,
   onDelete,
   selectedRowId,
@@ -172,6 +185,15 @@ export function EntityGrid({
     onEdit(id, col.id, v);
   }, [grid, onEdit]);
 
+  const onPaste = useCallback((target: Item, values: readonly (readonly string[])[]): boolean => {
+    const edits = pasteEdits(grid, target as [number, number], values);
+    if (edits.length > 0) {
+      if (onEditBatch) onEditBatch(edits);
+      else edits.forEach((e) => { if (e.op === 'update') onEdit(e.id, e.field, String(e.value)); });
+    }
+    return false; // we applied them; don't let Glide also apply
+  }, [grid, onEditBatch, onEdit]);
+
   const onSelectionChange = useCallback((sel: GridSelection) => {
     setSelection(sel);
     // Notify the parent which row is active (drives the nodes-split right pane).
@@ -216,6 +238,8 @@ export function EntityGrid({
           rows={grid.rows.length}
           getCellContent={getCellContent}
           onCellEdited={onCellEdited}
+          getCellsForSelection={true}
+          onPaste={onPaste}
           gridSelection={selection}
           onGridSelectionChange={onSelectionChange}
           rowMarkers="number"
