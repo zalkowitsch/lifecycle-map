@@ -15,6 +15,12 @@ import type { Mode } from '@/types/lifecycle-map';
 import { useGlideTheme } from './useGlideTheme';
 import styles from './DatabasePanel.module.css';
 
+/** Fixed grid geometry, shared so the nodes-split `<` marker can align to a row. */
+export const GRID_HEADER_H = 36;
+export const GRID_ROW_H = 34;
+/** Height of the toolbar row above the grid (Add/Delete + note). */
+export const GRID_TOOLBAR_H = 41;
+
 /** Pure: mode ids for a dropdown cell. */
 // eslint-disable-next-line react-refresh/only-export-components -- pure helper, exported for unit tests (see brief)
 export function modeOptions(modes: Mode[]): string[] {
@@ -94,6 +100,12 @@ export interface EntityGridProps {
   onSelectRow?: (rowId: string) => void;
 }
 
+const EMPTY_SELECTION: GridSelection = {
+  current: undefined,
+  columns: CompactSelection.empty(),
+  rows: CompactSelection.empty(),
+};
+
 export function EntityGrid({
   grid,
   modes,
@@ -104,16 +116,36 @@ export function EntityGrid({
   selectedRowId,
   onSelectRow,
 }: EntityGridProps) {
-  const [internalSelectedRowId, setInternalSelectedRowId] = useState<string | undefined>(selectedRowId);
+  // Store Glide's FULL selection (cell cursor + rows). Keeping `current` (the
+  // active cell) is what makes the overlay editor open on type/double-click —
+  // a row-only controlled selection suppresses cell editing entirely.
+  const [selection, setSelection] = useState<GridSelection>(EMPTY_SELECTION);
 
-  // Keep internal selection in sync with the `selectedRowId` prop (e.g. the
-  // nodes tab drives selection externally via the nested-table split view).
+  // When the parent drives selection by row id (nodes-split), reflect it as a
+  // row-cursor so the right pane and the row highlight stay in sync.
   useEffect(() => {
-    setInternalSelectedRowId(selectedRowId);
-  }, [selectedRowId]);
+    const rowIdx = selectedRowIndex(grid, selectedRowId);
+    if (rowIdx < 0) return;
+    setSelection((prev) => {
+      if (prev.current?.cell?.[1] === rowIdx) return prev;
+      return {
+        current: { cell: [0, rowIdx], range: { x: 0, y: rowIdx, width: 1, height: 1 }, rangeStack: [] },
+        columns: CompactSelection.empty(),
+        rows: CompactSelection.fromSingleSelection(rowIdx),
+      };
+    });
+  }, [grid, selectedRowId]);
 
   const glideCols: GlideColumn[] = useMemo(
-    () => grid.columns.map((c) => ({ title: c.title, id: c.id, width: 180 })),
+    // `grow` lets columns share the pane width so the table fills its container
+    // edge-to-edge instead of leaving a bare ruled area to the right. The last
+    // column grows a bit more so any leftover space reads as intentional.
+    () => grid.columns.map((c, i) => ({
+      title: c.title,
+      id: c.id,
+      width: 180,
+      grow: i === grid.columns.length - 1 ? 2 : 1,
+    })),
     [grid.columns],
   );
 
@@ -140,28 +172,25 @@ export function EntityGrid({
     onEdit(id, col.id, v);
   }, [grid, onEdit]);
 
-  const onRowSelected = useCallback((sel: GridSelection) => {
+  const onSelectionChange = useCallback((sel: GridSelection) => {
+    setSelection(sel);
+    // Notify the parent which row is active (drives the nodes-split right pane).
+    // Only fires on an actual cell cursor — i.e. the user clicked a cell.
     const rowIdx = sel.current?.cell?.[1];
-    if (rowIdx == null) return;
+    if (rowIdx == null) { onSelectRow?.(''); return; }
     const row = grid.rows[rowIdx];
-    if (!row) return;
-    const id = String(row.id);
-    setInternalSelectedRowId(id);
-    if (onSelectRow) onSelectRow(id);
+    if (row) onSelectRow?.(String(row.id));
   }, [grid, onSelectRow]);
 
-  const gridSelection: GridSelection = useMemo(() => {
-    const rowIdx = selectedRowIndex(grid, internalSelectedRowId);
-    return {
-      current: undefined,
-      columns: CompactSelection.empty(),
-      rows: rowIdx >= 0 ? CompactSelection.fromSingleSelection(rowIdx) : CompactSelection.empty(),
-    };
-  }, [grid, internalSelectedRowId]);
+  const selectedRowId2 = (() => {
+    const rowIdx = selection.current?.cell?.[1];
+    if (rowIdx == null) return undefined;
+    return grid.rows[rowIdx] ? String(grid.rows[rowIdx]!.id) : undefined;
+  })();
 
   const handleDeleteSelected = useCallback(() => {
-    if (internalSelectedRowId != null) onDelete(internalSelectedRowId);
-  }, [internalSelectedRowId, onDelete]);
+    if (selectedRowId2 != null) onDelete(selectedRowId2);
+  }, [selectedRowId2, onDelete]);
 
   const glideTheme = useGlideTheme();
 
@@ -172,7 +201,7 @@ export function EntityGrid({
         <button
           className={`${styles.btn} ${styles.btnGhost}`}
           onClick={handleDeleteSelected}
-          disabled={!canDeleteSelected(internalSelectedRowId)}
+          disabled={!canDeleteSelected(selectedRowId2)}
         >
           Delete selected
         </button>
@@ -187,11 +216,15 @@ export function EntityGrid({
           rows={grid.rows.length}
           getCellContent={getCellContent}
           onCellEdited={onCellEdited}
-          gridSelection={gridSelection}
-          onGridSelectionChange={onRowSelected}
+          gridSelection={selection}
+          onGridSelectionChange={onSelectionChange}
           rowMarkers="number"
+          rowSelect="none"
+          headerHeight={GRID_HEADER_H}
+          rowHeight={GRID_ROW_H}
           smoothScrollX
           smoothScrollY
+          width="100%"
           height="100%"
         />
       </div>

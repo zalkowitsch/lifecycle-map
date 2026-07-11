@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { NormalizedMap, Mode } from '@/types/lifecycle-map';
 import type { RawSource } from '@/hooks/useViewerState';
 import type { DatatableRegistry } from '@/lib/datatables/registry';
@@ -7,7 +7,7 @@ import { deriveEntityRows } from '@/lib/database/deriveEntityRows';
 import { applyEntityEdit, applyNodeNestedEdit } from '@/lib/database/applyEntityEdit';
 import { serializeSource } from '@/lib/database/serializeSource';
 import { parseSource } from '@/lib/parseSource';
-import { EntityGrid } from './EntityGrid';
+import { EntityGrid, GRID_HEADER_H, GRID_ROW_H, GRID_TOOLBAR_H } from './EntityGrid';
 import { NestedTable } from './NestedTable';
 import styles from './DatabasePanel.module.css';
 
@@ -41,6 +41,27 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
   const [tab, setTab] = useState<Entity>('lanes');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [nestedField, setNestedField] = useState<'modules' | 'states' | 'meta'>('modules');
+
+  // Glide Data Grid renders its overlay cell editor into `#portal`, which MUST
+  // be a direct child of <body> (not inside this fixed panel's stacking
+  // context). Without it, editing silently fails ("portal not found"). Create
+  // it on mount, give it a z-index above the panel, and remove it on unmount.
+  useEffect(() => {
+    if (!open) return;
+    let portal = document.getElementById('portal');
+    const created = !portal;
+    if (!portal) {
+      portal = document.createElement('div');
+      portal.id = 'portal';
+      document.body.appendChild(portal);
+    }
+    portal.style.position = 'fixed';
+    portal.style.left = '0';
+    portal.style.top = '0';
+    portal.style.zIndex = '100';
+    return () => { if (created) portal?.remove(); };
+  }, [open]);
+
   if (!open) return null;
 
   const modes: Mode[] = (data.meta.modes ?? []) as Mode[];
@@ -55,6 +76,15 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
   };
   // Features live in a separate datatable; if none was loaded there's nothing to edit.
   const featuresMissing = tab === 'features' && sourceIndexForEntity(rawSources, 'features') < 0;
+
+  // Vertical center of the selected node's row, so the `<` connector aligns to
+  // it. Geometry is fixed (see EntityGrid constants): toolbar + header + rows.
+  // Falls back to the top of the grid when the selection isn't in the derived
+  // rows (shouldn't happen, but keeps the marker on-screen).
+  const selectedRowIdx = selectedNodeId ? grid.rows.findIndex((r) => String(r.id) === selectedNodeId) : -1;
+  const markerTop = selectedRowIdx >= 0
+    ? GRID_TOOLBAR_H + GRID_HEADER_H + selectedRowIdx * GRID_ROW_H + GRID_ROW_H / 2 - 10
+    : GRID_TOOLBAR_H + GRID_HEADER_H + GRID_ROW_H / 2 - 10;
 
   const commitEntity = (edit: EntityEdit): void => {
     const idx = sourceIndexForEntity(rawSources, tab);
@@ -74,9 +104,22 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
     onCommit(0, serializeSource(next, src.lang));
   };
 
-  const selectedNode = selectedNodeId
-    ? (data.nodes.find((n) => n.id === selectedNodeId) as unknown as Record<string, unknown> | undefined)
-    : undefined;
+  // The nested editor must read the RAW node from the map source, not the
+  // resolved `data` node: the datatable resolver has already replaced each
+  // `context.modules` id string with its resolved row object, so `data` no
+  // longer carries the ids the ref picker needs to write back. Parse the map
+  // source and find the node there.
+  const selectedNode = (() => {
+    if (!selectedNodeId) return undefined;
+    const mapSrc = rawSources[0];
+    if (!mapSrc) return undefined;
+    try {
+      const obj = parseSource(mapSrc.text) as unknown as { nodes?: Record<string, unknown>[] };
+      return (obj.nodes ?? []).find((n) => n.id === selectedNodeId);
+    } catch {
+      return undefined;
+    }
+  })();
 
   return (
     <div className={styles.overlay} role="dialog" aria-label="Database editor">
@@ -113,7 +156,13 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
                 onSelectRow={setSelectedNodeId}
               />
             </div>
-            {selectedNode && <div className={styles.marker} aria-hidden="true">&lt;</div>}
+            {selectedNode && (
+              <div
+                className={styles.marker}
+                aria-hidden="true"
+                style={{ top: markerTop }}
+              >&lt;</div>
+            )}
             <div className={styles.splitRight}>
               {selectedNode
                 ? <NestedTable node={selectedNode} field={nestedField} featureIds={featureIds}
