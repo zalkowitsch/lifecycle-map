@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import type { Mode } from '@/types/lifecycle-map';
 import type { EntityEdit } from '@/lib/database/types';
 import styles from './DatabasePanel.module.css';
 
@@ -14,11 +15,12 @@ export interface NestedTableProps {
   node: Record<string, unknown>;
   field: 'modules' | 'states' | 'meta';
   featureIds: string[];
+  modes: Mode[];
   onFieldChange: (f: 'modules' | 'states' | 'meta') => void;
   onEdit: (edit: EntityEdit) => void;
 }
 
-export function NestedTable({ node, field, featureIds, onFieldChange, onEdit }: NestedTableProps) {
+export function NestedTable({ node, field, featureIds, modes, onFieldChange, onEdit }: NestedTableProps) {
   const rows = useMemo(() => nestedRows(node, field), [node, field]);
   return (
     <>
@@ -34,7 +36,7 @@ export function NestedTable({ node, field, featureIds, onFieldChange, onEdit }: 
           <option value="states">states</option>
           <option value="meta">meta</option>
         </select>
-        {field === 'modules' && (
+        {['modules', 'states', 'meta'].includes(field) && (
           <button className={styles.btn} style={{ marginLeft: 'auto' }} onClick={() => onEdit({ op: 'add', id: '' })}>
             + add ref
           </button>
@@ -78,11 +80,53 @@ export function NestedTable({ node, field, featureIds, onFieldChange, onEdit }: 
               )}
             </tbody>
           </table>
+        ) : field === 'states' ? (
+          <table className={styles.nestedTable}>
+            <thead><tr><th className={styles.rowNum}>#</th><th>label</th><th>mode</th><th>narrative</th><th></th></tr></thead>
+            <tbody>
+              {rows.map((r, i) => {
+                const row = (r && typeof r === 'object' ? r : {}) as Record<string, unknown>;
+                return (
+                  <tr key={i}>
+                    <td className={styles.rowNum}>{i + 1}</td>
+                    <td><input className={styles.select} value={String(row.label ?? '')}
+                      onChange={(e) => onEdit({ op: 'update', id: String(i), field: 'label', value: e.target.value })} /></td>
+                    <td>
+                      <select className={styles.select} value={String(row.mode ?? '')}
+                        onChange={(e) => onEdit({ op: 'update', id: String(i), field: 'mode', value: e.target.value })}>
+                        <option value="">—</option>
+                        {modes.map((m) => <option key={m.id} value={m.id}>{m.id}</option>)}
+                      </select>
+                    </td>
+                    <td><input className={`${styles.select} ${styles.refSelect}`} value={String(row.narrative ?? '')}
+                      onChange={(e) => onEdit({ op: 'update', id: String(i), field: 'narrative', value: e.target.value })} /></td>
+                    <td><button className={styles.iconBtn} onClick={() => onEdit({ op: 'delete', id: String(i) })} aria-label={`Remove state ${i + 1}`}>✕</button></td>
+                  </tr>
+                );
+              })}
+              {rows.length === 0 && <tr><td className={styles.rowNum}></td><td className={styles.nestedEmpty} colSpan={4}>No states yet.</td></tr>}
+            </tbody>
+          </table>
         ) : (
-          <div className={styles.nestedEmpty}>
-            Editing <strong>{field}</strong> — {rows.length} item{rows.length === 1 ? '' : 's'}.
-            Inline editing for {field} is coming soon; edit via the source for now.
-          </div>
+          <table className={styles.nestedTable}>
+            <thead><tr><th className={styles.rowNum}>#</th><th>label</th><th>value</th><th></th></tr></thead>
+            <tbody>
+              {rows.map((r, i) => {
+                const row = (r && typeof r === 'object' ? r : {}) as Record<string, unknown>;
+                return (
+                  <tr key={i}>
+                    <td className={styles.rowNum}>{i + 1}</td>
+                    <td><input className={styles.select} value={String(row.label ?? '')}
+                      onChange={(e) => onEdit({ op: 'update', id: String(i), field: 'label', value: e.target.value })} /></td>
+                    <td><input className={`${styles.select} ${styles.refSelect}`} value={String(row.value ?? '')}
+                      onChange={(e) => onEdit({ op: 'update', id: String(i), field: 'value', value: e.target.value })} /></td>
+                    <td><button className={styles.iconBtn} onClick={() => onEdit({ op: 'delete', id: String(i) })} aria-label={`Remove pair ${i + 1}`}>✕</button></td>
+                  </tr>
+                );
+              })}
+              {rows.length === 0 && <tr><td className={styles.rowNum}></td><td className={styles.nestedEmpty} colSpan={3}>No entries yet.</td></tr>}
+            </tbody>
+          </table>
         )}
       </div>
     </>

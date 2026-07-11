@@ -165,7 +165,7 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
             )}
             <div className={styles.splitRight}>
               {selectedNode
-                ? <NestedTable node={selectedNode} field={nestedField} featureIds={featureIds}
+                ? <NestedTable node={selectedNode} field={nestedField} featureIds={featureIds} modes={modes}
                     onFieldChange={setNestedField} onEdit={commitNodeNested} />
                 : <div className={styles.placeholder}>Select a node on the left to edit its features and nested fields.</div>}
             </div>
