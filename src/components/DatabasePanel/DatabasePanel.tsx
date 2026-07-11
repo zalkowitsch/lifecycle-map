@@ -7,6 +7,9 @@ import { deriveEntityRows } from '@/lib/database/deriveEntityRows';
 import { applyEntityEdit, applyNodeNestedEdit } from '@/lib/database/applyEntityEdit';
 import { serializeSource } from '@/lib/database/serializeSource';
 import { parseSource } from '@/lib/parseSource';
+import { useSourceHistory } from './useSourceHistory';
+import { countDependents } from '@/lib/database/countDependents';
+import { discoverLangs } from '@/lib/discoverLangs';
 import { EntityGrid, GRID_HEADER_H, GRID_ROW_H, GRID_TOOLBAR_H } from './EntityGrid';
 import { NestedTable } from './NestedTable';
 import styles from './DatabasePanel.module.css';
@@ -62,6 +65,28 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
     return () => { if (created) portal?.remove(); };
   }, [open]);
 
+  const getSourceText = (i: number): string | undefined => rawSources[i]?.text;
+  const history = useSourceHistory(onCommit, getSourceText);
+
+  // Reset history when the panel opens or the source set changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- `history` is stable (from useSourceHistory) and intentionally excluded
+  useEffect(() => { history.reset(); }, [open, rawSources]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent): void => {
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod || (e.key !== 'z' && e.key !== 'Z' && e.key !== 'y')) return;
+      // If a Glide overlay editor is open, let it handle in-cell undo.
+      if (document.getElementById('portal')?.childElementCount) return;
+      e.preventDefault();
+      if (e.key === 'y' || ((e.key === 'z' || e.key === 'Z') && e.shiftKey)) history.redo();
+      else history.undo();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, history]);
+
   if (!open) return null;
 
   const modes: Mode[] = (data.meta.modes ?? []) as Mode[];
@@ -86,13 +111,19 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
     ? GRID_TOOLBAR_H + GRID_HEADER_H + selectedRowIdx * GRID_ROW_H + GRID_ROW_H / 2 - 10
     : GRID_TOOLBAR_H + GRID_HEADER_H + GRID_ROW_H / 2 - 10;
 
+  const commitWithHistory = (index: number, newText: string): void => {
+    const prev = rawSources[index]?.text;
+    if (prev !== undefined) history.record(index, prev);
+    onCommit(index, newText);
+  };
+
   const commitEntity = (edit: EntityEdit): void => {
     const idx = sourceIndexForEntity(rawSources, tab);
     const src = rawSources[idx];
     if (!src) return;
     const obj = parseSource(src.text) as unknown as Record<string, unknown>;
     const next = applyEntityEdit(obj, tab, edit, lang);
-    onCommit(idx, serializeSource(next, src.lang));
+    commitWithHistory(idx, serializeSource(next, src.lang));
   };
 
   const commitNodeNested = (edit: EntityEdit): void => {
@@ -101,8 +132,31 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
     if (!src) return;
     const obj = parseSource(src.text) as unknown as Record<string, unknown>;
     const next = applyNodeNestedEdit(obj, selectedNodeId, nestedField, edit);
-    onCommit(0, serializeSource(next, src.lang));
+    commitWithHistory(0, serializeSource(next, src.lang));
   };
+
+  const commitEntityEdits = (edits: EntityEdit[]): void => {
+    const idx = sourceIndexForEntity(rawSources, tab);
+    const src = rawSources[idx];
+    if (!src) return;
+    let obj = parseSource(src.text) as unknown as Record<string, unknown>;
+    for (const e of edits) obj = applyEntityEdit(obj, tab, e, lang);
+    commitWithHistory(idx, serializeSource(obj, src.lang));
+  };
+
+  const handleDelete = (id: string): void => {
+    const idx = sourceIndexForEntity(rawSources, tab);
+    const src = rawSources[idx];
+    if (!src) return;
+    const obj = parseSource(src.text) as unknown as Record<string, unknown>;
+    const deps = countDependents(obj, tab, id);
+    if (deps > 0 && !window.confirm(`${deps} node(s) reference this ${tab.slice(0, -1)}. Delete anyway?`)) return;
+    const next = applyEntityEdit(obj, tab, { op: 'delete', id }, lang);
+    commitWithHistory(idx, serializeSource(next, src.lang));
+  };
+
+  const langs = discoverLangs(data);
+  const otherLangs = langs.filter((l) => l !== lang);
 
   // The nested editor must read the RAW node from the map source, not the
   // resolved `data` node: the datatable resolver has already replaced each
@@ -134,6 +188,13 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
             <span className={styles.tabCount}>{counts[t.id]}</span>
           </button>
         ))}
+        <button className={styles.tab} onClick={history.undo} disabled={!history.canUndo} title="Undo (Cmd+Z)">Undo</button>
+        <button className={styles.tab} onClick={history.redo} disabled={!history.canRedo} title="Redo (Cmd+Shift+Z)">Redo</button>
+        {langs.length > 1 && (
+          <span className={styles.langHint}>
+            Editing: {lang.toUpperCase()}{otherLangs.length ? ` · also: ${otherLangs.map((l) => l.toUpperCase()).join(', ')}` : ''}
+          </span>
+        )}
         <button className={styles.back} onClick={onClose}>← back to map</button>
       </div>
 
@@ -150,8 +211,9 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
                 grid={grid}
                 modes={modes}
                 onEdit={(id, field, value) => commitEntity({ op: 'update', id, field, value })}
+                onEditBatch={commitEntityEdits}
                 onAdd={() => commitEntity({ op: 'add', id: `node-${Date.now()}` })}
-                onDelete={(id) => commitEntity({ op: 'delete', id })}
+                onDelete={handleDelete}
                 selectedRowId={selectedNodeId ?? undefined}
                 onSelectRow={setSelectedNodeId}
               />
@@ -177,8 +239,9 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
               modes={modes}
               featureIds={tab === 'features' ? featureIds : undefined}
               onEdit={(id, field, value) => commitEntity({ op: 'update', id, field, value })}
+              onEditBatch={commitEntityEdits}
               onAdd={() => commitEntity({ op: 'add', id: `${tab}-${Date.now()}` })}
-              onDelete={(id) => commitEntity({ op: 'delete', id })}
+              onDelete={handleDelete}
             />
           </div>
         )}

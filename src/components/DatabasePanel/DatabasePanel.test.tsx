@@ -46,3 +46,17 @@ describe('DatabasePanel', () => {
     expect(onClose).toHaveBeenCalled();
   });
 });
+
+describe('DatabasePanel delete confirm + lang hint', () => {
+  const data = {
+    meta: { modes: [], default_lang: 'en' },
+    lanes: [{ id: 'l', label: { en: 'L', pt: 'Le' } }], phases: [{ id: 'p', label: 'P' }],
+    nodes: [{ id: 'n1', lane: 'l', phase: 'p', title: 'N', states: {} }], edges: [], _modeMap: {}, _moduleCatalog: {},
+  } as any;
+  const sources = [{ name: 'map.json', text: JSON.stringify(data), lang: 'json' as const }];
+
+  it('shows a language hint when localized fields exist', () => {
+    render(<DatabasePanel open data={data} rawSources={sources} onClose={() => {}} onCommit={() => {}} lang="en" />);
+    expect(screen.getByText(/editing:/i)).toBeInTheDocument();
+  });
+});

@@ -38,7 +38,7 @@ export function NestedTable({ node, field, featureIds, modes, onFieldChange, onE
         </select>
         {['modules', 'states', 'meta'].includes(field) && (
           <button className={styles.btn} style={{ marginLeft: 'auto' }} onClick={() => onEdit({ op: 'add', id: '' })}>
-            + add ref
+            {field === 'modules' ? '+ add ref' : '+ add'}
           </button>
         )}
       </div>
