@@ -6,7 +6,7 @@
 // fires synchronously when we ask it to.
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { I18nProvider } from '@/contexts/I18nContext';
@@ -427,5 +427,30 @@ describe('CodeDrawer', () => {
     );
     const aside = screen.getByRole('complementary', { hidden: true });
     expect(aside).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  test('Format button pretty-prints minified JSON in the active buffer', async () => {
+    const sources = [{ name: 'map.json', text: '{"a":1,"b":[2,3]}', lang: 'json' as const }];
+    render(
+      <Wrap>
+        <CodeDrawer open onClose={() => {}} sources={sources} onEdit={() => {}} />
+      </Wrap>,
+    );
+    const ta = screen.getByRole('textbox') as HTMLTextAreaElement;
+    expect(ta.value).toBe('{"a":1,"b":[2,3]}');
+    fireEvent.click(screen.getByRole('button', { name: /format/i }));
+    expect(ta.value).toBe('{\n  "a": 1,\n  "b": [\n    2,\n    3\n  ]\n}');
+  });
+
+  test('Format is a no-op on invalid JSON', () => {
+    const sources = [{ name: 'map.json', text: '{invalid', lang: 'json' as const }];
+    render(
+      <Wrap>
+        <CodeDrawer open onClose={() => {}} sources={sources} onEdit={() => {}} />
+      </Wrap>,
+    );
+    const ta = screen.getByRole('textbox') as HTMLTextAreaElement;
+    fireEvent.click(screen.getByRole('button', { name: /format/i }));
+    expect(ta.value).toBe('{invalid'); // unchanged
   });
 });

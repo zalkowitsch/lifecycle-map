@@ -130,6 +130,7 @@
   resize: none;
   tab-size: 2;
   white-space: pre;
+  overflow-x: auto;
 }
 .editor::placeholder { color: var(--mute); font-style: italic; }
 

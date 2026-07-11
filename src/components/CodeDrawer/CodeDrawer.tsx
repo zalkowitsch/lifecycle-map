@@ -23,7 +23,10 @@ import {
   useState,
 } from 'react';
 
+import yaml from 'js-yaml';
+
 import { useI18n } from '@/contexts/I18nContext';
+import { zipStore } from '@/lib/database/zip';
 import { parseSource } from '@/lib/parseSource';
 
 import styles from './CodeDrawer.module.css';
@@ -231,6 +234,39 @@ export function CodeDrawer(props: CodeDrawerProps): JSX.Element {
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }, [activeBuffer, activeSource]);
 
+  const onDownloadAll = useCallback((): void => {
+    if (sources.length <= 1) { onDownload(); return; }
+    const bytes = zipStore(sources.map((s, i) => ({ name: s.name, text: buffers[i] ?? s.text })));
+    const blob = new Blob([bytes.slice()], { type: 'application/zip' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'map-bundle.zip';
+    document.body.appendChild(a); a.click(); a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, [sources, buffers, onDownload]);
+
+  // Pretty-print the active buffer in place. Pushes the prior text onto the
+  // tab's undo stack (so Undo can revert the reformat) and routes through
+  // `onEdit` like any other accepted edit. No-ops (with an error status) on
+  // invalid JSON/YAML — the buffer is left untouched.
+  const onFormat = useCallback((): void => {
+    if (!activeSource) return;
+    try {
+      const pretty = activeSource.lang === 'yaml'
+        ? yaml.dump(yaml.load(activeBuffer))
+        : JSON.stringify(JSON.parse(activeBuffer), null, 2);
+      // Push current buffer to this tab's undo stack, then set the formatted text.
+      undoStacks.current[activeTab]?.push(activeBuffer);
+      setBuffers((prev) => prev.map((b, i) => (i === activeTab ? pretty : b)));
+      // Reuse the debounced parse→onEdit path by simulating a change:
+      onEdit(activeTab, pretty);
+      setStatus('saved');
+    } catch {
+      setStatus('error');
+      setErrorMsg('Cannot format: invalid ' + (activeSource.lang === 'yaml' ? 'YAML' : 'JSON'));
+    }
+  }, [activeBuffer, activeSource, activeTab, onEdit]);
+
   const drawerCls = open ? `${styles.drawer} ${styles.open}` : styles.drawer;
 
   const statusLabel = status === 'saved'
@@ -314,6 +350,15 @@ export function CodeDrawer(props: CodeDrawerProps): JSX.Element {
         <button
           type="button"
           className={styles.actionBtn}
+          onClick={onFormat}
+          disabled={!activeSource}
+          title="Format"
+        >
+          Format
+        </button>
+        <button
+          type="button"
+          className={styles.actionBtn}
           onClick={onCopy}
           disabled={!activeSource}
         >
@@ -322,10 +367,10 @@ export function CodeDrawer(props: CodeDrawerProps): JSX.Element {
         <button
           type="button"
           className={styles.actionBtn}
-          onClick={onDownload}
+          onClick={sources.length > 1 ? onDownloadAll : onDownload}
           disabled={!activeSource}
         >
-          {t('code.download')}
+          {sources.length > 1 ? 'Download all' : t('code.download')}
         </button>
         <span className={statusCls}>{statusLabel}</span>
         <span className={styles.meta}>{meta}</span>
