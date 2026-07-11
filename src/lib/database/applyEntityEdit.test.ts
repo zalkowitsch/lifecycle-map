@@ -98,3 +98,36 @@ describe('applyNodeNestedEdit — modules array of ids', () => {
     expect((removed.nodes as any)[0].context.modules).toEqual(['f1']);
   });
 });
+
+describe('applyNodeNestedEdit — states (array of objects)', () => {
+  const map = () => ({ lanes: [], phases: [], edges: [],
+    nodes: [{ id: 'n1', lane: 'l', phase: 'p', title: 'N', context: { states: [{ label: 'Today', mode: 'Manual' }] } }] });
+  it('update sets a sub-field on the row at index (id=index, field=subField)', () => {
+    const out = applyNodeNestedEdit(map(), 'n1', 'states', { op: 'update', id: '0', field: 'mode', value: 'Auto' });
+    expect((out.nodes as any)[0].context.states[0]).toEqual({ label: 'Today', mode: 'Auto' });
+  });
+  it('add appends an empty object; delete by index removes', () => {
+    const added = applyNodeNestedEdit(map(), 'n1', 'states', { op: 'add', id: '' });
+    expect((added.nodes as any)[0].context.states).toHaveLength(2);
+    const removed = applyNodeNestedEdit(map(), 'n1', 'states', { op: 'delete', id: '0' });
+    expect((removed.nodes as any)[0].context.states).toEqual([]);
+  });
+});
+
+describe('applyNodeNestedEdit — meta (label/value pairs)', () => {
+  const map = () => ({ lanes: [], phases: [], edges: [],
+    nodes: [{ id: 'n1', lane: 'l', phase: 'p', title: 'N', context: { meta: [{ label: 'Entity', value: 'Claim' }] } }] });
+  it('update sets value on the pair at index', () => {
+    const out = applyNodeNestedEdit(map(), 'n1', 'meta', { op: 'update', id: '0', field: 'value', value: 'Payer' });
+    expect((out.nodes as any)[0].context.meta[0]).toEqual({ label: 'Entity', value: 'Payer' });
+  });
+});
+
+describe('applyNodeNestedEdit — modules still index-addressed by field', () => {
+  const map = () => ({ lanes: [], phases: [], edges: [],
+    nodes: [{ id: 'n1', lane: 'l', phase: 'p', title: 'N', context: { modules: ['f1', 'f2'] } }] });
+  it('update replaces a module id by index (field=index)', () => {
+    const out = applyNodeNestedEdit(map(), 'n1', 'modules', { op: 'update', id: '0', field: '0', value: 'fX' });
+    expect((out.nodes as any)[0].context.modules).toEqual(['fX', 'f2']);
+  });
+});

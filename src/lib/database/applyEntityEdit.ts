@@ -119,16 +119,16 @@ export function applyNodeNestedEdit(
   if (field === 'modules') {
     if (edit.op === 'add') arr.push('');
     else if (edit.op === 'delete') arr.splice(Number(edit.id), 1);
-    else arr[Number(edit.field)] = edit.value;
+    else arr[Number(edit.field)] = edit.value; // field == row index; cell is the whole string
   } else {
-    // states / meta: arrays of objects keyed by index too (v1 scope: modules is the ref case)
+    // states / meta: array of objects. update: id = row index, field = sub-field name.
     if (edit.op === 'add') arr.push({});
     else if (edit.op === 'delete') arr.splice(Number(edit.id), 1);
     else {
-      const item = (arr[Number(edit.id)] && typeof arr[Number(edit.id)] === 'object'
-        ? arr[Number(edit.id)] : {}) as Record<string, unknown>;
+      const idx = Number(edit.id);
+      const item = (arr[idx] && typeof arr[idx] === 'object' ? arr[idx] : {}) as Record<string, unknown>;
       item[edit.field] = edit.value;
-      arr[Number(edit.id)] = item;
+      arr[idx] = item;
     }
   }
   context[field] = arr;
