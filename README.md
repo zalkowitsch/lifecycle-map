@@ -17,6 +17,11 @@ It produces a swim-lane diagram you can walk step-by-step, with a side drawer sh
 
 Each node can optionally describe a **today vs. tomorrow** state — current state vs. target state — useful for transformation roadmaps, capability maps, and self-serve adoption planning.
 
+It also supports two structural features beyond the basic diagram:
+
+- **Relational datatables** — instead of duplicating shared data inline on every node, keep entities (e.g. features) in a separate datatable file and reference them by id from the map. The viewer joins them on load. See [Datatables in SCHEMA.md](./SCHEMA.md#datatables-relational-references).
+- **Database editor** — a full-screen, spreadsheet-style editor (opened from the database icon in the header) for CRUD on lanes, phases, features, and nodes. Edits apply to the map live. See [below](#editing-the-map-database-editor).
+
 ## Quick start
 
 Three ways to load data:
@@ -75,6 +80,38 @@ Opens a textarea for direct JSON/YAML paste.
 That's it — paste this into the viewer and you get a working map.
 
 See [`examples/hiring-pipeline.json`](./examples/hiring-pipeline.json) for a fuller example with today/tomorrow states, modules, and custom mode colors.
+
+## Editing the map (Database editor)
+
+Beyond viewing, you can edit a loaded map as tables. Click the **database icon** in
+the header to open a full-screen editor with four tabs:
+
+- **Personas** (lanes), **Steps** (phases), **Features** (a datatable), **Nodes** (cards)
+
+Each tab is a spreadsheet grid. Click a cell to edit; use **+ Add** / **Delete selected**
+to add or remove rows. Edits apply to the map **live** — close the editor (← back to map)
+and the diagram reflects them. The **Nodes** tab opens a split view: pick a node on the
+left, edit its nested fields (like its referenced features) on the right.
+
+Editing localized (`{en,pt,es}`) fields updates the active language only, preserving the
+others. `id` columns are read-only (renaming an id would break edges/references).
+
+## Relational datatables
+
+A map can reference shared entities by id instead of embedding them on every node.
+Keep them in a datatable file and drop it alongside the map:
+
+```
+biller-lifecycle.json    ← the map; nodes reference feature ids
+features.json            ← a datatable: { "_meta": {"name":"features"}, "rows": { "<id>": {…} } }
+```
+
+**Drag both files onto the viewer together** (multi-file drop) — the viewer builds the
+datatable registry, resolves each node's referenced ids into full rows, and renders. A
+missing reference degrades gracefully (shown as unresolved) rather than crashing. Feature
+edits in the Database editor mutate the datatable and reflect in every referencing node.
+
+Full reference: [Datatables in SCHEMA.md](./SCHEMA.md#datatables-relational-references).
 
 ## Use with AI agents
 
