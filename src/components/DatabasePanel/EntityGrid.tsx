@@ -12,6 +12,8 @@ import {
 import '@glideapps/glide-data-grid/dist/index.css';
 import type { GridColumn, GridRows } from '@/lib/database/types';
 import type { Mode } from '@/types/lifecycle-map';
+import { useGlideTheme } from './useGlideTheme';
+import styles from './DatabasePanel.module.css';
 
 /** Pure: mode ids for a dropdown cell. */
 // eslint-disable-next-line react-refresh/only-export-components -- pure helper, exported for unit tests (see brief)
@@ -161,16 +163,26 @@ export function EntityGrid({
     if (internalSelectedRowId != null) onDelete(internalSelectedRowId);
   }, [internalSelectedRowId, onDelete]);
 
+  const glideTheme = useGlideTheme();
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div style={{ padding: '6px 8px', display: 'flex', gap: 8 }}>
-        <button onClick={onAdd}>+ Add</button>
-        <button onClick={handleDeleteSelected} disabled={!canDeleteSelected(internalSelectedRowId)}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minWidth: 0 }}>
+      <div className={styles.toolbar}>
+        <button className={styles.btn} onClick={onAdd}>+ Add row</button>
+        <button
+          className={`${styles.btn} ${styles.btnGhost}`}
+          onClick={handleDeleteSelected}
+          disabled={!canDeleteSelected(internalSelectedRowId)}
+        >
           Delete selected
         </button>
+        <span className={styles.toolbarNote}>
+          {grid.rows.length} row{grid.rows.length === 1 ? '' : 's'} · live
+        </span>
       </div>
-      <div style={{ flex: 1, minHeight: 0 }}>
+      <div className={styles.gridWrap}>
         <DataEditor
+          theme={glideTheme}
           columns={glideCols}
           rows={grid.rows.length}
           getCellContent={getCellContent}
@@ -180,6 +192,7 @@ export function EntityGrid({
           rowMarkers="number"
           smoothScrollX
           smoothScrollY
+          height="100%"
         />
       </div>
     </div>
