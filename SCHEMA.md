@@ -510,6 +510,28 @@ drop the lifecycle map file and its `.datatable.json`/`.datatable.csv` files ont
 at the same time (see [Multi-file bundle loading](#multi-file-bundle-loading) above) — the
 panel then edits whichever file actually backs each tab.
 
+The grid behaves like a spreadsheet: select a cell or range and **copy** (`Cmd/Ctrl+C`) or
+**paste** (`Cmd/Ctrl+V`) — a paste writes every targeted cell in a single step, skipping
+read-only columns (such as `id`). Edits are undoable per source with **`Cmd/Ctrl+Z`** (undo)
+and **`Cmd/Ctrl+Shift+Z`** or **`Cmd/Ctrl+Y`** (redo); history is scoped to the panel and
+resets when it closes or a new map loads.
+
+The **Nodes** tab opens a split view: selecting a node reveals its nested fields on the right,
+where you can edit its **modules** (feature references), **states** (label / mode / narrative),
+and **meta** (label / value) rows — add and remove rows inline. Deleting a Persona, Step, or
+Feature that other nodes reference first warns with the **dependent count** (e.g. "3 node(s)
+reference this feature") and proceeds only on confirmation; a now-dangling reference degrades
+gracefully rather than cascading. Localized (`{en,pt,es}`) fields edit only the **active
+language**, which the panel shows in its header hint ("Editing: EN · also: PT, ES").
+
+The **Code drawer** (raw-source view) adds a **Format** button that pretty-prints the active
+tab's source — expanding a minified one-line document into indented, hand-editable text
+(JSON via `JSON.stringify(…, null, 2)`, YAML via `yaml.dump`), leaving the buffer untouched
+if it can't parse. When a multi-file bundle is loaded, its **Download** action becomes
+**Download all** and emits a `map-bundle.zip` containing every source; single-file maps
+download the one file as before. (Share-by-URL links remain map-only — use Download for the
+full bundle.)
+
 ---
 
 ## Complete minimal typed example
