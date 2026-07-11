@@ -255,8 +255,18 @@ export function CodeDrawer(props: CodeDrawerProps): JSX.Element {
       const pretty = activeSource.lang === 'yaml'
         ? yaml.dump(yaml.load(activeBuffer))
         : JSON.stringify(JSON.parse(activeBuffer), null, 2);
-      // Push current buffer to this tab's undo stack, then set the formatted text.
-      undoStacks.current[activeTab]?.push(activeBuffer);
+      // Cancel any pending debounced commit: it captured the PRE-format text in
+      // its closure and would fire `tryCommit(activeTab, preFormatText)` after
+      // this, re-committing the minified text and undoing the format.
+      if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
+      // Push the current buffer onto this tab's undo stack (so Undo reverts the
+      // reformat), matching tryCommit's discipline: cap at UNDO_LIMIT and clear
+      // the redo stack (Format is a new edit, so any redo branch is stale).
+      const stack = undoStacks.current[activeTab] ?? [];
+      stack.push(activeBuffer);
+      if (stack.length > UNDO_LIMIT) stack.shift();
+      undoStacks.current[activeTab] = stack;
+      redoStacks.current[activeTab] = [];
       setBuffers((prev) => prev.map((b, i) => (i === activeTab ? pretty : b)));
       // Reuse the debounced parse→onEdit path by simulating a change:
       onEdit(activeTab, pretty);

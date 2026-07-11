@@ -85,6 +85,11 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
       if (!mod || (e.key !== 'z' && e.key !== 'Z' && e.key !== 'y')) return;
       // If a Glide overlay editor is open, let it handle in-cell undo.
       if (document.getElementById('portal')?.childElementCount) return;
+      // If the user is typing in a nested-editor field (states/meta inputs, the
+      // mode <select>), let the browser's native in-field undo win rather than
+      // hijacking Cmd+Z for a source-level undo.
+      const el = e.target;
+      if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement) return;
       e.preventDefault();
       if (e.key === 'y' || ((e.key === 'z' || e.key === 'Z') && e.shiftKey)) history.redo();
       else history.undo();
@@ -156,7 +161,11 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
     if (!src) return;
     const obj = parseSource(src.text) as unknown as Record<string, unknown>;
     const deps = countDependents(obj, tab, id);
-    if (deps > 0 && !window.confirm(`${deps} node(s) reference this ${tab.slice(0, -1)}. Delete anyway?`)) return;
+    // Human-readable singular from the tab label ("Personas" → "persona"),
+    // rather than the entity stem ("lanes" → "lane") which mislabels the row.
+    const tabLabel = TABS.find((t) => t.id === tab)?.label ?? tab;
+    const entityLabel = tabLabel.replace(/s$/, '').toLowerCase();
+    if (deps > 0 && !window.confirm(`${deps} node(s) reference this ${entityLabel}. Delete anyway?`)) return;
     const next = applyEntityEdit(obj, tab, { op: 'delete', id }, lang);
     commitWithHistory(idx, serializeSource(next, src.lang));
   };

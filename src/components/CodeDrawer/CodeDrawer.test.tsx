@@ -453,4 +453,31 @@ describe('CodeDrawer', () => {
     fireEvent.click(screen.getByRole('button', { name: /format/i }));
     expect(ta.value).toBe('{invalid'); // unchanged
   });
+
+  test('Format cancels the pending parse-debounce so it does not self-revert', async () => {
+    // Regression: typing starts a 600ms tryCommit timer capturing the typed
+    // (minified) text. Clicking Format before it fires must cancel that timer,
+    // otherwise the stale timer re-commits the minified text over the format.
+    const user = userEvent.setup({ delay: null });
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const onEdit = vi.fn();
+    render(
+      <Wrap>
+        <CodeDrawer open onClose={() => {}}
+          sources={[{ name: 'map.json', text: '{"a":1}', lang: 'json' }]} onEdit={onEdit} />
+      </Wrap>,
+    );
+    const ta = screen.getByRole('textbox') as HTMLTextAreaElement;
+    await user.clear(ta);
+    await user.type(ta, '{{"a":2}'); // valid minified JSON; schedules the debounce
+    fireEvent.click(screen.getByRole('button', { name: /format/i }));
+    const pretty = '{\n  "a": 2\n}';
+    expect(ta.value).toBe(pretty);
+    // Let the (now-cancelled) debounce window elapse.
+    act(() => { vi.advanceTimersByTime(700); });
+    // The buffer must remain formatted, and the last onEdit must be the pretty
+    // text — the minified '{"a":2}' must NOT have been re-committed afterward.
+    expect(ta.value).toBe(pretty);
+    expect(onEdit).toHaveBeenLastCalledWith(0, pretty);
+  });
 });
