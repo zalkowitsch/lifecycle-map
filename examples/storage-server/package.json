@@ -1,0 +1,17 @@
+{
+  "name": "lifecycle-map-storage-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Reference backend: Postgres-backed document store with Okta/Google auth for lifecycle-map's storage adapter.",
+  "scripts": {
+    "start": "node server.mjs",
+    "init-db": "psql \"$DATABASE_URL\" -f schema.sql"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "jose": "^5.9.6",
+    "pg": "^8.13.1"
+  }
+}
