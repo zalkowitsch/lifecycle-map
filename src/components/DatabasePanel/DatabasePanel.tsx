@@ -4,6 +4,7 @@ import type { RawSource } from '@/hooks/useViewerState';
 import type { DatatableRegistry } from '@/lib/datatables/registry';
 import type { Entity, EntityEdit } from '@/lib/database/types';
 import { deriveEntityRows } from '@/lib/database/deriveEntityRows';
+import { filterRows } from '@/lib/database/filterRows';
 import { applyEntityEdit, applyNodeNestedEdit } from '@/lib/database/applyEntityEdit';
 import { serializeSource } from '@/lib/database/serializeSource';
 import { parseSource } from '@/lib/parseSource';
@@ -44,6 +45,12 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
   const [tab, setTab] = useState<Entity>('lanes');
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [nestedField, setNestedField] = useState<'modules' | 'states' | 'meta'>('modules');
+  // Grid search — filters the flat entity grids (lanes/phases/features). Reset
+  // when switching tabs so a query doesn't leak across entities. The Nodes tab
+  // keeps its unfiltered split (the `<` marker + node selection rely on stable
+  // row indices), so search is hidden there.
+  const [search, setSearch] = useState('');
+  useEffect(() => { setSearch(''); }, [tab]);
 
   // Glide Data Grid renders its overlay cell editor into `#portal`, which MUST
   // be a direct child of <body> (not inside this fixed panel's stacking
@@ -103,6 +110,10 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
   const modes: Mode[] = (data.meta.modes ?? []) as Mode[];
   const featureIds = registry?.ids('features') ?? [];
   const grid = deriveEntityRows(data, registry, tab);
+  // Search applies only to the flat grids; the Nodes split stays unfiltered.
+  const searchable = tab !== 'nodes';
+  const displayGrid = searchable ? filterRows(grid, search) : grid;
+  const filtered = searchable && search.trim() !== '';
 
   const counts: Record<Entity, number> = {
     lanes: data.lanes.length,
@@ -203,14 +214,40 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
             <span className={styles.tabCount}>{counts[t.id]}</span>
           </button>
         ))}
-        <button className={styles.tab} onClick={history.undo} disabled={!history.canUndo} title="Undo (Cmd+Z)">Undo</button>
-        <button className={styles.tab} onClick={history.redo} disabled={!history.canRedo} title="Redo (Cmd+Shift+Z)">Redo</button>
-        {langs.length > 1 && (
-          <span className={styles.langHint}>
-            Editing: {lang.toUpperCase()}{otherLangs.length ? ` · also: ${otherLangs.map((l) => l.toUpperCase()).join(', ')}` : ''}
-          </span>
-        )}
-        <button className={styles.back} onClick={onClose}>← back to map</button>
+
+        <div className={styles.tabsRight}>
+          {searchable && (
+            <div className={styles.searchWrap}>
+              <span className={styles.searchIcon} aria-hidden="true">⌕</span>
+              <input
+                className={styles.search}
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={`Search ${TABS.find((t) => t.id === tab)?.label.toLowerCase() ?? ''}…`}
+                aria-label="Search rows"
+              />
+              {search !== '' && (
+                <button
+                  className={styles.searchClear}
+                  onClick={() => setSearch('')}
+                  aria-label="Clear search"
+                  title="Clear"
+                >×</button>
+              )}
+            </div>
+          )}
+          {langs.length > 1 && (
+            <span className={styles.langHint}>
+              Editing: {lang.toUpperCase()}{otherLangs.length ? ` · also: ${otherLangs.map((l) => l.toUpperCase()).join(', ')}` : ''}
+            </span>
+          )}
+          <div className={styles.actionGroup}>
+            <button className={styles.actionBtn} onClick={history.undo} disabled={!history.canUndo} title="Undo (Cmd+Z)">↶ Undo</button>
+            <button className={styles.actionBtn} onClick={history.redo} disabled={!history.canRedo} title="Redo (Cmd+Shift+Z)">↷ Redo</button>
+          </div>
+          <button className={styles.back} onClick={onClose}>← back to map</button>
+        </div>
       </div>
 
       <div className={styles.body}>
@@ -250,7 +287,8 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
         ) : (
           <div className={styles.gridWrap}>
             <EntityGrid
-              grid={grid}
+              grid={displayGrid}
+              totalRows={filtered ? grid.rows.length : undefined}
               modes={modes}
               featureIds={tab === 'features' ? featureIds : undefined}
               onEdit={(id, field, value) => commitEntity({ op: 'update', id, field, value })}

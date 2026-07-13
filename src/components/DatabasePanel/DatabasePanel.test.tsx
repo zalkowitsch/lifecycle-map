@@ -83,13 +83,57 @@ describe('DatabasePanel undo history survives live commits', () => {
 
   it('keeps Undo enabled after an edit commits (rawSources identity change must not reset history)', () => {
     render(<Harness />);
-    const undoBtn = screen.getByRole('button', { name: /^undo$/i });
+    const undoBtn = screen.getByRole('button', { name: /undo/i });
     expect(undoBtn).toBeDisabled();
     // "+ Add row" routes through commitEntity → commitWithHistory → record + onCommit.
     fireEvent.click(screen.getByRole('button', { name: /add row/i }));
     // After the commit re-renders with a new rawSources array, Undo must still be
     // available — the just-recorded history entry must survive.
-    expect(screen.getByRole('button', { name: /^undo$/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /undo/i })).toBeEnabled();
+  });
+});
+
+describe('DatabasePanel grid search', () => {
+  const searchData = {
+    meta: { modes: [] },
+    lanes: [
+      { id: 'patient', label: 'Patient' },
+      { id: 'frontdesk', label: 'Front Desk' },
+      { id: 'biller', label: 'Biller' },
+    ],
+    phases: [{ id: 'p', label: 'P' }],
+    nodes: [{ id: 'n1', lane: 'patient', phase: 'p', title: 'N', states: {} }],
+    edges: [], _modeMap: {}, _moduleCatalog: {},
+  } as unknown as NormalizedMap;
+  const searchSources: RawSource[] = [{ name: 'map.json', text: JSON.stringify(searchData), lang: 'json' }];
+
+  it('filters the grid and shows an "N of M" count (Personas tab)', () => {
+    render(<DatabasePanel open data={searchData} rawSources={searchSources} onClose={vi.fn()} onCommit={vi.fn()} />);
+    // starts unfiltered: "3 rows · live"
+    expect(screen.getByText(/3 rows · live/)).toBeInTheDocument();
+    const box = screen.getByRole('textbox', { name: /search rows/i });
+    fireEvent.change(box, { target: { value: 'front' } });
+    // one lane matches → "1 of 3 · live"
+    expect(screen.getByText(/1 of 3 · live/)).toBeInTheDocument();
+  });
+
+  it('resets the search when switching tabs', () => {
+    render(<DatabasePanel open data={searchData} rawSources={searchSources} onClose={vi.fn()} onCommit={vi.fn()} />);
+    const box = screen.getByRole('textbox', { name: /search rows/i });
+    fireEvent.change(box, { target: { value: 'front' } });
+    expect(screen.getByText(/1 of 3 · live/)).toBeInTheDocument();
+    // switch to Steps, then back to Personas — the query must have cleared
+    fireEvent.click(screen.getByRole('button', { name: /steps/i }));
+    fireEvent.click(screen.getByRole('button', { name: /personas/i }));
+    expect((screen.getByRole('textbox', { name: /search rows/i }) as HTMLInputElement).value).toBe('');
+    expect(screen.getByText(/3 rows · live/)).toBeInTheDocument();
+  });
+
+  it('hides the search box on the Nodes tab (unfiltered split)', () => {
+    render(<DatabasePanel open data={searchData} rawSources={searchSources} onClose={vi.fn()} onCommit={vi.fn()} />);
+    expect(screen.getByRole('textbox', { name: /search rows/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /nodes/i }));
+    expect(screen.queryByRole('textbox', { name: /search rows/i })).toBeNull();
   });
 });
 

@@ -102,6 +102,8 @@ export function pasteEditsFromClipboard(
 
 export interface EntityGridProps {
   grid: GridRows;
+  /** When the grid is filtered, the unfiltered total (renders "N of M"). */
+  totalRows?: number;
   modes: Mode[];
   featureIds?: string[];
   onEdit: (rowId: string, field: string, value: string) => void;
@@ -120,6 +122,7 @@ const EMPTY_SELECTION: GridSelection = {
 
 export function EntityGrid({
   grid,
+  totalRows,
   modes,
   featureIds = [],
   onEdit,
@@ -228,7 +231,9 @@ export function EntityGrid({
           Delete selected
         </button>
         <span className={styles.toolbarNote}>
-          {grid.rows.length} row{grid.rows.length === 1 ? '' : 's'} · live
+          {totalRows != null
+            ? `${grid.rows.length} of ${totalRows} · live`
+            : `${grid.rows.length} row${grid.rows.length === 1 ? '' : 's'} · live`}
         </span>
       </div>
       <div className={styles.gridWrap}>
