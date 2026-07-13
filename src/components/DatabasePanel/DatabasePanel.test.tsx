@@ -135,6 +135,19 @@ describe('DatabasePanel grid search', () => {
     fireEvent.click(screen.getByRole('button', { name: /nodes/i }));
     expect(screen.queryByRole('textbox', { name: /search rows/i })).toBeNull();
   });
+
+  it('shows a source chip naming the file each tab edits (map vs features)', () => {
+    const multiSources: RawSource[] = [
+      { name: 'my-map.json', text: JSON.stringify(searchData), lang: 'json' },
+      { name: 'features.json', text: '{"_meta":{"name":"features"},"rows":{}}', lang: 'json' },
+    ];
+    render(<DatabasePanel open data={searchData} rawSources={multiSources} onClose={vi.fn()} onCommit={vi.fn()} />);
+    // Personas (a map entity) → the map file
+    expect(screen.getByTitle(/written to my-map\.json/i)).toBeInTheDocument();
+    // Features → the features datatable
+    fireEvent.click(screen.getByRole('button', { name: /features/i }));
+    expect(screen.getByTitle(/written to features\.json/i)).toBeInTheDocument();
+  });
 });
 
 describe('DatabasePanel delete confirm + lang hint', () => {

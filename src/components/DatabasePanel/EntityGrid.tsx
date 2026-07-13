@@ -104,6 +104,8 @@ export interface EntityGridProps {
   grid: GridRows;
   /** When the grid is filtered, the unfiltered total (renders "N of M"). */
   totalRows?: number;
+  /** The source file this grid's edits are written to (shown as a chip). */
+  sourceName?: string;
   modes: Mode[];
   featureIds?: string[];
   onEdit: (rowId: string, field: string, value: string) => void;
@@ -123,6 +125,7 @@ const EMPTY_SELECTION: GridSelection = {
 export function EntityGrid({
   grid,
   totalRows,
+  sourceName,
   modes,
   featureIds = [],
   onEdit,
@@ -231,6 +234,11 @@ export function EntityGrid({
           Delete selected
         </button>
         <span className={styles.toolbarNote}>
+          {sourceName && (
+            <span className={styles.sourceChip} title={`Edits are written to ${sourceName}`}>
+              {sourceName}
+            </span>
+          )}
           {totalRows != null
             ? `${grid.rows.length} of ${totalRows} · live`
             : `${grid.rows.length} row${grid.rows.length === 1 ? '' : 's'} · live`}

@@ -110,6 +110,10 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
   const modes: Mode[] = (data.meta.modes ?? []) as Mode[];
   const featureIds = registry?.ids('features') ?? [];
   const grid = deriveEntityRows(data, registry, tab);
+  // Which source file the current tab's edits land in (map for most, the
+  // features datatable for the Features tab) — surfaced as a chip so it's clear
+  // where changes are written.
+  const sourceName = rawSources[sourceIndexForEntity(rawSources, tab)]?.name;
   // Search applies only to the flat grids; the Nodes split stays unfiltered.
   const searchable = tab !== 'nodes';
   const displayGrid = searchable ? filterRows(grid, search) : grid;
@@ -261,6 +265,7 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
             <div className={styles.splitLeft}>
               <EntityGrid
                 grid={grid}
+                sourceName={sourceName}
                 modes={modes}
                 onEdit={(id, field, value) => commitEntity({ op: 'update', id, field, value })}
                 onEditBatch={commitEntityEdits}
@@ -289,6 +294,7 @@ export function DatabasePanel({ open, onClose, data, rawSources, registry, onCom
             <EntityGrid
               grid={displayGrid}
               totalRows={filtered ? grid.rows.length : undefined}
+              sourceName={sourceName}
               modes={modes}
               featureIds={tab === 'features' ? featureIds : undefined}
               onEdit={(id, field, value) => commitEntity({ op: 'update', id, field, value })}

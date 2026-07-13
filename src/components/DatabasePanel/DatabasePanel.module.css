@@ -174,9 +174,21 @@
 .btnGhost:hover:not(:disabled) { background: var(--rule-2); color: var(--ink); }
 .toolbarNote {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 11px;
   color: var(--mute);
   font-family: var(--font-mono);
+}
+.sourceChip {
+  padding: 2px 7px;
+  border: 1px solid var(--rule-2);
+  border-radius: var(--button-radius);
+  color: var(--ink-2, var(--ink));
+  background: var(--bg-2);
+  font-size: 10px;
+  letter-spacing: 0.02em;
 }
 
 /* ---- body / grid area ---- */
