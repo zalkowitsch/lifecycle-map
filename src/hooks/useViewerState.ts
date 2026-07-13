@@ -145,7 +145,7 @@ async function fetchSource(url: string): Promise<{ data: LifecycleMap; text: str
   return { data, text, name };
 }
 
-export type ViewerSource = 'url' | 'hash' | 'img' | 'slug' | 'dnd' | 'paste' | 'restored';
+export type ViewerSource = 'url' | 'hash' | 'img' | 'slug' | 'dnd' | 'paste' | 'restored' | 'storage';
 
 export interface RawSource {
   name: string;
@@ -299,6 +299,34 @@ export function useViewerState() {
     await loadFromText(text, 'pasted', 'paste');
   }, [loadFromText]);
 
+  /**
+   * Load a document that came from a storage adapter: `sources[0]` is the map,
+   * the rest are datatables. Reuses the same bundle → resolve → normalize path
+   * as drag-and-drop, tagging the load with the given `slug` so autosave writes
+   * back to the same document. The datatable registry is rebuilt from the
+   * sources exactly as commitSource/handleFileDrop do.
+   */
+  const loadFromSources = useCallback(async (sources: RawSource[], slug: string) => {
+    const first = sources[0];
+    if (!first) {
+      setState((s) => ({ ...s, error: 'Empty document (no sources).' }));
+      return;
+    }
+    try {
+      const bundleInput = sources.map((s) => ({ name: s.name, text: s.text }));
+      const bundle = loadBundle(bundleInput);
+      const datatableSources = bundleInput
+        .filter((f) => f.name !== bundle.lifecycleName)
+        .map((f) => ({ name: f.name, text: f.text, lang: detectLang(f.name, f.text) }));
+      await loadFromText(
+        bundle.lifecycleText, bundle.lifecycleName, 'storage',
+        slug, undefined, bundle.registry, datatableSources,
+      );
+    } catch (e) {
+      setState((s) => ({ ...s, error: e instanceof Error ? e.message : String(e) }));
+    }
+  }, [loadFromText]);
+
   const decryptImage = useCallback(async (url: string, password: string) => {
     try {
       setState((s) => ({ ...s, loading: true, error: null }));
@@ -428,6 +456,7 @@ export function useViewerState() {
     loadFromUrl,
     handleFileDrop,
     handlePaste,
+    loadFromSources,
     commitSource,
     decryptImage,
     showPasteUI,

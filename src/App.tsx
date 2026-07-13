@@ -1,9 +1,11 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { I18nProvider, useI18n } from '@/contexts/I18nContext';
 import { useViewerState } from '@/hooks/useViewerState';
+import { useStorage } from '@/hooks/useStorage';
 import { useKeyboard } from '@/hooks/useKeyboard';
 import { useSessionState } from '@/hooks/useSessionState';
+import type { StorageAdapter } from '@/lib/storage';
 import { discoverLangs } from '@/lib/discoverLangs';
 import Canvas from '@/components/Canvas';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -25,10 +27,16 @@ const DatabasePanel = lazy(() =>
   import('@/components/DatabasePanel').then((m) => ({ default: m.DatabasePanel })),
 );
 
-function AppShell() {
+interface AppShellProps {
+  /** Optional pluggable persistence backing (database, via your backend). */
+  storage?: StorageAdapter;
+}
+
+function AppShell({ storage: storageAdapter }: AppShellProps) {
   const { L, t, dataLang, availableLangs, setAvailableLangs, setDataLang } = useI18n();
   const { mode } = useTheme();
   const viewer = useViewerState();
+  const storage = useStorage(storageAdapter);
   const session = useSessionState();
   // Canvas applies the zoom internally via prop — we just track the value
   // here for the header label and keyboard shortcuts.
@@ -222,6 +230,57 @@ function AppShell() {
     if (!viewer.state.rawSources[idx]) return;
     viewer.commitSource(idx, newText);
   }, [viewer]);
+
+  // Load a document from the storage backing into the viewer, tagging it with
+  // its slug so subsequent edits autosave back to the same document.
+  const loadFromStorage = useCallback(async (docSlug: string): Promise<boolean> => {
+    const sources = await storage.load(docSlug);
+    if (!sources) return false;
+    // Storage returns StoredSource[] (name/text/lang) — the viewer's RawSource[].
+    await viewer.loadFromSources(sources, docSlug);
+    return true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- storage/viewer methods are stable enough; re-reading at call time is desired
+  }, [storage.load, viewer.loadFromSources]);
+
+  // When storage is enabled and the URL carries `?doc=<slug>`, auto-load it from
+  // the backing on first mount (before falling back to file/URL/hash flows).
+  const storageLoadTried = useRef(false);
+  useEffect(() => {
+    if (!storage.enabled || storageLoadTried.current) return;
+    storageLoadTried.current = true;
+    const docSlug = new URLSearchParams(window.location.search).get('doc');
+    if (docSlug) void loadFromStorage(docSlug);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot on mount when storage is enabled
+  }, [storage.enabled]);
+
+  // Autosave to the storage backing (when one is wired). Debounced so a burst
+  // of edits collapses into one save. Keyed on the serialized sources so it only
+  // fires on real content changes. The first run after a (slug, sources) pair
+  // appears is skipped, so loading a document doesn't immediately re-save it.
+  const autosaveSig = viewer.state.rawSources.map((s) => `${s.name} ${s.text}`).join('');
+  const autosaveSlug = viewer.state.slug;
+  const autosaveBaseline = useRef<{ slug: string; sig: string } | null>(null);
+  useEffect(() => {
+    if (!storage.enabled || !autosaveSlug || viewer.state.rawSources.length === 0) return;
+    // Skip the initial signature for this document (freshly loaded → already in sync).
+    const baseline = autosaveBaseline.current;
+    // First sight of this slug (fresh load or document switch) → adopt its
+    // current content as the in-sync baseline and don't save. Storing the slug
+    // alongside the sig in ONE ref means a document switch resets the baseline
+    // atomically — no separate "reset" effect that could null it after this one
+    // set it in the same render (that ordering bug made edits never autosave).
+    if (!baseline || baseline.slug !== autosaveSlug) {
+      autosaveBaseline.current = { slug: autosaveSlug, sig: autosaveSig };
+      return;
+    }
+    if (baseline.sig === autosaveSig) return; // unchanged since baseline
+    const handle = window.setTimeout(() => {
+      autosaveBaseline.current = { slug: autosaveSlug, sig: autosaveSig };
+      void storage.save(autosaveSlug, viewer.state.rawSources);
+    }, 800);
+    return () => window.clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed intentionally on the content signature + slug; `storage`/`viewer` are stable enough and re-reading them mid-debounce is desired
+  }, [autosaveSig, autosaveSlug, storage.enabled]);
 
   const getJsonText = useCallback((): string => {
     const src = viewer.state.rawSources[0];
@@ -422,11 +481,21 @@ function AppShell() {
   );
 }
 
-export function App() {
+export interface AppProps {
+  /**
+   * Optional pluggable persistence backing. Instantiate an adapter (e.g.
+   * `new HttpStorageAdapter({ baseUrl, getToken })` in the browser) and pass it
+   * here to persist maps + datatables to your backend, with autosave. Omit to
+   * keep the file/URL/in-memory behavior.
+   */
+  storage?: StorageAdapter;
+}
+
+export function App({ storage }: AppProps = {}) {
   return (
     <ThemeProvider>
       <I18nProvider>
-        <AppShell />
+        <AppShell storage={storage} />
       </I18nProvider>
     </ThemeProvider>
   );
