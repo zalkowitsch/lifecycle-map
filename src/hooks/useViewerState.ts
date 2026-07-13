@@ -313,6 +313,9 @@ export function useViewerState() {
       return;
     }
     try {
+      // Unlike handleFileDrop, we skip mergeDroppedFiles here: a stored document
+      // is already canonical (a map + its datatables), with no legacy dropped
+      // module/rubric catalog to fold in. Straight to loadBundle.
       const bundleInput = sources.map((s) => ({ name: s.name, text: s.text }));
       const bundle = loadBundle(bundleInput);
       const datatableSources = bundleInput

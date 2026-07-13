@@ -275,8 +275,15 @@ function AppShell({ storage: storageAdapter }: AppShellProps) {
     }
     if (baseline.sig === autosaveSig) return; // unchanged since baseline
     const handle = window.setTimeout(() => {
-      autosaveBaseline.current = { slug: autosaveSlug, sig: autosaveSig };
-      void storage.save(autosaveSlug, viewer.state.rawSources);
+      const savedSig = autosaveSig;
+      const savedSlug = autosaveSlug;
+      // Advance the baseline ONLY after the save actually succeeds. If the save
+      // fails (network error) or conflicts, leave the baseline behind so this
+      // effect — whose content still differs from the baseline — re-fires and
+      // retries on the next tick, instead of silently dropping the edit.
+      void storage.save(savedSlug, viewer.state.rawSources).then((result) => {
+        if (result !== null) autosaveBaseline.current = { slug: savedSlug, sig: savedSig };
+      });
     }, 800);
     return () => window.clearTimeout(handle);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed intentionally on the content signature + slug; `storage`/`viewer` are stable enough and re-reading them mid-debounce is desired
@@ -374,6 +381,18 @@ function AppShell({ storage: storageAdapter }: AppShellProps) {
             </h1>
           </div>
           <div className="h-meta">
+            {storage.enabled && storage.status !== 'idle' && (
+              <span
+                className={`storage-status storage-status--${storage.status}`}
+                title={storage.error ?? undefined}
+                role="status"
+              >
+                {storage.status === 'saving' && '⟳ Saving…'}
+                {storage.status === 'saved' && '✓ Saved'}
+                {storage.status === 'conflict' && '⚠ Conflict — reload'}
+                {storage.status === 'error' && '⚠ Save failed'}
+              </span>
+            )}
             <a href="./docs/">{t('header.docs')}</a>
             <div className="h-actions">
               <button className="h-icon-btn" title={(t('header.shortcuts.title') || 'Shortcuts') + ' (?)'} onClick={() => setShortcutsOpen(true)} aria-label="Shortcuts">

@@ -42,6 +42,21 @@ h1 em { font-style: italic; font-weight: 300; color: var(--accent); }
   border-bottom: 1px solid var(--rule);
 }
 .h-meta a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+.storage-status {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.04em; padding: 2px 8px;
+  border: 1px solid var(--rule-2); border-radius: var(--button-radius);
+  color: var(--mute); white-space: nowrap;
+}
+.storage-status--saving { color: var(--mute); }
+.storage-status--saved  { color: var(--downstream-stroke, var(--accent)); border-color: var(--rule-2); }
+.storage-status--conflict,
+.storage-status--error {
+  color: #b91c1c; border-color: #b91c1c;
+  background: rgba(185, 28, 28, 0.06);
+}
+[data-mode="dark"] .storage-status--conflict,
+[data-mode="dark"] .storage-status--error { color: #fca5a5; border-color: #fca5a5; }
 .h-actions { display: flex; gap: 6px; align-items: center; }
 .h-icon-btn {
   background: var(--bg); border: 1px solid var(--rule);

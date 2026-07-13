@@ -14,7 +14,20 @@
 
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 
-const MODE = process.env.AUTH_MODE ?? 'none';
+// AUTH_MODE must be set EXPLICITLY. There is deliberately no default: a silent
+// default of 'none' would leave the database wide open if someone forgot to set
+// it. Choose 'okta' | 'google' for real auth, or opt in to 'none' explicitly
+// for local development.
+const MODE = process.env.AUTH_MODE;
+if (!MODE) {
+  throw new Error(
+    "AUTH_MODE is required. Set AUTH_MODE=okta|google for real auth, or " +
+    "AUTH_MODE=none explicitly for local dev (disables all auth).",
+  );
+}
+if (MODE === 'none') {
+  console.warn('⚠  AUTH_MODE=none — authentication is DISABLED. Do not use in production.');
+}
 
 function makeVerifier() {
   if (MODE === 'none') {
@@ -26,7 +39,7 @@ function makeVerifier() {
     const audience = required('OIDC_AUDIENCE');   // e.g. api://lifecycle-map
     const jwks = createRemoteJWKSet(new URL(`${issuer}/v1/keys`));
     return async (token) => {
-      const { payload } = await jwtVerify(token, jwks, { issuer, audience });
+      const { payload } = await jwtVerify(token, jwks, { issuer, audience, algorithms: ['RS256'] });
       return payload;
     };
   }
@@ -37,7 +50,7 @@ function makeVerifier() {
     const audience = required('OIDC_AUDIENCE');
     const jwks = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
     return async (token) => {
-      const { payload } = await jwtVerify(token, jwks, { issuer, audience });
+      const { payload } = await jwtVerify(token, jwks, { issuer, audience, algorithms: ['RS256'] });
       // Optionally restrict to your workspace domain:
       if (process.env.GOOGLE_HD && payload.hd !== process.env.GOOGLE_HD) {
         throw new Error(`Wrong Google Workspace domain: ${payload.hd}`);
